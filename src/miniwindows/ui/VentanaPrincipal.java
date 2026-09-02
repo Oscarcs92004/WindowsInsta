@@ -1,5 +1,7 @@
 package miniwindows.ui;
 
+import java.awt.Image;
+
 import javax.swing.JFrame;
 
 import miniwindows.modelo.Usuario;
@@ -19,9 +21,14 @@ public class VentanaPrincipal extends JFrame {
         this.servicio = servicio;
 
         setTitle("Mini-Windows");
-        setSize(900, 600);
+        setSize(1920, 1080);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);   // centrada en la pantalla
+
+        Image icono = Iconos.imagen("file.png");
+        if (icono != null) {
+            setIconImage(icono);
+        }
 
         mostrarLogin();
     }
