@@ -1,11 +1,13 @@
 package miniwindows.so;
 
 import java.awt.BorderLayout;
+import java.awt.Image;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -36,6 +38,9 @@ public class PanelReproductor extends JPanel {
     private final JList<String> lista = new JList<>(modeloLista);
     private final JLabel caratula = new JLabel("Sin caratula", SwingConstants.CENTER);
     private final JTextArea descripcion = new JTextArea(3, 20);
+
+    private HiloReproductor hilo;
+    private int indiceActual = -1;
 
     public PanelReproductor(Usuario usuarioActual, File carpetaRaiz) {
         setLayout(new BorderLayout());
@@ -79,11 +84,80 @@ public class PanelReproductor extends JPanel {
         //   Stop:  hilo.detener();  hilo = null;
         //   Ademas: mostrar aqui la caratula (caratula.setIcon(...)) y la
         //           descripcion (descripcion.setText(...)) de la cancion.
-        btnPlay.addActionListener(e -> pendiente());
-        btnPause.addActionListener(e -> pendiente());
-        btnStop.addActionListener(e -> pendiente());
+        btnPlay.addActionListener(e -> reproducir());
+        btnPause.addActionListener(e -> pausar());
+        btnStop.addActionListener(e -> detener());
     }
 
+    private void reproducir() {
+        int i = lista.getSelectedIndex();
+        if (i < 0) {
+            JOptionPane.showMessageDialog(this, "Seleccione una cancion de la lista.");
+            return;
+        }
+        if (hilo != null && i == indiceActual) {
+            hilo.reanudar();
+            return;
+        }
+        detener();
+        File cancion = canciones.get(i);
+        mostrarInfo(cancion);
+        hilo = new HiloReproductor(cancion);
+        indiceActual = i;
+        hilo.start();
+    }
+
+    private void pausar() {
+        if (hilo != null) {
+            hilo.pausar();
+        }
+    }
+
+    private void detener() {
+        if (hilo != null) {
+            hilo.detener();
+            hilo = null;
+            indiceActual = -1;
+        }
+    }
+
+    private void mostrarInfo(File cancion) {
+        long kb = cancion.length() / 1024;
+        descripcion.setText(
+                "Cancion: " + cancion.getName()
+                        + "\nCarpeta: " + cancion.getParent()
+                        + "\nTamano: " + kb + " KB");
+
+        File archivoCaratula = buscarCaratula(cancion.getParentFile());
+        if (archivoCaratula != null) {
+            ImageIcon icono = new ImageIcon(archivoCaratula.getPath());
+            Image escalada = icono.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+            caratula.setIcon(new ImageIcon(escalada));
+            caratula.setText("");
+        } else {
+            caratula.setIcon(null);
+            caratula.setText("Sin caratula");
+        }
+    }
+
+    private File buscarCaratula(File carpeta) {
+        if (carpeta == null) {
+            return null;
+        }
+        String[] nombresPosibles = {
+                "cover.jpg", "cover.jpeg", "cover.png",
+                "folder.jpg", "folder.jpeg", "folder.png"
+        };
+        for (String nombre : nombresPosibles) {
+            File f = new File(carpeta, nombre);
+            if (f.exists()) {
+                return f;
+            }
+        }
+        return null;
+    }
+
+    // ya no se necesita en esta clase
     private void pendiente() {
         JOptionPane.showMessageDialog(this,
                 "Reproduccion: falta implementarla (ver el comentario TODO en PanelReproductor).");

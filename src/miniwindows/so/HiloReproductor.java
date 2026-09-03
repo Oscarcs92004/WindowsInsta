@@ -1,5 +1,14 @@
 package miniwindows.so;
 
+import java.io.File;
+import java.io.IOException;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
+import javax.sound.sampled.UnsupportedAudioFileException;
 /**
  * Hilo que reproduce la musica en segundo plano (Pilar 3 - hilos), para que
  * el resto de Mini-Windows siga respondiendo mientras suena la cancion.
@@ -15,9 +24,14 @@ package miniwindows.so;
  *      cancion o alguien llame a detener().
  */
 public class HiloReproductor extends Thread {
-
+    private static final int TAMANO_BLOQUE = 4096;
+    private final File cancion;
     private volatile boolean pausado = false;
     private volatile boolean detenido = false;
+
+    public HiloReproductor(File cancion) {
+        this.cancion = cancion;
+    }
 
     public void pausar() {
         pausado = true;
@@ -33,15 +47,43 @@ public class HiloReproductor extends Thread {
 
     @Override
     public void run() {
-        while (!detenido) {
-            if (pausado) {
-                dormir(100);
-                continue;
+        try (AudioInputStream entrada = AudioSystem.getAudioInputStream(cancion)) {
+            AudioFormat formato = entrada.getFormat();
+            DataLine.Info info = new DataLine.Info(SourceDataLine.class, formato);
+
+            if (!AudioSystem.isLineSupported(info)) {
+                System.err.println("Formato de audio no soportado: " + cancion.getName());
+                return;
             }
 
-            // TODO (Oscar): reproducir aqui el siguiente bloque de audio.
-            //   Cuando la cancion termine, salir del while (break).
-            dormir(100);
+            try (SourceDataLine linea = (SourceDataLine) AudioSystem.getLine(info)) {
+                linea.open(formato);
+                linea.start();
+
+                byte[] bloque = new byte[TAMANO_BLOQUE];
+                int leidos;
+
+                while (!detenido && (leidos = entrada.read(bloque, 0, bloque.length)) != -1) {
+
+                    while (pausado && !detenido) {
+                        dormir(100);
+                    }
+                    if (detenido) {
+                        break;
+                    }
+
+                    linea.write(bloque, 0, leidos);
+                }
+
+                linea.drain();
+            }
+        } catch (UnsupportedAudioFileException e) {
+            System.err.println("Archivo de audio no soportado (se esperaba .wav): "
+                    + cancion.getName());
+        } catch (LineUnavailableException e) {
+            System.err.println("No se pudo abrir la salida de audio: " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("Error leyendo el archivo de audio: " + e.getMessage());
         }
     }
 
@@ -50,6 +92,7 @@ public class HiloReproductor extends Thread {
             Thread.sleep(milis);
         } catch (InterruptedException e) {
             detenido = true;
+            Thread.currentThread().interrupt();
         }
     }
 }

@@ -430,7 +430,7 @@ public class PanelExplorador extends JPanel {
                 break;
         }
 
-        for (File hijo : hijos) {
+        for (File hijo : lista) {
             DefaultMutableTreeNode nodoHijo = new DefaultMutableTreeNode(hijo);
             nodo.add(nodoHijo);
             if (hijo.isDirectory()) {
