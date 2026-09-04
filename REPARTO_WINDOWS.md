@@ -303,11 +303,11 @@ Cuando termines O1–O3: Alex hace `so/RendererArchivos.java` (un
 - [x] Escritorio tipo sistema operativo: iconos, ventanas internas y barra de tareas
 - [x] "Crear usuario" solo visible para el administrador; cerrar sesión
 - [x] Consola con `mkdir`, `rm`, `cd`, `cd..`, `dir`, `date`, `time` y prompt
-- [ ] Explorador: renombrar, copiar, pegar; ordenar por nombre / fecha / tipo / tamaño
-- [ ] "Organizar" en segundo plano con `SwingWorker` y `ListaEnlazada` por tipo
+- [x] Explorador: renombrar, copiar, pegar; ordenar por nombre / fecha / tipo / tamaño
+- [x] "Organizar" en segundo plano con `SwingWorker` y `ListaEnlazada` por tipo
 - [ ] Editor `.txt` con color, fuente y tamaño que se conservan al reabrir (`.fmt`)
 - [ ] Visor de imágenes con carga en `SwingWorker`
-- [ ] Reproductor con Play / Pause / Stop, lista, carátula y descripción, en su hilo
+- [x] Reproductor con Play / Pause / Stop, lista, carátula y descripción, en su hilo
 - [ ] Sockets: `LOGIN` de punta a punta por el servidor
 - [ ] Foto de perfil en el registro
 - [ ] Acentos y `ñ` se guardan y se leen bien (UTF-8)
