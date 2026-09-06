@@ -20,11 +20,13 @@ import java.nio.file.Files;
  */
 public class PanelEditor extends JPanel {
 
+    private Usuario usuarioActual;
     private final File carpetaRaiz;
     private final JTextPane texto = new JTextPane();
     private File archivoAbierto;
 
     public PanelEditor(Usuario usuarioActual, File carpetaRaiz) {
+        this.usuarioActual = usuarioActual;
         this.carpetaRaiz = carpetaRaiz;
 
         setLayout(new BorderLayout());
