@@ -1,4 +1,4 @@
-package SimuladorWindow.so.so;
+package SimuladorWindow.so;
 
 import miniwindows.modelo.Usuario;
 

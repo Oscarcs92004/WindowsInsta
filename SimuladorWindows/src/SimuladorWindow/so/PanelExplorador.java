@@ -1,4 +1,4 @@
-package SimuladorWindow.so.so;
+package SimuladorWindow.so;
 
 import miniwindows.estructuras.ListaEnlazada;
 import miniwindows.modelo.Usuario;
