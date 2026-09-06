@@ -1,7 +1,7 @@
 package SimuladorWindow.ui;
 
-import miniwindows.modelo.Usuario;
-import miniwindows.servicios.UsuarioServicio;
+import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.servicios.UsuarioServicio;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,7 +19,7 @@ public class VentanaPrincipal extends JFrame {
     public VentanaPrincipal(UsuarioServicio servicio) {
         this.servicio = servicio;
 
-        setTitle("Mini-Windows");
+        setTitle("Simulador Windows");
         setSize(1920, 1080);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);   // centrada en la pantalla

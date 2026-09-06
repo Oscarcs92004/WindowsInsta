@@ -1,8 +1,8 @@
 package SimuladorWindow.ui;
 
-import miniwindows.excepciones.CuentaDesactivadaException;
-import miniwindows.modelo.Usuario;
-import miniwindows.servicios.UsuarioServicio;
+import SimuladorWindow.excepciones.CuentaDesactivadaException;
+import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.servicios.UsuarioServicio;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,7 +27,7 @@ public class PanelLogin extends JPanel {
         JButton btnEntrar = new JButton("Entrar");
         JButton btnCrear = new JButton("Crear cuenta");
 
-        c.gridx = 0; c.gridy = 0; add(new JLabel("Mini-Windows"), c);
+        c.gridx = 0; c.gridy = 0; add(new JLabel("Simulador Windows"), c);
         c.gridx = 0; c.gridy = 1; add(new JLabel("Usuario:"), c);
         c.gridx = 1; add(txtUsuario, c);
         c.gridx = 0; c.gridy = 2; add(new JLabel("Contrasena:"), c);

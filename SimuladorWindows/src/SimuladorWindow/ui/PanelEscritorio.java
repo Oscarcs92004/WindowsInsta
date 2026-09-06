@@ -1,9 +1,9 @@
 package SimuladorWindow.ui;
 
-import miniwindows.modelo.Rol;
-import miniwindows.modelo.Usuario;
-import miniwindows.servicios.UsuarioServicio;
-import miniwindows.so.*;
+import SimuladorWindow.modelo.Rol;
+import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.servicios.UsuarioServicio;
+import SimuladorWindow.so.*;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -257,7 +257,7 @@ public class PanelEscritorio extends JPanel {
      * {@code null} y el escritorio se queda con su color teal.
      */
     private static Image cargarWallpaper() {
-        String recurso = "/miniwindows/recursos/Wallpaper/windows.jpg";
+        String recurso = "/SimuladorWindow/recursos/Wallpaper/windows.jpg";
 
         // 1. Como recurso del classpath (al ejecutar desde el JAR o el IDE).
         URL url = PanelEscritorio.class.getResource(recurso);

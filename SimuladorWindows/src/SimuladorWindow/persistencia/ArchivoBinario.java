@@ -1,6 +1,6 @@
 package SimuladorWindow.persistencia;
 
-import miniwindows.excepciones.ArchivoCorruptoException;
+import SimuladorWindow.excepciones.ArchivoCorruptoException;
 
 import java.io.*;
 

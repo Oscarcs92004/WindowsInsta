@@ -6,7 +6,7 @@ import java.io.File;
 import java.net.URL;
 
 /**
- * Carga los iconos que estan en {@code src/miniwindows/recursos/Icon} y los
+ * Carga los iconos que estan en {@code src/SimuladorWindow/recursos/Icon} y los
  * devuelve escalados al tamano que pida cada pantalla.
  *
  * Igual que el wallpaper: primero los busca como recurso del classpath (JAR o
@@ -44,7 +44,7 @@ public final class Iconos {
         if (nombreArchivo == null) {
             return null;
         }
-        String recurso = "/miniwindows/recursos/Icon/" + nombreArchivo;
+        String recurso = "/SimuladorWindow/recursos/Icon/" + nombreArchivo;
 
         URL url = Iconos.class.getResource(recurso);
         if (url != null) {

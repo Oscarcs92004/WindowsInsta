@@ -1,8 +1,8 @@
 package SimuladorWindow.ui;
 
-import miniwindows.excepciones.UsernameDuplicadoException;
-import miniwindows.modelo.Usuario;
-import miniwindows.servicios.UsuarioServicio;
+import SimuladorWindow.excepciones.UsernameDuplicadoException;
+import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.servicios.UsuarioServicio;
 
 import javax.swing.*;
 import java.awt.*;

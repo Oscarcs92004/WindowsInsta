@@ -1,11 +1,11 @@
 package SimuladorWindow.pruebas;
 
-import miniwindows.estructuras.ListaEnlazada;
-import miniwindows.excepciones.CuentaDesactivadaException;
-import miniwindows.excepciones.UsernameDuplicadoException;
-import miniwindows.modelo.Usuario;
-import miniwindows.persistencia.ArchivoBinario;
-import miniwindows.servicios.UsuarioServicio;
+import SimuladorWindow.estructuras.ListaEnlazada;
+import SimuladorWindow.excepciones.CuentaDesactivadaException;
+import SimuladorWindow.excepciones.UsernameDuplicadoException;
+import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.persistencia.ArchivoBinario;
+import SimuladorWindow.servicios.UsuarioServicio;
 
 import java.io.File;
 import java.util.ArrayList;

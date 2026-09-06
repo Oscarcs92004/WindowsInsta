@@ -1,7 +1,7 @@
 package SimuladorWindow.so;
 
-import miniwindows.estructuras.ListaEnlazada;
-import miniwindows.modelo.Usuario;
+import SimuladorWindow.estructuras.ListaEnlazada;
+import SimuladorWindow.modelo.Usuario;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;

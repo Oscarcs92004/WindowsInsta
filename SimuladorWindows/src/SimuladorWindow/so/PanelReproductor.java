@@ -1,6 +1,6 @@
 package SimuladorWindow.so;
 
-import miniwindows.modelo.Usuario;
+import SimuladorWindow.modelo.Usuario;
 
 import javax.swing.*;
 import java.awt.*;

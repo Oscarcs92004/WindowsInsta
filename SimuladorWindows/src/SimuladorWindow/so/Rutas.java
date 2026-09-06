@@ -1,7 +1,7 @@
 package SimuladorWindow.so;
 
-import miniwindows.modelo.Rol;
-import miniwindows.modelo.Usuario;
+import SimuladorWindow.modelo.Rol;
+import SimuladorWindow.modelo.Usuario;
 
 import java.io.File;
 
