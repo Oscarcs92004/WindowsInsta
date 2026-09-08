@@ -20,6 +20,7 @@ public class InterpreteComandos {
         comandos.put("mfile",new ComandoMfile(sistema));
         comandos.put("rm",new ComandoRm(sistema));
         comandos.put("..",new ComandoAnterior(sistema));
+        comandos.put("cd..",new ComandoAnterior(sistema));
         comandos.put("date",new ComandoDate(sistema));
         comandos.put("time",new ComandoTime());
         comandos.put("wr",new ComandoWr(sistema));

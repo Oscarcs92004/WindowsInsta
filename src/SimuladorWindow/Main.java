@@ -4,6 +4,9 @@ import java.io.File;
 
 import javax.swing.SwingUtilities;
 
+import javax.swing.JOptionPane;
+
+import SimuladorWindow.excepciones.ArchivoCorruptoException;
 import SimuladorWindow.insta.InstaServicio;
 import SimuladorWindow.servicios.UsuarioServicio;
 import SimuladorWindow.ui.Estilo;
@@ -15,10 +18,17 @@ public class Main {
         File carpetaDatos = new File("datos");
 
         UsuarioServicio servicio = new UsuarioServicio(carpetaDatos);
-        servicio.asegurarAdmin();
-
         InstaServicio insta = new InstaServicio(carpetaDatos, servicio);
-        insta.asegurarCuentasEjemplo();
+
+        try {
+            servicio.asegurarAdmin();
+            insta.asegurarCuentasEjemplo();
+        } catch (ArchivoCorruptoException e) {
+            JOptionPane.showMessageDialog(null,
+                    e.getMessage() + "\nBorra la carpeta 'datos' y vuelve a arrancar.",
+                    "Error al leer los datos", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         SwingUtilities.invokeLater(() -> {
             Estilo.aplicarLookAndFeel();
