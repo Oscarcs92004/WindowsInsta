@@ -32,11 +32,13 @@ public class PanelEditarPerfil extends JPanel {
 
         setBackground(EstiloInsta.FONDO);
         setLayout(new GridBagLayout());
-        setBorder(EstiloInsta.margen(16, 20, 16, 20));
+        setBorder(EstiloInsta.margen(12, 14, 12, 14));
         GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(6, 4, 6, 4);
+        c.insets = new Insets(3, 0, 3, 0);
         c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1;
+        c.gridx = 0;
 
         txtFoto.setEditable(false);
         EstiloInsta.estiloCampo(txtNombre);
@@ -49,44 +51,44 @@ public class PanelEditarPerfil extends JPanel {
         int fila = 0;
         JButton btnVolver = EstiloInsta.enlace("< Volver al perfil");
         btnVolver.addActionListener(e -> panelInsta.volverAlPerfil());
-        c.gridx = 0; c.gridy = fila; c.gridwidth = 3; add(btnVolver, c);
-        c.gridwidth = 1;
-        fila++;
+        c.gridy = fila++; add(btnVolver, c);
+
         JLabel titulo = new JLabel("Editar perfil");
         titulo.setFont(EstiloInsta.TITULO);
-        c.gridx = 0; c.gridy = fila; c.gridwidth = 3; add(titulo, c);
-        c.gridwidth = 1;
-        fila++;
-        c.gridx = 0; c.gridy = fila; add(new JLabel("Nombre completo:"), c);
-        c.gridx = 1; add(txtNombre, c);
-        fila++;
-        c.gridx = 0; c.gridy = fila; add(new JLabel("Edad:"), c);
-        c.gridx = 1; add(txtEdad, c);
-        fila++;
-        c.gridx = 0; c.gridy = fila; add(new JLabel("Contrasena:"), c);
-        c.gridx = 1; add(txtClave, c);
-        fila++;
-        c.gridx = 0; c.gridy = fila; add(new JLabel("Foto de perfil:"), c);
-        c.gridx = 1; add(txtFoto, c);
-        c.gridx = 2; add(btnFoto, c);
-        fila++;
+        c.gridy = fila++; add(titulo, c);
+
+        fila = etiquetaCampo(c, fila, "Nombre completo:", txtNombre);
+        fila = etiquetaCampo(c, fila, "Edad:", txtEdad);
+        fila = etiquetaCampo(c, fila, "Contrasena:", txtClave);
+        fila = etiquetaCampo(c, fila, "Foto de perfil:", txtFoto);
+        c.gridy = fila++; add(btnFoto, c);
+
         JButton btnGuardar = EstiloInsta.botonPrimario("Guardar cambios");
         btnGuardar.addActionListener(e -> guardar());
-        c.gridx = 1; c.gridy = fila; add(btnGuardar, c);
-        fila++;
-        c.gridx = 0; c.gridy = fila; add(new JLabel("Estado de la cuenta:"), c);
-        c.gridx = 1; add(lblEstado, c);
-        fila++;
+        c.gridy = fila++; c.insets = new Insets(12, 0, 6, 0); add(btnGuardar, c);
+        c.insets = new Insets(3, 0, 3, 0);
+
+        c.gridy = fila++; add(new JLabel("Estado de la cuenta:"), c);
+        c.gridy = fila++; add(lblEstado, c);
         JButton btnEstado = EstiloInsta.botonSecundario("Activar / Desactivar cuenta");
         btnEstado.addActionListener(e -> cambiarEstado());
-        c.gridx = 1; c.gridy = fila; add(btnEstado, c);
-        fila++;
+        c.gridy = fila++; add(btnEstado, c);
+
         JButton btnSalir = EstiloInsta.enlace("Cerrar sesion");
         btnSalir.setForeground(EstiloInsta.ROJO);
         btnSalir.addActionListener(e -> panelInsta.cerrarSesion());
-        c.gridx = 1; c.gridy = fila; add(btnSalir, c);
+        c.gridy = fila++; add(btnSalir, c);
 
         recargar();
+    }
+
+    /** Etiqueta en una linea y el campo a lo ancho debajo. */
+    private int etiquetaCampo(GridBagConstraints c, int fila, String etiqueta, JComponent campo) {
+        JLabel l = new JLabel(etiqueta);
+        l.setFont(EstiloInsta.NORMAL);
+        c.gridy = fila; add(l, c);
+        c.gridy = fila + 1; add(campo, c);
+        return fila + 2;
     }
 
     public void recargar() {

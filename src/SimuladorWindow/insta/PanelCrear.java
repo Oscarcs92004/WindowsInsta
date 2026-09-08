@@ -226,39 +226,40 @@ public class PanelCrear extends JPanel {
     private JPanel form() {
         JPanel p = new JPanel(new GridBagLayout());
         p.setBackground(EstiloInsta.FONDO);
-        p.setBorder(EstiloInsta.margen(16, 16, 16, 16));
+        p.setBorder(EstiloInsta.margen(12, 12, 12, 12));
         return p;
     }
 
     private GridBagConstraints filaBase() {
         GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(6, 4, 6, 4);
+        c.insets = new Insets(4, 0, 4, 0);
         c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1;
+        c.gridwidth = 2;
         return c;
     }
 
-    /** Una fila: etiqueta a la izquierda, campo a la derecha y (opcional) un boton. */
+    /** Etiqueta en una linea y, debajo, el campo a lo ancho (y un boton si hay). */
     private int fila(JPanel p, GridBagConstraints c, int fila,
                      String etiqueta, JComponent campo, JComponent boton) {
         JLabel l = new JLabel(etiqueta);
         l.setFont(EstiloInsta.NORMAL);
         c.gridx = 0; c.gridy = fila; p.add(l, c);
-        c.gridx = 1; p.add(campo, c);
+        c.gridy = fila + 1; p.add(campo, c);
         if (boton != null) {
-            c.gridy = fila + 1; c.gridx = 1; p.add(boton, c);
-            return fila + 2;
+            c.gridy = fila + 2; p.add(boton, c);
+            return fila + 3;
         }
-        return fila + 1;
+        return fila + 2;
     }
 
-    /** Una fila con etiqueta arriba y un area de texto ancha debajo. */
+    /** Etiqueta en una linea y, debajo, un area de texto ancha. */
     private int area(JPanel p, GridBagConstraints c, int fila, String etiqueta, JTextArea ta) {
         JLabel l = new JLabel(etiqueta);
         l.setFont(EstiloInsta.NORMAL);
-        c.gridx = 0; c.gridy = fila; c.gridwidth = 2; p.add(l, c);
+        c.gridx = 0; c.gridy = fila; p.add(l, c);
         c.gridy = fila + 1; p.add(new JScrollPane(ta), c);
-        c.gridwidth = 1;
         return fila + 2;
     }
 

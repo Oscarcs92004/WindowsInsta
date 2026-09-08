@@ -25,15 +25,17 @@ public class PanelInteracciones extends JPanel {
 
         setBackground(EstiloInsta.FONDO);
         setLayout(new BorderLayout());
-        setBorder(EstiloInsta.margen(20, 24, 20, 24));
+        setBorder(EstiloInsta.margen(12, 12, 12, 12));
 
-        JLabel titulo = new JLabel("Interacciones · publicaciones que te mencionan");
+        JLabel titulo = new JLabel("Publicaciones que te mencionan");
         titulo.setFont(EstiloInsta.FUERTE);
-        titulo.setBorder(EstiloInsta.margen(0, 0, 10, 0));
+        titulo.setBorder(EstiloInsta.margen(0, 0, 8, 0));
         add(titulo, BorderLayout.NORTH);
 
         area.setEditable(false);
         area.setFont(EstiloInsta.NORMAL);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
         JScrollPane scroll = new JScrollPane(area);
         scroll.setBorder(BorderFactory.createLineBorder(EstiloInsta.BORDE));
         add(scroll, BorderLayout.CENTER);
