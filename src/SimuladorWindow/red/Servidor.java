@@ -8,10 +8,10 @@ import java.net.Socket;
  * Servidor central de sockets (Pilar 4). Escucha en un puerto fijo y por
  * cada cliente que se conecta lanza un hilo que lo atiende (ver Pilar 3).
  *
- * Se ejecuta aparte de la app:  java -cp out miniwindows.red.Servidor
+ * Se ejecuta aparte de la app:
+ *   java -cp out SimuladorWindow.red.Servidor
  *
- * TODO (Alex) - Fase 5: completar el comando LOGIN en AtenderCliente.
- *   POST y FOLLOW son de INSTA+ y se agregan en su fase.
+ * Entiende los comandos LOGIN, POST y FOLLOW (ver AtenderCliente).
  */
 public class Servidor {
 

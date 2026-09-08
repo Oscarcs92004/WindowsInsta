@@ -11,10 +11,6 @@ import java.net.Socket;
  *
  *   Cliente c = new Cliente("localhost", Servidor.PUERTO);
  *   String respuesta = c.pedir("LOGIN;ana;1234");
- *
- * TODO (Oscar) - Fase 5: usar esta clase desde PanelLogin
- *   (c.pedir("LOGIN;user;pass")) en lugar de llamar a UsuarioServicio directo.
- *   Si la conexion falla, avisar con un JOptionPane de que no hay servidor.
  */
 public class Cliente {
 
@@ -31,5 +27,18 @@ public class Cliente {
     public String pedir(String comando) throws IOException {
         out.println(comando);
         return in.readLine();
+    }
+
+    /**
+     * Se conecta a localhost, manda el comando y devuelve la respuesta.
+     * Si el servidor no esta encendido, devuelve null (no lanza excepcion),
+     * para que quien llame pueda seguir en modo local.
+     */
+    public static String intentar(String comando) {
+        try {
+            return new Cliente("localhost", Servidor.PUERTO).pedir(comando);
+        } catch (IOException e) {
+            return null;   // no hay servidor
+        }
     }
 }
