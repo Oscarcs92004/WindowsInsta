@@ -2,6 +2,7 @@ package SimuladorWindow.insta;
 
 import SimuladorWindow.estructuras.ListaEnlazada;
 import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.servicios.UsuarioServicio;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,43 +12,75 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Comentarios / Timeline (enunciado 4.3 y 4.7).
+ * Feed / Comentarios / Timeline (enunciado 4.3 y 4.7), con el aspecto de
+ * Instagram: una columna centrada de "publicaciones" (avatar + usuario arriba,
+ * imagen, y el pie con el texto).
  *
- * Arriba: caja para publicar un insta de texto (maximo 140 caracteres).
- * Abajo: mis publicaciones y las de quienes sigo, de la mas nueva a la mas
- * vieja, armadas en una ListaEnlazada propia. Las imagenes se muestran
- * escaladas segun su orientacion (ConfigInsta, diseño responsive 4.6).
+ * Arriba hay una tarjeta para publicar un insta de texto (maximo 140).
+ * El feed son mis publicaciones y las de quienes sigo, de la mas nueva a la
+ * mas vieja, armadas en una ListaEnlazada propia.
  */
 public class PanelTimeline extends JPanel {
 
     private static final int MAX_TEXTO = 140;
+    private static final int ANCHO_FEED = 480;
 
     private final InstaServicio insta;
+    private final UsuarioServicio usuarios;
     private final Usuario usuarioActual;
 
-    private final JTextArea cajaNueva = new JTextArea(3, 30);
-    private final JPanel lista = new JPanel();
+    private final JTextArea cajaNueva = new JTextArea(2, 24);
+    private final JPanel feed = new JPanel();
 
-    public PanelTimeline(InstaServicio insta, Usuario usuarioActual) {
+    public PanelTimeline(InstaServicio insta, UsuarioServicio usuarios, Usuario usuarioActual) {
         this.insta = insta;
+        this.usuarios = usuarios;
         this.usuarioActual = usuarioActual;
 
-        setLayout(new BorderLayout());
+        setBackground(EstiloInsta.FONDO);
+        setLayout(new GridBagLayout());
 
-        JPanel arriba = new JPanel(new BorderLayout());
-        arriba.setBorder(BorderFactory.createTitledBorder(
-                "Nueva publicacion (max " + MAX_TEXTO + " caracteres)"));
-        arriba.add(new JScrollPane(cajaNueva), BorderLayout.CENTER);
-        JButton btnPublicar = new JButton("Publicar");
-        btnPublicar.addActionListener(e -> publicar());
-        arriba.add(btnPublicar, BorderLayout.EAST);
-        add(arriba, BorderLayout.NORTH);
+        feed.setLayout(new BoxLayout(feed, BoxLayout.Y_AXIS));
+        feed.setBackground(EstiloInsta.FONDO);
+        feed.setBorder(EstiloInsta.margen(16, 0, 16, 0));
 
-        lista.setLayout(new BoxLayout(lista, BoxLayout.Y_AXIS));
-        lista.setBackground(Color.WHITE);
-        add(new JScrollPane(lista), BorderLayout.CENTER);
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.anchor = GridBagConstraints.PAGE_START;   // arriba y centrado
+        c.weightx = 1;
+        c.weighty = 1;
+        add(feed, c);
 
         recargar();
+    }
+
+    private JComponent cajaPublicar() {
+        JPanel caja = EstiloInsta.tarjeta();
+        caja.setLayout(new BorderLayout(8, 8));
+        caja.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(EstiloInsta.BORDE, 1, true),
+                EstiloInsta.margen(12, 12, 12, 12)));
+        caja.setAlignmentX(CENTER_ALIGNMENT);
+        caja.setMaximumSize(new Dimension(ANCHO_FEED, 130));
+
+        JLabel titulo = new JLabel("Crear publicacion  (max " + MAX_TEXTO + ")");
+        titulo.setFont(EstiloInsta.FUERTE);
+        titulo.setForeground(EstiloInsta.TEXTO);
+        caja.add(titulo, BorderLayout.NORTH);
+
+        cajaNueva.setLineWrap(true);
+        cajaNueva.setWrapStyleWord(true);
+        EstiloInsta.estiloCampo(cajaNueva);
+        caja.add(new JScrollPane(cajaNueva), BorderLayout.CENTER);
+
+        JButton btnPublicar = EstiloInsta.botonPrimario("Publicar");
+        btnPublicar.addActionListener(e -> publicar());
+        JPanel derecha = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        derecha.setOpaque(false);
+        derecha.add(btnPublicar);
+        caja.add(derecha, BorderLayout.SOUTH);
+        return caja;
     }
 
     private void publicar() {
@@ -68,17 +101,24 @@ public class PanelTimeline extends JPanel {
     }
 
     public void recargar() {
-        lista.removeAll();
+        feed.removeAll();
+        feed.add(cajaPublicar());
+        feed.add(Box.createVerticalStrut(16));
 
+        boolean hay = false;
         for (Publicacion p : construirTimeline().comoLista()) {
-            lista.add(filaPublicacion(p));
-            lista.add(new JSeparator());
+            feed.add(tarjetaPublicacion(p));
+            feed.add(Box.createVerticalStrut(16));
+            hay = true;
         }
-        if (lista.getComponentCount() == 0) {
-            lista.add(new JLabel("Todavia no hay publicaciones. Publica algo o sigue a alguien."));
+        if (!hay) {
+            JLabel vacio = new JLabel("Todavia no hay publicaciones. Publica algo o sigue a alguien.");
+            vacio.setForeground(EstiloInsta.TEXTO_GRIS);
+            vacio.setAlignmentX(CENTER_ALIGNMENT);
+            feed.add(vacio);
         }
-        lista.revalidate();
-        lista.repaint();
+        feed.revalidate();
+        feed.repaint();
     }
 
     /** Timeline ya ordenado (mas nuevo primero), en una ListaEnlazada propia. */
@@ -103,26 +143,68 @@ public class PanelTimeline extends JPanel {
         return resultado;
     }
 
-    private JComponent filaPublicacion(Publicacion p) {
-        JPanel fila = new JPanel(new BorderLayout());
-        fila.setOpaque(false);
-        fila.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
+    // -----------------------------------------------------------------
 
-        JTextArea texto = new JTextArea(TextoInsta.formato(p));
-        texto.setEditable(false);
-        texto.setOpaque(false);
-        fila.add(texto, BorderLayout.NORTH);
+    private JComponent tarjetaPublicacion(Publicacion p) {
+        JPanel card = EstiloInsta.tarjeta();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setAlignmentX(CENTER_ALIGNMENT);
+        card.setMaximumSize(new Dimension(ANCHO_FEED, Integer.MAX_VALUE));
+
+        card.add(cabeceraPublicacion(p));
 
         if (p.tieneImagen()) {
-            ImageIcon icono = ConfigInsta.escalarParaVista(new File(p.getRutaImagen()));
-            JLabel imagen = new JLabel();
-            if (icono != null) {
-                imagen.setIcon(icono);
-            } else {
+            ImageIcon icono = ConfigInsta.escalarParaFeed(new File(p.getRutaImagen()));
+            JLabel imagen = new JLabel(icono != null ? icono : new ImageIcon(),
+                    SwingConstants.CENTER);
+            if (icono == null) {
                 imagen.setText("[imagen no disponible]");
             }
-            fila.add(imagen, BorderLayout.CENTER);
+            imagen.setAlignmentX(LEFT_ALIGNMENT);
+            card.add(imagen);
         }
+
+        card.add(pie(p));
+        return card;
+    }
+
+    private JComponent cabeceraPublicacion(Publicacion p) {
+        Usuario autor = usuarios.buscar(p.getAutor());
+        String foto = (autor == null) ? null : autor.getFotoPerfil();
+
+        JPanel fila = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
+        fila.setOpaque(false);
+        fila.setAlignmentX(LEFT_ALIGNMENT);
+
+        fila.add(new JLabel(EstiloInsta.avatar(foto, p.getAutor(), 30)));
+
+        JLabel usuario = new JLabel(p.getAutor());
+        usuario.setFont(EstiloInsta.FUERTE);
+        usuario.setForeground(EstiloInsta.TEXTO);
+        fila.add(usuario);
+
+        JLabel tiempo = new JLabel("· " + TextoInsta.hace(p.getFecha()));
+        tiempo.setFont(EstiloInsta.CHICA);
+        tiempo.setForeground(EstiloInsta.TEXTO_GRIS);
+        fila.add(tiempo);
         return fila;
+    }
+
+    private JComponent pie(Publicacion p) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setOpaque(false);
+        panel.setBorder(EstiloInsta.margen(6, 10, 12, 10));
+        panel.setAlignmentX(LEFT_ALIGNMENT);
+
+        JTextArea texto = new JTextArea();
+        texto.setEditable(false);
+        texto.setOpaque(false);
+        texto.setLineWrap(true);
+        texto.setWrapStyleWord(true);
+        texto.setFont(EstiloInsta.NORMAL);
+        texto.setForeground(EstiloInsta.TEXTO);
+        texto.setText(p.getAutor() + "  " + p.getTexto());
+        panel.add(texto, BorderLayout.CENTER);
+        return panel;
     }
 }

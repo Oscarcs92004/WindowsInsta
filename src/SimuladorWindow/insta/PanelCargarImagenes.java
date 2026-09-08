@@ -34,13 +34,18 @@ public class PanelCargarImagenes extends JPanel {
         this.insta = insta;
         this.usuarioActual = usuarioActual;
 
+        setBackground(EstiloInsta.FONDO);
         setLayout(new GridBagLayout());
+        setBorder(EstiloInsta.margen(24, 28, 24, 28));
         GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(4, 4, 4, 4);
+        c.insets = new Insets(6, 4, 6, 4);
         c.anchor = GridBagConstraints.WEST;
 
         txtRuta.setEditable(false);
-        JButton btnElegir = new JButton("Elegir imagen");
+        EstiloInsta.estiloCampo(txtRuta);
+        EstiloInsta.estiloCampo(txtCarpeta);
+        EstiloInsta.estiloCampo(txtDescripcion);
+        JButton btnElegir = EstiloInsta.botonSecundario("Elegir imagen");
         btnElegir.addActionListener(e -> elegirImagen());
 
         int fila = 0;
@@ -54,7 +59,7 @@ public class PanelCargarImagenes extends JPanel {
         c.gridx = 0; c.gridy = fila; add(new JLabel("Descripcion (max " + MAX_DESCRIPCION + "):"), c);
         c.gridx = 1; add(new JScrollPane(txtDescripcion), c);
         fila++;
-        JButton btnSubir = new JButton("Publicar imagen");
+        JButton btnSubir = EstiloInsta.botonPrimario("Publicar imagen");
         btnSubir.addActionListener(e -> subir());
         c.gridx = 1; c.gridy = fila; add(btnSubir, c);
     }

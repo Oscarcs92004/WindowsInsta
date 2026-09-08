@@ -42,29 +42,43 @@ public class PanelInbox extends JPanel {
         this.usuarioActual = usuarioActual;
 
         setLayout(new BorderLayout());
+        setBackground(EstiloInsta.FONDO);
 
         conversaciones.addListSelectionListener(e -> mostrarConversacion());
-        JButton btnNueva = new JButton("Nueva conversacion");
+        conversaciones.setFont(EstiloInsta.NORMAL);
+        conversaciones.setFixedCellHeight(34);
+        conversaciones.setBorder(EstiloInsta.margen(4, 6, 4, 6));
+        JButton btnNueva = EstiloInsta.botonSecundario("Nueva conversacion");
         btnNueva.addActionListener(e -> nuevaConversacion());
         JPanel izq = new JPanel(new BorderLayout());
-        izq.add(new JScrollPane(conversaciones), BorderLayout.CENTER);
+        izq.setOpaque(false);
+        izq.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, EstiloInsta.BORDE));
+        JScrollPane scrollConv = new JScrollPane(conversaciones);
+        scrollConv.setBorder(null);
+        izq.add(scrollConv, BorderLayout.CENTER);
         izq.add(btnNueva, BorderLayout.SOUTH);
-        izq.setPreferredSize(new Dimension(160, 0));
+        izq.setPreferredSize(new Dimension(180, 0));
         add(izq, BorderLayout.WEST);
 
         historial.setLayout(new BoxLayout(historial, BoxLayout.Y_AXIS));
-        historial.setBackground(Color.WHITE);
-        add(new JScrollPane(historial), BorderLayout.CENTER);
+        historial.setBackground(EstiloInsta.BLANCO);
+        JScrollPane scrollHist = new JScrollPane(historial);
+        scrollHist.setBorder(null);
+        add(scrollHist, BorderLayout.CENTER);
 
-        JPanel abajo = new JPanel(new BorderLayout());
+        JPanel abajo = new JPanel(new BorderLayout(6, 6));
+        abajo.setOpaque(false);
+        abajo.setBorder(EstiloInsta.margen(8, 8, 8, 8));
+        EstiloInsta.estiloCampo(entrada);
         abajo.add(entrada, BorderLayout.CENTER);
         entrada.addActionListener(e -> enviarTexto());
 
-        JPanel botones = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton btnEnviar = new JButton("Enviar");
-        JButton btnSticker = new JButton("Enviar sticker");
-        JButton btnLeidos = new JButton("Marcar leidos");
-        JButton btnBorrar = new JButton("Borrar conversacion");
+        JPanel botones = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        botones.setOpaque(false);
+        JButton btnEnviar = EstiloInsta.botonPrimario("Enviar");
+        JButton btnSticker = EstiloInsta.botonSecundario("Sticker");
+        JButton btnLeidos = EstiloInsta.botonSecundario("Marcar leidos");
+        JButton btnBorrar = EstiloInsta.botonSecundario("Borrar conversacion");
         btnEnviar.addActionListener(e -> enviarTexto());
         btnSticker.addActionListener(e -> enviarSticker());
         btnLeidos.addActionListener(e -> marcarLeidos());
@@ -100,6 +114,8 @@ public class PanelInbox extends JPanel {
 
         if (seleccion != null && modeloConv.contains(seleccion)) {
             conversaciones.setSelectedValue(seleccion, true);
+        } else if (!modeloConv.isEmpty()) {
+            conversaciones.setSelectedIndex(0);      // abre la primera conversacion
         } else {
             limpiarHistorial();
         }
@@ -135,15 +151,18 @@ public class PanelInbox extends JPanel {
         historial.repaint();
     }
 
-    /** Una linea del chat: texto normal, o la imagen si es un sticker. */
+    /** Una burbuja del chat: alineada a la derecha si la envie yo, a la
+     *  izquierda si la envio el otro. Los stickers se ven como imagen. */
     private JComponent filaMensaje(Mensaje m) {
-        String encabezado = FECHA.format(m.getFechaHora()) + "  " + m.getEmisor()
-                + (m.isLeido() ? "" : "  (no leido)");
+        boolean mio = m.getEmisor().equalsIgnoreCase(usuarioActual.getUsername());
 
-        JPanel fila = new JPanel(new BorderLayout());
-        fila.setOpaque(false);
-        fila.setBorder(BorderFactory.createEmptyBorder(3, 6, 3, 6));
-        fila.add(new JLabel(encabezado), BorderLayout.NORTH);
+        JPanel burbuja = new JPanel();
+        burbuja.setLayout(new BoxLayout(burbuja, BoxLayout.Y_AXIS));
+        burbuja.setBackground(mio ? EstiloInsta.AZUL : new Color(239, 239, 239));
+        burbuja.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(
+                        mio ? EstiloInsta.AZUL : EstiloInsta.BORDE, 1, true),
+                EstiloInsta.margen(6, 10, 6, 10)));
 
         if (m.esSticker()) {
             JLabel img = new JLabel();
@@ -154,11 +173,25 @@ public class PanelInbox extends JPanel {
             } else {
                 img.setText("[sticker: " + archivo.getName() + "]");
             }
-            fila.add(img, BorderLayout.CENTER);
+            burbuja.add(img);
         } else {
-            JLabel texto = new JLabel(m.getTexto());
-            fila.add(texto, BorderLayout.CENTER);
+            JLabel texto = new JLabel("<html><body style='width:220px'>"
+                    + m.getTexto().replace("<", "&lt;") + "</body></html>");
+            texto.setForeground(mio ? Color.WHITE : EstiloInsta.TEXTO);
+            texto.setFont(EstiloInsta.NORMAL);
+            burbuja.add(texto);
         }
+
+        JLabel hora = new JLabel(TextoInsta.hace(m.getFechaHora())
+                + (mio && !m.isLeido() ? "  · enviado" : "")
+                + (!mio && !m.isLeido() ? "  · nuevo" : ""));
+        hora.setFont(EstiloInsta.CHICA);
+        hora.setForeground(mio ? new Color(220, 235, 255) : EstiloInsta.TEXTO_GRIS);
+        burbuja.add(hora);
+
+        JPanel fila = new JPanel(new FlowLayout(mio ? FlowLayout.RIGHT : FlowLayout.LEFT, 8, 4));
+        fila.setOpaque(false);
+        fila.add(burbuja);
         return fila;
     }
 

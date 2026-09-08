@@ -23,9 +23,20 @@ public class PanelInteracciones extends JPanel {
         this.insta = insta;
         this.usuarioActual = usuarioActual;
 
+        setBackground(EstiloInsta.FONDO);
         setLayout(new BorderLayout());
+        setBorder(EstiloInsta.margen(20, 24, 20, 24));
+
+        JLabel titulo = new JLabel("Interacciones · publicaciones que te mencionan");
+        titulo.setFont(EstiloInsta.FUERTE);
+        titulo.setBorder(EstiloInsta.margen(0, 0, 10, 0));
+        add(titulo, BorderLayout.NORTH);
+
         area.setEditable(false);
-        add(new JScrollPane(area), BorderLayout.CENTER);
+        area.setFont(EstiloInsta.NORMAL);
+        JScrollPane scroll = new JScrollPane(area);
+        scroll.setBorder(BorderFactory.createLineBorder(EstiloInsta.BORDE));
+        add(scroll, BorderLayout.CENTER);
         recargar();
     }
 

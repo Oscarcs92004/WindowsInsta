@@ -29,14 +29,23 @@ public final class ConfigInsta {
     public static final Dimension VERTICAL   = new Dimension(1080, 1350);
     public static final Dimension HORIZONTAL = new Dimension(1080, 566);
 
-    /** Ancho al que se dibujan las imagenes en pantalla (mas chico que 1080). */
+    /** Ancho al que se dibuja una imagen en una lista pequeña. */
     private static final int ANCHO_EN_PANTALLA = 260;
 
-    /**
-     * Devuelve la imagen escalada al tamaño que corresponde a su orientacion.
-     * Si la imagen no se puede leer, devuelve null.
-     */
+    /** Ancho de la imagen dentro de una publicacion del feed (como Instagram). */
+    private static final int ANCHO_EN_FEED = 460;
+
+    /** Imagen escalada al tamaño que corresponde a su orientacion (lista chica). */
     public static ImageIcon escalarParaVista(File imagen) {
+        return escalar(imagen, ANCHO_EN_PANTALLA);
+    }
+
+    /** Imagen escalada para verse dentro de una publicacion del feed. */
+    public static ImageIcon escalarParaFeed(File imagen) {
+        return escalar(imagen, ANCHO_EN_FEED);
+    }
+
+    private static ImageIcon escalar(File imagen, int nuevoAncho) {
         if (imagen == null || !imagen.exists()) {
             return null;
         }
@@ -48,7 +57,6 @@ public final class ConfigInsta {
         }
 
         Dimension vista = orientacion(ancho, alto);
-        int nuevoAncho = ANCHO_EN_PANTALLA;
         int nuevoAlto = nuevoAncho * vista.height / vista.width;
 
         Image escalada = original.getImage()
