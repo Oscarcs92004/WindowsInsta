@@ -60,6 +60,11 @@ public class InstaServicio {
         asegurarStickersGlobales();
     }
 
+    /** El registro de cuentas de INSTA+ (users.ins), aparte del de Windows. */
+    public UsuarioServicio getUsuarioServicio() {
+        return usuarioServicio;
+    }
+
     public File carpetaStickersGlobales() {
         return new File(raiz, "stickers_globales");
     }

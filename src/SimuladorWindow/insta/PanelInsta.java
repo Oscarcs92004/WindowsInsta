@@ -2,7 +2,6 @@ package SimuladorWindow.insta;
 
 import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.servicios.UsuarioServicio;
-import SimuladorWindow.ui.VentanaPrincipal;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,7 +16,10 @@ public class PanelInsta extends JPanel {
 
     private final CardLayout cartas = new CardLayout();
     private final JPanel contenedor = new JPanel(cartas);
-    private final VentanaPrincipal ventana;
+    private final Runnable alCerrarSesion;
+
+    /** Mientras esta sesion de INSTA+ este activa, el hilo de avisos corre. */
+    private volatile boolean sesionActiva = true;
 
     /** Icono de mensajes de la cabecera; el hilo le pone el numero de no leidos. */
     private JButton botonMensajes;
@@ -35,8 +37,8 @@ public class PanelInsta extends JPanel {
     private int navActivo = 0;
 
     public PanelInsta(InstaServicio insta, UsuarioServicio usuarios,
-                      Usuario usuarioActual, VentanaPrincipal ventana) {
-        this.ventana = ventana;
+                      Usuario usuarioActual, Runnable alCerrarSesion) {
+        this.alCerrarSesion = alCerrarSesion;
         insta.asegurarCarpetaUsuario(usuarioActual.getUsername());
 
         panelPerfil        = new PanelPerfil(insta, usuarios, usuarioActual, this);
@@ -155,7 +157,7 @@ public class PanelInsta extends JPanel {
      */
     private void iniciarHiloNotificaciones(InstaServicio insta, String username) {
         Thread vigilante = new Thread(() -> {
-            while (true) {
+            while (sesionActiva) {
                 int noLeidos = insta.contarNoLeidos(username);
                 SwingUtilities.invokeLater(() -> {
                     if (botonMensajes != null) {
@@ -205,12 +207,14 @@ public class PanelInsta extends JPanel {
         irA("PERFIL", 4);
     }
 
-    /** La usa el boton "Cerrar sesion" del propio perfil. */
+    /** La usa el boton "Cerrar sesion" del propio perfil: vuelve al login de
+     *  INSTA+ (no cierra la sesion de Windows). */
     public void cerrarSesion() {
-        int op = JOptionPane.showConfirmDialog(this, "Cerrar sesion?",
+        int op = JOptionPane.showConfirmDialog(this, "Cerrar sesion de INSTA+?",
                 "Confirmar", JOptionPane.YES_NO_OPTION);
         if (op == JOptionPane.YES_OPTION) {
-            ventana.mostrarLogin();
+            sesionActiva = false;         // corta el hilo de avisos
+            alCerrarSesion.run();
         }
     }
 }
