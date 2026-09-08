@@ -72,6 +72,26 @@ public class UsuarioServicio {
         return usuario;                           // todo bien
     }
 
+    /** La lista con todos los usuarios del sistema (para buscar, INSTA+, etc.). */
+    public List<Usuario> listar() {
+        return leerUsuarios();
+    }
+
+    /**
+     * Guarda los cambios hechos a un usuario ya existente (editar perfil,
+     * activar/desactivar la cuenta). Busca por username y lo reemplaza.
+     */
+    public void actualizar(Usuario cambiado) {
+        List<Usuario> usuarios = leerUsuarios();
+        for (int i = 0; i < usuarios.size(); i++) {
+            if (usuarios.get(i).getUsername().equalsIgnoreCase(cambiado.getUsername())) {
+                usuarios.set(i, cambiado);
+                guardarUsuarios(usuarios);
+                return;
+            }
+        }
+    }
+
     /**
      * Busca un usuario por su username, sin distinguir mayusculas de
      * minusculas. Devuelve null si no lo encuentra.

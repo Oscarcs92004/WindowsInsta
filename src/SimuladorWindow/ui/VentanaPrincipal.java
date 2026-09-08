@@ -1,5 +1,6 @@
 package SimuladorWindow.ui;
 
+import SimuladorWindow.insta.InstaServicio;
 import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.servicios.UsuarioServicio;
 
@@ -15,9 +16,11 @@ import java.awt.*;
 public class VentanaPrincipal extends JFrame {
 
     private final UsuarioServicio servicio;
+    private final InstaServicio insta;
 
-    public VentanaPrincipal(UsuarioServicio servicio) {
+    public VentanaPrincipal(UsuarioServicio servicio, InstaServicio insta) {
         this.servicio = servicio;
+        this.insta = insta;
 
         setTitle("Simulador Windows");
         setSize(1920, 1080);
@@ -41,7 +44,7 @@ public class VentanaPrincipal extends JFrame {
     }
 
     public void mostrarEscritorio(Usuario usuarioActual) {
-        cambiarPanel(new PanelEscritorio(this, servicio, usuarioActual));
+        cambiarPanel(new PanelEscritorio(this, servicio, insta, usuarioActual));
     }
 
     /** Reemplaza el contenido de la ventana por otro panel. */

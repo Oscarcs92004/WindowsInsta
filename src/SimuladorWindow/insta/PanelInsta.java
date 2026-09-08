@@ -1,0 +1,109 @@
+package SimuladorWindow.insta;
+
+import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.servicios.UsuarioServicio;
+import SimuladorWindow.ui.VentanaPrincipal;
+
+import javax.swing.*;
+import java.awt.*;
+
+/**
+ * INSTA+ dentro de una sola vista (enunciado 4.1 y 4.4).
+ *
+ * A la izquierda un menu con las 9 opciones; a la derecha un CardLayout que
+ * muestra una "pantalla" a la vez, sin abrir ventanas nuevas.
+ */
+public class PanelInsta extends JPanel {
+
+    private final CardLayout cartas = new CardLayout();
+    private final JPanel contenedor = new JPanel(cartas);
+
+    private final PanelPerfil panelPerfil;
+    private final PanelCargarImagenes panelCargar;
+    private final PanelTimeline panelTimeline;
+    private final PanelInteracciones panelInteracciones;
+    private final PanelBuscarPerfil panelBuscarPerfil;
+    private final PanelBuscarHashtag panelBuscarHashtag;
+    private final PanelInbox panelInbox;
+    private final PanelEditarPerfil panelEditar;
+
+    public PanelInsta(InstaServicio insta, UsuarioServicio usuarios,
+                      Usuario usuarioActual, VentanaPrincipal ventana) {
+
+        insta.asegurarCarpetaUsuario(usuarioActual.getUsername());
+
+        panelPerfil        = new PanelPerfil(insta, usuarios, usuarioActual, this);
+        panelCargar        = new PanelCargarImagenes(insta, usuarioActual);
+        panelTimeline      = new PanelTimeline(insta, usuarioActual);
+        panelInteracciones = new PanelInteracciones(insta, usuarioActual);
+        panelBuscarPerfil  = new PanelBuscarPerfil(insta, usuarios, usuarioActual, this);
+        panelBuscarHashtag = new PanelBuscarHashtag(insta, usuarios);
+        panelInbox         = new PanelInbox(insta, usuarios, usuarioActual);
+        panelEditar        = new PanelEditarPerfil(insta, usuarios, usuarioActual);
+
+        contenedor.add(envolver(panelPerfil),        "PERFIL");
+        contenedor.add(envolver(panelCargar),        "CARGAR");
+        contenedor.add(envolver(panelTimeline),      "TIMELINE");
+        contenedor.add(envolver(panelInteracciones), "INTERACCIONES");
+        contenedor.add(envolver(panelBuscarPerfil),  "BUSCAR_PERFIL");
+        contenedor.add(envolver(panelBuscarHashtag), "BUSCAR_HASHTAG");
+        contenedor.add(envolver(panelInbox),         "INBOX");
+        contenedor.add(envolver(panelEditar),        "EDITAR");
+
+        setLayout(new BorderLayout());
+        add(crearMenu(ventana), BorderLayout.WEST);
+        add(contenedor, BorderLayout.CENTER);
+
+        mostrar("PERFIL");
+    }
+
+    private JScrollPane envolver(JComponent panel) {
+        return new JScrollPane(panel);
+    }
+
+    private JComponent crearMenu(VentanaPrincipal ventana) {
+        JPanel menu = new JPanel(new GridLayout(0, 1, 4, 4));
+        menu.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+
+        agregarBoton(menu, "Perfil",         () -> { panelPerfil.mostrarMio(); mostrar("PERFIL"); });
+        agregarBoton(menu, "Cargar imagenes",() -> { panelCargar.recargar();   mostrar("CARGAR"); });
+        agregarBoton(menu, "Comentarios",    () -> { panelTimeline.recargar(); mostrar("TIMELINE"); });
+        agregarBoton(menu, "Interacciones",  () -> { panelInteracciones.recargar(); mostrar("INTERACCIONES"); });
+        agregarBoton(menu, "Buscar Profile", () -> mostrar("BUSCAR_PERFIL"));
+        agregarBoton(menu, "Buscar Hashtag", () -> mostrar("BUSCAR_HASHTAG"));
+        agregarBoton(menu, "Inbox",          () -> { panelInbox.recargar(); mostrar("INBOX"); });
+        agregarBoton(menu, "Editar perfil",  () -> { panelEditar.recargar(); mostrar("EDITAR"); });
+        agregarBoton(menu, "Cerrar sesion",  () -> cerrarSesion(ventana));
+
+        JPanel contenedorMenu = new JPanel(new BorderLayout());
+        contenedorMenu.add(new JLabel("  INSTA+"), BorderLayout.NORTH);
+        contenedorMenu.add(menu, BorderLayout.CENTER);
+        return contenedorMenu;
+    }
+
+    private void agregarBoton(JPanel menu, String texto, Runnable accion) {
+        JButton boton = new JButton(texto);
+        boton.addActionListener(e -> accion.run());
+        menu.add(boton);
+    }
+
+    private void cerrarSesion(VentanaPrincipal ventana) {
+        int op = JOptionPane.showConfirmDialog(this, "Cerrar sesion?",
+                "Confirmar", JOptionPane.YES_NO_OPTION);
+        if (op == JOptionPane.YES_OPTION) {
+            ventana.mostrarLogin();
+        }
+    }
+
+    // -----------------------------------------------------------------
+
+    private void mostrar(String carta) {
+        cartas.show(contenedor, carta);
+    }
+
+    /** La usan Buscar Profile e Interacciones para abrir el perfil de otro. */
+    public void verPerfilDe(String username) {
+        panelPerfil.mostrarPerfilDe(username);
+        mostrar("PERFIL");
+    }
+}

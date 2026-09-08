@@ -101,6 +101,15 @@ public class InstaServicio {
         return u != null && u.isActiva();
     }
 
+    /** Los usernames de todos los usuarios del sistema. */
+    public List<String> todosLosUsuarios() {
+        List<String> nombres = new ArrayList<>();
+        for (Usuario u : usuarioServicio.listar()) {
+            nombres.add(u.getUsername());
+        }
+        return nombres;
+    }
+
     // -----------------------------------------------------------------
     //  Seguir / dejar de seguir (enunciado 4.5 y 4.9b)
     // -----------------------------------------------------------------
