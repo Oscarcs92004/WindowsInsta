@@ -1,5 +1,7 @@
 package SimuladorWindow.ui;
 
+import SimuladorWindow.insta.InstaServicio;
+import SimuladorWindow.insta.PanelInsta;
 import SimuladorWindow.modelo.Rol;
 import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.servicios.UsuarioServicio;
@@ -31,6 +33,8 @@ import java.util.function.Supplier;
 public class PanelEscritorio extends JPanel {
 
     private final VentanaPrincipal ventana;
+    private final UsuarioServicio servicio;
+    private final InstaServicio insta;
     private final Usuario usuarioActual;
     private final File carpetaRaiz;
 
@@ -52,8 +56,10 @@ public class PanelEscritorio extends JPanel {
     private int cascada = 0;
 
     public PanelEscritorio(VentanaPrincipal ventana, UsuarioServicio servicio,
-                           Usuario usuarioActual) {
+                           InstaServicio insta, Usuario usuarioActual) {
         this.ventana = ventana;
+        this.servicio = servicio;
+        this.insta = insta;
         this.usuarioActual = usuarioActual;
 
         Rutas.asegurarCarpetasUsuario(usuarioActual);
@@ -79,6 +85,7 @@ public class PanelEscritorio extends JPanel {
         apps.put("Visor de imagenes",() -> new PanelVisor(usuarioActual, carpetaRaiz));
         apps.put("Consola",          () -> new PanelConsola(usuarioActual, carpetaRaiz));
         apps.put("Reproductor",      () -> new PanelReproductor(usuarioActual, carpetaRaiz));
+        apps.put("INSTA+",           () -> new PanelInsta(insta, servicio, usuarioActual, ventana));
         return apps;
     }
 
@@ -90,6 +97,7 @@ public class PanelEscritorio extends JPanel {
             case "Visor de imagenes": return "camera.png";
             case "Consola":           return "console.png";
             case "Reproductor":       return "musica.png";
+            case "INSTA+":            return "camera.png";
             default:                  return null;
         }
     }
@@ -205,7 +213,11 @@ public class PanelEscritorio extends JPanel {
 
         JInternalFrame frame = new JInternalFrame(titulo, true, true, true, true);
         frame.setContentPane(contenido);
-        frame.setSize(600, 430);
+        if ("INSTA+".equals(titulo)) {
+            frame.setSize(880, 580);
+        } else {
+            frame.setSize(600, 430);
+        }
         frame.setLocation(60 + cascada, 20 + cascada);
         cascada = (cascada + 28) % 170;
         if (icono != null) {

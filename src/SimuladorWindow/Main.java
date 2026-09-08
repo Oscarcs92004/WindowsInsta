@@ -4,6 +4,7 @@ import java.io.File;
 
 import javax.swing.SwingUtilities;
 
+import SimuladorWindow.insta.InstaServicio;
 import SimuladorWindow.servicios.UsuarioServicio;
 import SimuladorWindow.ui.Estilo;
 import SimuladorWindow.ui.VentanaPrincipal;
@@ -16,9 +17,12 @@ public class Main {
         UsuarioServicio servicio = new UsuarioServicio(carpetaDatos);
         servicio.asegurarAdmin();
 
+        InstaServicio insta = new InstaServicio(carpetaDatos, servicio);
+        insta.asegurarCuentasEjemplo();
+
         SwingUtilities.invokeLater(() -> {
             Estilo.aplicarLookAndFeel();
-            VentanaPrincipal ventana = new VentanaPrincipal(servicio);
+            VentanaPrincipal ventana = new VentanaPrincipal(servicio, insta);
             ventana.setVisible(true);
         });
     }
