@@ -188,7 +188,7 @@ public class PanelPerfil extends JPanel {
         return p;
     }
 
-    /** Grid de 3 columnas con las imagenes publicadas (enunciado 4.6). */
+    /** Grid de 3 columnas con las fotos y los reels publicados (enunciado 4.6). */
     private JComponent grid(Usuario u) {
         JPanel grid = new JPanel(new GridLayout(0, ConfigInsta.COLUMNAS_GRID, 3, 3));
         grid.setOpaque(false);
@@ -196,22 +196,14 @@ public class PanelPerfil extends JPanel {
 
         int puestas = 0;
         for (Publicacion p : insta.publicacionesDe(u.getUsername())) {
-            if (!p.tieneImagen()) {
-                continue;
+            if (p.esSoloTexto()) {
+                continue;                        // los instas de texto no van al grid
             }
-            ImageIcon mini = ConfigInsta.miniatura(new File(p.getRutaImagen()), 112);
-            JLabel celda = new JLabel();
-            if (mini != null) {
-                celda.setIcon(mini);
-            } else {
-                celda.setText("(imagen)");
-            }
-            celda.setToolTipText(p.getTexto());
-            grid.add(celda);
+            grid.add(celdaGrid(p));
             puestas++;
         }
         if (puestas == 0) {
-            JLabel vacio = new JLabel("Sin imagenes publicadas todavia.");
+            JLabel vacio = new JLabel("Sin fotos ni reels publicados todavia.");
             vacio.setForeground(EstiloInsta.TEXTO_GRIS);
             JPanel wrap = new JPanel(new FlowLayout(FlowLayout.LEFT));
             wrap.setOpaque(false);
@@ -219,6 +211,28 @@ public class PanelPerfil extends JPanel {
             return wrap;
         }
         return grid;
+    }
+
+    private JComponent celdaGrid(Publicacion p) {
+        if (p.esVideo()) {
+            JLabel celda = new JLabel("<html><center>REEL<br>&#9654;</center></html>",
+                    SwingConstants.CENTER);
+            celda.setOpaque(true);
+            celda.setBackground(new Color(30, 30, 30));
+            celda.setForeground(Color.WHITE);
+            celda.setPreferredSize(new Dimension(112, 112));
+            celda.setToolTipText(p.getTexto());
+            return celda;
+        }
+        ImageIcon mini = ConfigInsta.miniatura(new File(p.getRutaImagen()), 112);
+        JLabel celda = new JLabel();
+        if (mini != null) {
+            celda.setIcon(mini);
+        } else {
+            celda.setText("(imagen)");
+        }
+        celda.setToolTipText(p.getTexto());
+        return celda;
     }
 
     // -----------------------------------------------------------------

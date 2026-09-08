@@ -317,7 +317,9 @@ Cuando termines O1–O3: Alex hace `so/RendererArchivos.java` (un
 - [x] Una sola pantalla con `CardLayout` y menú de 9 opciones (`PanelInsta`)
 - [x] Modelos `Publicacion`, `Mensaje`, `Sticker` (`Serializable`) e `InstaServicio` binario
 - [x] Perfil con los 10 datos del enunciado; perfil ajeno con Seguir / Dejar de seguir
-- [x] Publicar insta de texto (máx. 140) y cargar imágenes con descripción (máx. 220)
+- [x] Crear publicación: foto, reel (video) o solo texto — como el "+" de Instagram
+- [x] Foto/reel con descripción (máx. 220), carpeta personal, `#hashtags` y `@menciones`; texto máx. 140
+- [x] Feed estilo Instagram: la foto o el reel (con botón de play), fila de "me gusta / comentar" y el pie
 - [x] Timeline propio + de a quienes sigo, más nuevo primero, con `ListaEnlazada`
 - [x] Seguir / dejar de seguir (con confirmación), followers sin duplicados
 - [x] Buscar Profile (coincidencia parcial) y Buscar Hashtag (sin duplicados)

@@ -23,7 +23,7 @@ public class PanelInsta extends JPanel {
     private JButton botonMensajes;
 
     private final PanelPerfil panelPerfil;
-    private final PanelCargarImagenes panelCargar;
+    private final PanelCrear panelCrear;
     private final PanelTimeline panelTimeline;
     private final PanelInteracciones panelInteracciones;
     private final PanelBuscarPerfil panelBuscarPerfil;
@@ -40,7 +40,7 @@ public class PanelInsta extends JPanel {
         insta.asegurarCarpetaUsuario(usuarioActual.getUsername());
 
         panelPerfil        = new PanelPerfil(insta, usuarios, usuarioActual, this);
-        panelCargar        = new PanelCargarImagenes(insta, usuarioActual);
+        panelCrear         = new PanelCrear(insta, usuarioActual);
         panelTimeline      = new PanelTimeline(insta, usuarios, usuarioActual);
         panelInteracciones = new PanelInteracciones(insta, usuarioActual);
         panelBuscarPerfil  = new PanelBuscarPerfil(insta, usuarios, usuarioActual, this);
@@ -50,7 +50,7 @@ public class PanelInsta extends JPanel {
 
         contenedor.setBackground(EstiloInsta.FONDO);
         contenedor.add(envolver(panelPerfil),        "PERFIL");
-        contenedor.add(envolver(panelCargar),        "CARGAR");
+        contenedor.add(envolver(panelCrear),        "CARGAR");
         contenedor.add(envolver(panelTimeline),      "TIMELINE");
         contenedor.add(envolver(panelInteracciones), "INTERACCIONES");
         contenedor.add(envolver(buscarConPestanas()), "BUSCAR");
@@ -101,7 +101,7 @@ public class PanelInsta extends JPanel {
 
         navBotones[0] = navBoton(IconosInsta.CASA,    () -> { panelTimeline.recargar();      irA("TIMELINE", 0); });
         navBotones[1] = navBoton(IconosInsta.LUPA,    () -> irA("BUSCAR", 1));
-        navBotones[2] = navBoton(IconosInsta.MAS,     () -> { panelCargar.recargar();        irA("CARGAR", 2); });
+        navBotones[2] = navBoton(IconosInsta.MAS,     () -> { panelCrear.recargar();        irA("CARGAR", 2); });
         navBotones[3] = navBoton(IconosInsta.CORAZON, () -> { panelInteracciones.recargar(); irA("INTERACCIONES", 3); });
         navBotones[4] = navBoton(IconosInsta.PERSONA, () -> { panelPerfil.mostrarMio();      irA("PERFIL", 4); });
 
