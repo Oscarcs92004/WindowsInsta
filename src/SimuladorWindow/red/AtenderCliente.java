@@ -25,14 +25,18 @@ import java.net.Socket;
 class AtenderCliente implements Runnable {
 
     private final Socket socket;
+    /** Cuentas de Mini-Windows (usuarios.sop): para el comando LOGIN. */
     private final UsuarioServicio usuarios;
+    /** Cuentas de INSTA+ (users.ins): para POST y FOLLOW. */
+    private final UsuarioServicio usuariosInsta;
     private final InstaServicio insta;
 
     AtenderCliente(Socket socket) {
         this.socket = socket;
         File datos = new File("datos");
         this.usuarios = new UsuarioServicio(datos);
-        this.insta = new InstaServicio(datos, usuarios);
+        this.usuariosInsta = new UsuarioServicio(datos, "users.ins");
+        this.insta = new InstaServicio(datos, usuariosInsta);
     }
 
     @Override
@@ -84,7 +88,7 @@ class AtenderCliente implements Runnable {
         if (p.length < 3) {
             return "ERROR;faltan datos";
         }
-        if (usuarios.buscar(p[1]) == null) {
+        if (usuariosInsta.buscar(p[1]) == null) {
             return "ERROR;usuario no existe";
         }
         insta.asegurarCarpetaUsuario(p[1]);
@@ -96,7 +100,7 @@ class AtenderCliente implements Runnable {
         if (p.length < 3) {
             return "ERROR;faltan datos";
         }
-        if (usuarios.buscar(p[1]) == null || usuarios.buscar(p[2]) == null) {
+        if (usuariosInsta.buscar(p[1]) == null || usuariosInsta.buscar(p[2]) == null) {
             return "ERROR;usuario no existe";
         }
         insta.asegurarCarpetaUsuario(p[1]);
