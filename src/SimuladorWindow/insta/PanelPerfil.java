@@ -99,7 +99,37 @@ public class PanelPerfil extends JPanel {
               + "Publicaciones: " + publicaciones + "\n"
               + "Estado de la cuenta: " + estado);
         datos.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        return datos;
+
+        JButton btnFollowers = new JButton("Ver followers");
+        btnFollowers.addActionListener(e -> mostrarLista(
+                "Followers de " + u.getUsername(), insta.listaFollowers(u.getUsername())));
+        JButton btnFollowing = new JButton("Ver following");
+        btnFollowing.addActionListener(e -> mostrarLista(
+                "Following de " + u.getUsername(), insta.listaFollowing(u.getUsername())));
+
+        JPanel botones = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        botones.add(btnFollowers);
+        botones.add(btnFollowing);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(datos, BorderLayout.CENTER);
+        panel.add(botones, BorderLayout.SOUTH);
+        return panel;
+    }
+
+    /** Muestra los usernames de una ListaEnlazada en un diálogo. */
+    private void mostrarLista(String titulo, ListaEnlazada<String> lista) {
+        StringBuilder sb = new StringBuilder();
+        for (String username : lista.comoLista()) {
+            sb.append(username).append("\n");
+        }
+        if (sb.length() == 0) {
+            sb.append("(ninguno)");
+        }
+        JTextArea area = new JTextArea(sb.toString(), 12, 20);
+        area.setEditable(false);
+        JOptionPane.showMessageDialog(this, new JScrollPane(area), titulo,
+                JOptionPane.PLAIN_MESSAGE);
     }
 
     /** Grid de 3 columnas con las imagenes publicadas (enunciado 4.6). */

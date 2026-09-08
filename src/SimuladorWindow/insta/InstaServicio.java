@@ -1,5 +1,6 @@
 package SimuladorWindow.insta;
 
+import SimuladorWindow.estructuras.ListaEnlazada;
 import SimuladorWindow.excepciones.UsernameDuplicadoException;
 import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.persistencia.ArchivoBinario;
@@ -166,14 +167,28 @@ public class InstaServicio {
 
     // -----------------------------------------------------------------
     //  Seguir / dejar de seguir (enunciado 4.5 y 4.9b)
+    //
+    //  Los listados de following y followers se manejan con la ListaEnlazada
+    //  propia (enunciado 2.4): agregar un seguidor es agregarFinal(...) y un
+    //  "dejar de seguir" es eliminar(...), sin reorganizar un arreglo.
     // -----------------------------------------------------------------
 
+    /** El following de un usuario, ya cargado en una ListaEnlazada. */
+    public ListaEnlazada<String> listaFollowing(String username) {
+        return aListaEnlazada(leerTextos(archivoFollowing(username)));
+    }
+
+    /** Los followers de un usuario, ya cargados en una ListaEnlazada. */
+    public ListaEnlazada<String> listaFollowers(String username) {
+        return aListaEnlazada(leerTextos(archivoFollowers(username)));
+    }
+
     public List<String> aQuienesSigue(String username) {
-        return leerTextos(archivoFollowing(username));
+        return listaFollowing(username).comoLista();
     }
 
     public List<String> seguidoresDe(String username) {
-        return leerTextos(archivoFollowers(username));
+        return listaFollowers(username).comoLista();
     }
 
     public boolean sigo(String yo, String otro) {
@@ -186,27 +201,35 @@ public class InstaServicio {
     }
 
     public void seguir(String yo, String otro) {
-        List<String> miFollowing = aQuienesSigue(yo);
-        if (!contieneIgnoreCase(miFollowing, otro)) {
-            miFollowing.add(otro);
-            guardarTextos(archivoFollowing(yo), miFollowing);
+        ListaEnlazada<String> miFollowing = listaFollowing(yo);
+        if (!miFollowing.contiene(otro)) {
+            miFollowing.agregarFinal(otro);
+            guardarTextos(archivoFollowing(yo), miFollowing.comoLista());
         }
 
-        List<String> susFollowers = seguidoresDe(otro);
-        if (!contieneIgnoreCase(susFollowers, yo)) {   // sin duplicados (enunciado 4.3)
-            susFollowers.add(yo);
-            guardarTextos(archivoFollowers(otro), susFollowers);
+        ListaEnlazada<String> susFollowers = listaFollowers(otro);
+        if (!susFollowers.contiene(yo)) {          // sin duplicados (enunciado 4.3)
+            susFollowers.agregarFinal(yo);
+            guardarTextos(archivoFollowers(otro), susFollowers.comoLista());
         }
     }
 
     public void dejarDeSeguir(String yo, String otro) {
-        List<String> miFollowing = aQuienesSigue(yo);
-        quitarIgnoreCase(miFollowing, otro);
-        guardarTextos(archivoFollowing(yo), miFollowing);
+        ListaEnlazada<String> miFollowing = listaFollowing(yo);
+        miFollowing.eliminar(otro);
+        guardarTextos(archivoFollowing(yo), miFollowing.comoLista());
 
-        List<String> susFollowers = seguidoresDe(otro);
-        quitarIgnoreCase(susFollowers, yo);
-        guardarTextos(archivoFollowers(otro), susFollowers);
+        ListaEnlazada<String> susFollowers = listaFollowers(otro);
+        susFollowers.eliminar(yo);
+        guardarTextos(archivoFollowers(otro), susFollowers.comoLista());
+    }
+
+    private static ListaEnlazada<String> aListaEnlazada(List<String> origen) {
+        ListaEnlazada<String> lista = new ListaEnlazada<>();
+        for (String s : origen) {
+            lista.agregarFinal(s);
+        }
+        return lista;
     }
 
     // -----------------------------------------------------------------
@@ -347,25 +370,5 @@ public class InstaServicio {
             return new ArrayList<>();
         }
         return (List<Sticker>) ArchivoBinario.leer(archivo);
-    }
-
-    // -----------------------------------------------------------------
-
-    private static boolean contieneIgnoreCase(List<String> lista, String texto) {
-        for (String s : lista) {
-            if (s.equalsIgnoreCase(texto)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static void quitarIgnoreCase(List<String> lista, String texto) {
-        for (int i = 0; i < lista.size(); i++) {
-            if (lista.get(i).equalsIgnoreCase(texto)) {
-                lista.remove(i);
-                return;
-            }
-        }
     }
 }
