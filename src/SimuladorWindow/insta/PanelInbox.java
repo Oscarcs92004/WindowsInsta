@@ -33,7 +33,7 @@ public class PanelInbox extends JPanel {
 
     private final DefaultListModel<String> modeloConv = new DefaultListModel<>();
     private final JList<String> conversaciones = new JList<>(modeloConv);
-    private final JTextArea historial = new JTextArea();
+    private final JPanel historial = new JPanel();
     private final JTextField entrada = new JTextField();
 
     public PanelInbox(InstaServicio insta, UsuarioServicio usuarios, Usuario usuarioActual) {
@@ -52,7 +52,8 @@ public class PanelInbox extends JPanel {
         izq.setPreferredSize(new Dimension(160, 0));
         add(izq, BorderLayout.WEST);
 
-        historial.setEditable(false);
+        historial.setLayout(new BoxLayout(historial, BoxLayout.Y_AXIS));
+        historial.setBackground(Color.WHITE);
         add(new JScrollPane(historial), BorderLayout.CENTER);
 
         JPanel abajo = new JPanel(new BorderLayout());
@@ -100,8 +101,14 @@ public class PanelInbox extends JPanel {
         if (seleccion != null && modeloConv.contains(seleccion)) {
             conversaciones.setSelectedValue(seleccion, true);
         } else {
-            historial.setText("");
+            limpiarHistorial();
         }
+    }
+
+    private void limpiarHistorial() {
+        historial.removeAll();
+        historial.revalidate();
+        historial.repaint();
     }
 
     private String conversacionActual() {
@@ -110,29 +117,49 @@ public class PanelInbox extends JPanel {
 
     private void mostrarConversacion() {
         String otro = conversacionActual();
+        historial.removeAll();
         if (otro == null) {
-            historial.setText("");
+            limpiarHistorial();
             return;
         }
         String yo = usuarioActual.getUsername();
-        StringBuilder sb = new StringBuilder();
         for (Mensaje m : insta.inboxDe(yo)) {
             boolean deEsta = m.getEmisor().equalsIgnoreCase(otro)
                     || m.getReceptor().equalsIgnoreCase(otro);
             if (!deEsta) {
                 continue;
             }
-            String contenido = m.esSticker()
-                    ? "[sticker: " + new File(m.getTexto()).getName() + "]"
-                    : m.getTexto();
-            sb.append(FECHA.format(m.getFechaHora()))
-              .append("  ").append(m.getEmisor()).append(": ")
-              .append(contenido)
-              .append(m.isLeido() ? "" : "  (no leido)")
-              .append("\n");
+            historial.add(filaMensaje(m));
         }
-        historial.setText(sb.toString());
-        historial.setCaretPosition(historial.getDocument().getLength());
+        historial.revalidate();
+        historial.repaint();
+    }
+
+    /** Una linea del chat: texto normal, o la imagen si es un sticker. */
+    private JComponent filaMensaje(Mensaje m) {
+        String encabezado = FECHA.format(m.getFechaHora()) + "  " + m.getEmisor()
+                + (m.isLeido() ? "" : "  (no leido)");
+
+        JPanel fila = new JPanel(new BorderLayout());
+        fila.setOpaque(false);
+        fila.setBorder(BorderFactory.createEmptyBorder(3, 6, 3, 6));
+        fila.add(new JLabel(encabezado), BorderLayout.NORTH);
+
+        if (m.esSticker()) {
+            JLabel img = new JLabel();
+            File archivo = new File(m.getTexto());
+            if (archivo.exists()) {
+                img.setIcon(new ImageIcon(new ImageIcon(m.getTexto()).getImage()
+                        .getScaledInstance(96, 96, java.awt.Image.SCALE_SMOOTH)));
+            } else {
+                img.setText("[sticker: " + archivo.getName() + "]");
+            }
+            fila.add(img, BorderLayout.CENTER);
+        } else {
+            JLabel texto = new JLabel(m.getTexto());
+            fila.add(texto, BorderLayout.CENTER);
+        }
+        return fila;
     }
 
     // -----------------------------------------------------------------
@@ -267,6 +294,6 @@ public class PanelInbox extends JPanel {
                 || m.getReceptor().equalsIgnoreCase(otro));
         insta.guardarInbox(yo, inbox);
         recargar();
-        historial.setText("");
+        limpiarHistorial();
     }
 }

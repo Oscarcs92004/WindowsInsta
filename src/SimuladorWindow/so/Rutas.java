@@ -39,11 +39,10 @@ public class Rutas {
         if (!carpeta.exists()) {
             carpeta.mkdirs();
             new File(carpeta, "Mis Documentos").mkdir();
-            new File(carpeta, "Musica").mkdir();
-            new File(carpeta, "Mis Imagenes").mkdir();
-            // TODO (Alex): el enunciado escribe "Musica" y "Mis Imagenes" con
-            //   acento. Al compilar hay que pasar  -encoding UTF-8  a javac
-            //   (IntelliJ ya lo hace) y entonces se pueden poner los acentos.
+            new File(carpeta, "Música").mkdir();
+            new File(carpeta, "Mis Imágenes").mkdir();
+            // Los acentos funcionan porque el proyecto se compila con
+            // -encoding UTF-8 (IntelliJ ya lo hace; ver el README).
         }
     }
 }
