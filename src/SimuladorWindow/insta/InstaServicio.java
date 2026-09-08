@@ -5,9 +5,16 @@ import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.persistencia.ArchivoBinario;
 import SimuladorWindow.servicios.UsuarioServicio;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.imageio.ImageIO;
 
 /**
  * Todo lo de INSTA+ que toca disco, en un solo lugar (mismo molde que
@@ -34,12 +41,59 @@ public class InstaServicio {
 
     /** Los 5 stickers que todos tienen desde el principio (enunciado 4.12). */
     private static final String[] STICKERS_POR_DEFECTO =
-            {"Feliz", "Triste", "Corazon", "Risa", "Aplauso"};
+            {"Feliz", "Triste", "Corazón", "Risa", "Aplauso"};
+
+    /** Un color por sticker, en el mismo orden que STICKERS_POR_DEFECTO. */
+    private static final Color[] COLORES_STICKERS = {
+            new Color(255, 200, 0),     // Feliz  - amarillo
+            new Color(80, 120, 220),    // Triste - azul
+            new Color(220, 60, 90),     // Corazón - rojo
+            new Color(255, 140, 40),    // Risa   - naranja
+            new Color(80, 180, 100),    // Aplauso - verde
+    };
 
     public InstaServicio(File carpetaDeDatos, UsuarioServicio usuarioServicio) {
         this.raiz = new File(carpetaDeDatos, "INSTA_RAIZ");
         this.usuarioServicio = usuarioServicio;
-        new File(raiz, "stickers_globales").mkdirs();
+        carpetaStickersGlobales().mkdirs();
+        asegurarStickersGlobales();
+    }
+
+    public File carpetaStickersGlobales() {
+        return new File(raiz, "stickers_globales");
+    }
+
+    /** La imagen del sticker por defecto <nombre>, dentro de stickers_globales. */
+    public File archivoStickerGlobal(String nombre) {
+        return new File(carpetaStickersGlobales(), nombre + ".png");
+    }
+
+    /**
+     * Dibuja las 5 imagenes de los stickers por defecto (un circulo de color con
+     * la inicial) y las guarda en stickers_globales, solo si no existen ya.
+     */
+    private void asegurarStickersGlobales() {
+        for (int i = 0; i < STICKERS_POR_DEFECTO.length; i++) {
+            File destino = archivoStickerGlobal(STICKERS_POR_DEFECTO[i]);
+            if (destino.exists()) {
+                continue;
+            }
+            BufferedImage img = new BufferedImage(96, 96, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = img.createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setColor(COLORES_STICKERS[i]);
+            g.fillOval(4, 4, 88, 88);
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("SansSerif", Font.BOLD, 48));
+            String inicial = STICKERS_POR_DEFECTO[i].substring(0, 1);
+            g.drawString(inicial, 33, 62);
+            g.dispose();
+            try {
+                ImageIO.write(img, "png", destino);
+            } catch (IOException e) {
+                System.err.println("No se pudo crear el sticker " + destino);
+            }
+        }
     }
 
     // -----------------------------------------------------------------
@@ -85,7 +139,7 @@ public class InstaServicio {
             List<Sticker> stickers = new ArrayList<>();
             for (String nombre : STICKERS_POR_DEFECTO) {
                 stickers.add(new Sticker(nombre,
-                        "src/SimuladorWindow/recursos/Icon/file.png"));
+                        archivoStickerGlobal(nombre).getPath()));
             }
             guardarStickers(username, stickers);
         }
