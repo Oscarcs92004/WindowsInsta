@@ -305,11 +305,25 @@ Cuando termines O1–O3: Alex hace `so/RendererArchivos.java` (un
 - [x] Consola con `mkdir`, `rm`, `cd`, `cd..`, `dir`, `date`, `time` y prompt
 - [x] Explorador: renombrar, copiar, pegar; ordenar por nombre / fecha / tipo / tamaño
 - [x] "Organizar" en segundo plano con `SwingWorker` y `ListaEnlazada` por tipo
-- [ ] Editor `.txt` con color, fuente y tamaño que se conservan al reabrir (`.fmt`)
-- [ ] Visor de imágenes con carga en `SwingWorker`
+- [x] Editor con color, fuente y tamaño que se conservan al reabrir (formato binario `.edt`)
+- [x] Visor de imágenes con carga en `SwingWorker`
 - [x] Reproductor con Play / Pause / Stop, lista, carátula y descripción, en su hilo
-- [ ] Sockets: `LOGIN` de punta a punta por el servidor
-- [ ] Foto de perfil en el registro
-- [ ] Acentos y `ñ` se guardan y se leen bien (UTF-8)
-- [ ] Todos los errores se muestran con `JOptionPane`, no con `printStackTrace`
-- [x] La interfaz se parece a un sistema operativo real (falta pulir iconos y colores)
+- [x] Sockets: `LOGIN` (y `POST`, `FOLLOW`) de punta a punta por el servidor
+- [x] Foto de perfil en el registro
+- [x] La interfaz se parece a un sistema operativo real
+
+## 6. Checklist de INSTA+ (Fase 4)
+
+- [x] Una sola pantalla con `CardLayout` y menú de 9 opciones (`PanelInsta`)
+- [x] Modelos `Publicacion`, `Mensaje`, `Sticker` (`Serializable`) e `InstaServicio` binario
+- [x] Perfil con los 10 datos del enunciado; perfil ajeno con Seguir / Dejar de seguir
+- [x] Publicar insta de texto (máx. 140) y cargar imágenes con descripción (máx. 220)
+- [x] Timeline propio + de a quienes sigo, más nuevo primero, con `ListaEnlazada`
+- [x] Seguir / dejar de seguir (con confirmación), followers sin duplicados
+- [x] Buscar Profile (coincidencia parcial) y Buscar Hashtag (sin duplicados)
+- [x] Interacciones: publicaciones donde me mencionan con `@`, sin duplicados
+- [x] Inbox: enviar texto (máx. 300), sticker, marcar leído, borrar conversación
+- [x] Stickers: 5 por defecto + importar `.png` / `.jpg`
+- [x] Editar perfil y activar / desactivar cuenta (desactivada = como si no existiera)
+- [x] 3 cuentas de ejemplo con contenido (`noticias`, `moda`, `cine`)
+- [x] Hilo demonio que avisa de mensajes nuevos del Inbox
