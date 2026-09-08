@@ -25,6 +25,16 @@ public class PanelConsola extends JPanel {
     private String archivoEdicion = null;
     private final StringBuilder contenidoEdicion = new StringBuilder();
 
+    private void cerrarVentanaConsola() {
+        Container padre = getParent();
+        while (padre != null && !(padre instanceof JInternalFrame)) {
+            padre = padre.getParent();
+        }
+        if (padre instanceof JInternalFrame) {
+            ((JInternalFrame) padre).dispose();
+        }
+    }
+
     private void procesarEntrada() {
         String linea = entrada.getText();
         entrada.setText("");
@@ -40,10 +50,7 @@ public class PanelConsola extends JPanel {
             return;
         }
         if ("EXIT_APP".equals(resultado)) {
-            Window ventana = SwingUtilities.getWindowAncestor(this);
-            if (ventana != null) {
-                ventana.dispose();
-            }
+            cerrarVentanaConsola();
             return;
         }
         if ("MODO_ESCRITURA".equals(resultado) || "MODO_APPEND".equals(resultado)) {
