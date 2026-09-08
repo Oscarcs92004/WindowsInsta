@@ -12,19 +12,24 @@ binarios.
 
 ## Cómo compilar y ejecutar
 
+La librería para reproducir `.mp3` está en `lib/jlayer-1.0.1.jar` y hay que
+ponerla en el classpath.
+
 Desde la carpeta del proyecto, en PowerShell:
 
 ```
-javac -encoding UTF-8 -d out (Get-ChildItem -Recurse src -Filter *.java).FullName
-java -cp out SimuladorWindow.Main
+javac -encoding UTF-8 -cp "lib/jlayer-1.0.1.jar" -d out (Get-ChildItem -Recurse src -Filter *.java).FullName
+java -cp "out;lib/jlayer-1.0.1.jar" SimuladorWindow.Main
 ```
 
-En Git Bash / Linux / Mac:
+En Git Bash / Linux / Mac (separador `:` en vez de `;`):
 
 ```
-javac -encoding UTF-8 -d out $(find src -name "*.java")
-java -cp out SimuladorWindow.Main
+javac -encoding UTF-8 -cp "lib/jlayer-1.0.1.jar" -d out $(find src -name "*.java")
+java -cp "out:lib/jlayer-1.0.1.jar" SimuladorWindow.Main
 ```
+
+En IntelliJ ya está configurada la librería `lib/`, solo se le da a Run.
 
 La carpeta `datos/` se crea sola la primera vez y guarda todo (usuarios,
 publicaciones, mensajes...). No se sube a git.
@@ -39,8 +44,11 @@ El administrador puede crear usuarios y ver las carpetas de todos.
 Para que el login pase por la red, primero arranca el servidor en otra terminal:
 
 ```
-java -cp out SimuladorWindow.red.Servidor
+java -cp "out;lib/jlayer-1.0.1.jar" SimuladorWindow.red.Servidor
 ```
+
+En la pantalla de login marca **"Usar servidor (sockets)"** para que el inicio
+de sesión pase por el servidor.
 
 Entiende los comandos `LOGIN`, `POST` y `FOLLOW`. Si el servidor no está
 encendido, la aplicación inicia sesión en modo local.

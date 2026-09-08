@@ -56,6 +56,8 @@ public class PanelReproductor extends JPanel {
 
         btnAgregar.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser(carpetaRaiz);
+            chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                    "Musica (mp3, wav)", "mp3", "wav"));
             if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 File cancion = chooser.getSelectedFile();
                 canciones.add(cancion);
