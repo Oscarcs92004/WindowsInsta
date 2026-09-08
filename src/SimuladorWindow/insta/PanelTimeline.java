@@ -5,6 +5,7 @@ import SimuladorWindow.modelo.Usuario;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -14,7 +15,8 @@ import java.util.List;
  *
  * Arriba: caja para publicar un insta de texto (maximo 140 caracteres).
  * Abajo: mis publicaciones y las de quienes sigo, de la mas nueva a la mas
- * vieja, armadas en una ListaEnlazada propia.
+ * vieja, armadas en una ListaEnlazada propia. Las imagenes se muestran
+ * escaladas segun su orientacion (ConfigInsta, diseño responsive 4.6).
  */
 public class PanelTimeline extends JPanel {
 
@@ -24,7 +26,7 @@ public class PanelTimeline extends JPanel {
     private final Usuario usuarioActual;
 
     private final JTextArea cajaNueva = new JTextArea(3, 30);
-    private final JTextArea timeline = new JTextArea();
+    private final JPanel lista = new JPanel();
 
     public PanelTimeline(InstaServicio insta, Usuario usuarioActual) {
         this.insta = insta;
@@ -41,8 +43,9 @@ public class PanelTimeline extends JPanel {
         arriba.add(btnPublicar, BorderLayout.EAST);
         add(arriba, BorderLayout.NORTH);
 
-        timeline.setEditable(false);
-        add(new JScrollPane(timeline), BorderLayout.CENTER);
+        lista.setLayout(new BoxLayout(lista, BoxLayout.Y_AXIS));
+        lista.setBackground(Color.WHITE);
+        add(new JScrollPane(lista), BorderLayout.CENTER);
 
         recargar();
     }
@@ -65,17 +68,25 @@ public class PanelTimeline extends JPanel {
     }
 
     public void recargar() {
-        timeline.setText(construirTimeline());
-        timeline.setCaretPosition(0);
+        lista.removeAll();
+
+        for (Publicacion p : construirTimeline().comoLista()) {
+            lista.add(filaPublicacion(p));
+            lista.add(new JSeparator());
+        }
+        if (lista.getComponentCount() == 0) {
+            lista.add(new JLabel("Todavia no hay publicaciones. Publica algo o sigue a alguien."));
+        }
+        lista.revalidate();
+        lista.repaint();
     }
 
-    private String construirTimeline() {
-        // 1. Autores: yo + a quienes sigo.
+    /** Timeline ya ordenado (mas nuevo primero), en una ListaEnlazada propia. */
+    private ListaEnlazada<Publicacion> construirTimeline() {
         List<String> autores = new ArrayList<>();
         autores.add(usuarioActual.getUsername());
         autores.addAll(insta.aQuienesSigue(usuarioActual.getUsername()));
 
-        // 2. Junto las publicaciones en un ArrayList para poder ordenarlas.
         List<Publicacion> todas = new ArrayList<>();
         for (String autor : autores) {
             if (!insta.estaVisible(autor)) {
@@ -85,19 +96,33 @@ public class PanelTimeline extends JPanel {
         }
         todas.sort(Comparator.comparing(Publicacion::getFecha).reversed());
 
-        // 3. Las paso a la ListaEnlazada propia (enunciado 2.4) y las pinto.
-        ListaEnlazada<Publicacion> lista = new ListaEnlazada<>();
+        ListaEnlazada<Publicacion> resultado = new ListaEnlazada<>();
         for (Publicacion p : todas) {
-            lista.agregarFinal(p);
+            resultado.agregarFinal(p);
         }
+        return resultado;
+    }
 
-        StringBuilder sb = new StringBuilder();
-        for (Publicacion p : lista.comoLista()) {
-            sb.append(TextoInsta.formato(p)).append("\n\n");
+    private JComponent filaPublicacion(Publicacion p) {
+        JPanel fila = new JPanel(new BorderLayout());
+        fila.setOpaque(false);
+        fila.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
+
+        JTextArea texto = new JTextArea(TextoInsta.formato(p));
+        texto.setEditable(false);
+        texto.setOpaque(false);
+        fila.add(texto, BorderLayout.NORTH);
+
+        if (p.tieneImagen()) {
+            ImageIcon icono = ConfigInsta.escalarParaVista(new File(p.getRutaImagen()));
+            JLabel imagen = new JLabel();
+            if (icono != null) {
+                imagen.setIcon(icono);
+            } else {
+                imagen.setText("[imagen no disponible]");
+            }
+            fila.add(imagen, BorderLayout.CENTER);
         }
-        if (sb.length() == 0) {
-            return "Todavia no hay publicaciones. Publica algo o sigue a alguien.";
-        }
-        return sb.toString();
+        return fila;
     }
 }

@@ -50,8 +50,12 @@ public class PanelPerfil extends JPanel {
             return;
         }
 
-        add(crearFoto(u), BorderLayout.WEST);
-        add(crearDatos(u), BorderLayout.CENTER);
+        JPanel cabecera = new JPanel(new BorderLayout());
+        cabecera.add(crearFoto(u), BorderLayout.WEST);
+        cabecera.add(crearDatos(u), BorderLayout.CENTER);
+        add(cabecera, BorderLayout.NORTH);
+
+        add(new JScrollPane(crearGrid(u)), BorderLayout.CENTER);
 
         boolean esOtro = !username.equalsIgnoreCase(usuarioActual.getUsername());
         if (esOtro) {
@@ -96,6 +100,32 @@ public class PanelPerfil extends JPanel {
               + "Estado de la cuenta: " + estado);
         datos.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         return datos;
+    }
+
+    /** Grid de 3 columnas con las imagenes publicadas (enunciado 4.6). */
+    private JComponent crearGrid(Usuario u) {
+        JPanel grid = new JPanel(new GridLayout(0, ConfigInsta.COLUMNAS_GRID, 4, 4));
+
+        int puestas = 0;
+        for (Publicacion p : insta.publicacionesDe(u.getUsername())) {
+            if (!p.tieneImagen()) {
+                continue;
+            }
+            ImageIcon mini = ConfigInsta.miniatura(new File(p.getRutaImagen()), 110);
+            JLabel celda = new JLabel();
+            if (mini != null) {
+                celda.setIcon(mini);
+            } else {
+                celda.setText("(imagen)");
+            }
+            celda.setToolTipText(p.getTexto());
+            grid.add(celda);
+            puestas++;
+        }
+        if (puestas == 0) {
+            grid.add(new JLabel("  (sin imagenes publicadas)"));
+        }
+        return grid;
     }
 
     private JComponent crearAcciones(Usuario u) {
