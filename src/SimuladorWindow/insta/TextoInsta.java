@@ -26,7 +26,7 @@ public final class TextoInsta {
         String texto = p.getAutor() + " escribio:\n\""
                 + p.getTexto() + "\" - " + FECHA.format(p.getFecha());
         if (p.tieneImagen()) {
-            texto = texto + "\n[imagen: " + p.getRutaImagen() + "]";
+            texto = texto + "\n[imagen adjunta]";
         }
         return texto;
     }
