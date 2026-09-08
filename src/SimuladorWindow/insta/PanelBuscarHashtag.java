@@ -27,23 +27,24 @@ public class PanelBuscarHashtag extends JPanel {
 
         setBackground(EstiloInsta.FONDO);
         setLayout(new BorderLayout());
-        setBorder(EstiloInsta.margen(20, 24, 20, 24));
+        setBorder(EstiloInsta.margen(12, 12, 12, 12));
 
-        JPanel arriba = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
-        arriba.setOpaque(false);
         EstiloInsta.estiloCampo(txtHashtag);
+        txtHashtag.setToolTipText("Escribe el hashtag sin el #");
         JButton btnBuscar = EstiloInsta.botonPrimario("Buscar");
         btnBuscar.addActionListener(e -> buscar());
         txtHashtag.addActionListener(e -> buscar());
-        JLabel titulo = new JLabel("Explorar hashtag (sin #)");
-        titulo.setFont(EstiloInsta.FUERTE);
-        arriba.add(titulo);
-        arriba.add(txtHashtag);
-        arriba.add(btnBuscar);
+        JPanel arriba = new JPanel(new BorderLayout(6, 0));
+        arriba.setOpaque(false);
+        arriba.setBorder(EstiloInsta.margen(0, 0, 8, 0));
+        arriba.add(txtHashtag, BorderLayout.CENTER);
+        arriba.add(btnBuscar, BorderLayout.EAST);
         add(arriba, BorderLayout.NORTH);
 
         area.setEditable(false);
         area.setFont(EstiloInsta.NORMAL);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
         JScrollPane scroll = new JScrollPane(area);
         scroll.setBorder(BorderFactory.createLineBorder(EstiloInsta.BORDE));
         add(scroll, BorderLayout.CENTER);
