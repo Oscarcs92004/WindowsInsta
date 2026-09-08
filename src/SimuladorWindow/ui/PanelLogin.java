@@ -2,6 +2,7 @@ package SimuladorWindow.ui;
 
 import SimuladorWindow.excepciones.CuentaDesactivadaException;
 import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.red.Cliente;
 import SimuladorWindow.servicios.UsuarioServicio;
 
 import javax.swing.*;
@@ -38,28 +39,57 @@ public class PanelLogin extends JPanel {
         btnEntrar.addActionListener(e -> {
             String usuario = txtUsuario.getText().trim();
             String clave = new String(txtClave.getPassword());
-
-            try {
-                Usuario u = servicio.login(usuario, clave);
-                if (u == null) {
-                    int op = JOptionPane.showConfirmDialog(this,
-                            "Usuario o contrasena incorrectos.\n"
-                            + "Quieres crear una cuenta nueva?",
-                            "Error", JOptionPane.YES_NO_OPTION);
-                    if (op == JOptionPane.YES_OPTION) {
-                        ventana.mostrarRegistro();
-                    }
-                } else {
-                    ventana.mostrarEscritorio(u);
-                }
-            } catch (CuentaDesactivadaException ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage());
-            }
+            entrar(ventana, servicio, usuario, clave);
         });
 
         // Pulsar Enter en la caja de contrasena es como pulsar "Entrar".
         txtClave.addActionListener(e -> btnEntrar.doClick());
 
         btnCrear.addActionListener(e -> ventana.mostrarRegistro());
+    }
+
+    /**
+     * Inicia sesion. Primero intenta hacerlo por el servidor de sockets
+     * (LOGIN de punta a punta, Pilar 4); si el servidor no esta encendido,
+     * lo hace en local con el UsuarioServicio.
+     */
+    private void entrar(VentanaPrincipal ventana, UsuarioServicio servicio,
+                        String usuario, String clave) {
+
+        String respuesta = Cliente.intentar("LOGIN;" + usuario + ";" + clave);
+
+        if (respuesta != null) {
+            // El servidor contesto: usamos su respuesta.
+            if (respuesta.startsWith("OK")) {
+                ventana.mostrarEscritorio(servicio.buscar(usuario));
+            } else if (respuesta.contains("desactivada")) {
+                JOptionPane.showMessageDialog(this, "La cuenta esta desactivada.");
+            } else {
+                ofrecerRegistro(ventana);
+            }
+            return;
+        }
+
+        // No hay servidor: login local.
+        try {
+            Usuario u = servicio.login(usuario, clave);
+            if (u == null) {
+                ofrecerRegistro(ventana);
+            } else {
+                ventana.mostrarEscritorio(u);
+            }
+        } catch (CuentaDesactivadaException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage());
+        }
+    }
+
+    private void ofrecerRegistro(VentanaPrincipal ventana) {
+        int op = JOptionPane.showConfirmDialog(this,
+                "Usuario o contrasena incorrectos.\n"
+                + "Quieres crear una cuenta nueva?",
+                "Error", JOptionPane.YES_NO_OPTION);
+        if (op == JOptionPane.YES_OPTION) {
+            ventana.mostrarRegistro();
+        }
     }
 }
