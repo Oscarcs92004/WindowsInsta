@@ -25,16 +25,18 @@ public class PanelEditarPerfil extends JPanel {
     private final JTextField txtFoto = new JTextField(20);
     private final JLabel lblEstado = new JLabel();
 
-    public PanelEditarPerfil(InstaServicio insta, UsuarioServicio usuarios, Usuario usuarioActual) {
+    public PanelEditarPerfil(InstaServicio insta, UsuarioServicio usuarios,
+                             Usuario usuarioActual, PanelInsta panelInsta) {
         this.usuarios = usuarios;
         this.usuarioActual = usuarioActual;
 
         setBackground(EstiloInsta.FONDO);
         setLayout(new GridBagLayout());
-        setBorder(EstiloInsta.margen(24, 28, 24, 28));
+        setBorder(EstiloInsta.margen(16, 20, 16, 20));
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(6, 4, 6, 4);
         c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
 
         txtFoto.setEditable(false);
         EstiloInsta.estiloCampo(txtNombre);
@@ -45,6 +47,11 @@ public class PanelEditarPerfil extends JPanel {
         btnFoto.addActionListener(e -> elegirFoto());
 
         int fila = 0;
+        JButton btnVolver = EstiloInsta.enlace("< Volver al perfil");
+        btnVolver.addActionListener(e -> panelInsta.volverAlPerfil());
+        c.gridx = 0; c.gridy = fila; c.gridwidth = 3; add(btnVolver, c);
+        c.gridwidth = 1;
+        fila++;
         JLabel titulo = new JLabel("Editar perfil");
         titulo.setFont(EstiloInsta.TITULO);
         c.gridx = 0; c.gridy = fila; c.gridwidth = 3; add(titulo, c);
@@ -73,6 +80,11 @@ public class PanelEditarPerfil extends JPanel {
         JButton btnEstado = EstiloInsta.botonSecundario("Activar / Desactivar cuenta");
         btnEstado.addActionListener(e -> cambiarEstado());
         c.gridx = 1; c.gridy = fila; add(btnEstado, c);
+        fila++;
+        JButton btnSalir = EstiloInsta.enlace("Cerrar sesion");
+        btnSalir.setForeground(EstiloInsta.ROJO);
+        btnSalir.addActionListener(e -> panelInsta.cerrarSesion());
+        c.gridx = 1; c.gridy = fila; add(btnSalir, c);
 
         recargar();
     }

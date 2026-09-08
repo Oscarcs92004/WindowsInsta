@@ -1,18 +1,19 @@
 package SimuladorWindow.ui;
 
 import SimuladorWindow.excepciones.CuentaDesactivadaException;
-import SimuladorWindow.insta.EstiloInsta;
 import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.red.Cliente;
 import SimuladorWindow.servicios.UsuarioServicio;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import java.awt.*;
 
 /**
- * Pantalla de inicio de sesion (enunciado 4.2a), con el aspecto del login de
- * Instagram: un recuadro blanco centrado con el logo, los dos campos y el
- * boton azul, y debajo otro recuadro para crear cuenta.
+ * Pantalla de inicio de sesion (enunciado 4.2a), con el aspecto del cuadro de
+ * "Iniciar la sesion" de Windows 98: un dialogo gris con barra de titulo azul
+ * marino, el dibujo de una llave a la izquierda, los campos hundidos y los
+ * botones con relieve.
  *
  * Si se marca "Usar servidor", el login se hace por sockets contra el
  * Servidor (Pilar 4). Sin marcar, se hace en local.
@@ -20,105 +21,158 @@ import java.awt.*;
 public class PanelLogin extends JPanel {
 
     public PanelLogin(VentanaPrincipal ventana, UsuarioServicio servicio) {
-        setBackground(EstiloInsta.FONDO);
+        setBackground(Estilo.FONDO_ESCRITORIO);   // escritorio teal de Windows 98
         setLayout(new GridBagLayout());
 
-        JTextField txtUsuario = new JTextField(18);
-        JPasswordField txtClave = new JPasswordField(18);
-        EstiloInsta.estiloCampo(txtUsuario);
-        EstiloInsta.estiloCampo(txtClave);
-        EstiloInsta.placeholder(txtUsuario, "Usuario");
-        EstiloInsta.placeholder(txtClave, "Contrasena");
+        JTextField txtUsuario = new JTextField(16);
+        JPasswordField txtClave = new JPasswordField(16);
+        campoHundido(txtUsuario);
+        campoHundido(txtClave);
 
-        JButton btnEntrar = EstiloInsta.botonPrimario("Entrar");
+        JButton btnAceptar = boton("Aceptar");
+        JButton btnCrear = boton("Crear cuenta");
         JCheckBox chkServidor = new JCheckBox("Usar servidor (sockets)");
-        chkServidor.setBackground(EstiloInsta.BLANCO);
-        chkServidor.setForeground(EstiloInsta.TEXTO_GRIS);
-        chkServidor.setFont(EstiloInsta.CHICA);
+        chkServidor.setOpaque(false);
+        chkServidor.setFont(Estilo.NORMAL);
 
-        // --- Recuadro principal --------------------------------------
-        JPanel caja = EstiloInsta.tarjeta();
-        caja.setLayout(new GridBagLayout());
-        caja.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(EstiloInsta.BORDE, 1, true),
-                EstiloInsta.margen(36, 40, 24, 40)));
+        // --- El "dialogo" ------------------------------------------------
+        JPanel dialogo = new JPanel(new BorderLayout());
+        dialogo.setBackground(Estilo.PANEL);
+        dialogo.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
 
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridx = 0;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.weightx = 1;
-        c.insets = new Insets(5, 0, 5, 0);
+        dialogo.add(barraTitulo("Iniciar la sesion en Simulador Windows"), BorderLayout.NORTH);
 
-        JLabel logo = new JLabel("Simulador Windows", SwingConstants.CENTER);
-        logo.setFont(EstiloInsta.LOGO.deriveFont(21f));
-        logo.setForeground(EstiloInsta.TEXTO);
-        c.gridy = 0; c.insets = new Insets(0, 0, 18, 0); caja.add(logo, c);
+        JPanel cuerpo = new JPanel(new BorderLayout(12, 0));
+        cuerpo.setOpaque(false);
+        cuerpo.setBorder(BorderFactory.createEmptyBorder(14, 14, 10, 14));
+        cuerpo.add(new PanelLlave(), BorderLayout.WEST);
+        cuerpo.add(formulario(txtUsuario, txtClave, chkServidor), BorderLayout.CENTER);
+        dialogo.add(cuerpo, BorderLayout.CENTER);
 
-        c.insets = new Insets(5, 0, 5, 0);
-        c.gridy = 1; caja.add(txtUsuario, c);
-        c.gridy = 2; caja.add(txtClave, c);
-        c.gridy = 3; c.insets = new Insets(12, 0, 6, 0); caja.add(btnEntrar, c);
-        c.gridy = 4; c.insets = new Insets(6, 0, 0, 0); caja.add(separadorO(), c);
-        c.gridy = 5; c.insets = new Insets(10, 0, 0, 0); caja.add(chkServidor, c);
+        JPanel botones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 8));
+        botones.setOpaque(false);
+        botones.add(btnAceptar);
+        botones.add(btnCrear);
+        dialogo.add(botones, BorderLayout.SOUTH);
 
-        // --- Recuadro "crear cuenta" --------------------------------
-        JPanel cajaCrear = EstiloInsta.tarjeta();
-        cajaCrear.setLayout(new FlowLayout(FlowLayout.CENTER, 4, 10));
-        cajaCrear.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(EstiloInsta.BORDE, 1, true),
-                EstiloInsta.margen(6, 20, 6, 20)));
-        JLabel pregunta = new JLabel("No tienes una cuenta?");
-        pregunta.setForeground(EstiloInsta.TEXTO);
-        pregunta.setFont(EstiloInsta.NORMAL);
-        JButton btnCrear = EstiloInsta.enlace("Crear cuenta nueva");
-        cajaCrear.add(pregunta);
-        cajaCrear.add(btnCrear);
+        add(dialogo, new GridBagConstraints());
 
-        // --- Columna central ---------------------------------------
-        JPanel columna = new JPanel();
-        columna.setOpaque(false);
-        columna.setLayout(new BoxLayout(columna, BoxLayout.Y_AXIS));
-        caja.setAlignmentX(CENTER_ALIGNMENT);
-        cajaCrear.setAlignmentX(CENTER_ALIGNMENT);
-        caja.setMaximumSize(new Dimension(360, 400));
-        cajaCrear.setMaximumSize(new Dimension(360, 60));
-        columna.add(caja);
-        columna.add(Box.createVerticalStrut(12));
-        columna.add(cajaCrear);
-
-        add(columna, new GridBagConstraints());
-
-        // --- Acciones ----------------------------------------------
-        btnEntrar.addActionListener(e -> {
-            String usuario = EstiloInsta.valorReal(txtUsuario).trim();
-            String clave = EstiloInsta.valorReal(txtClave);
+        // --- Acciones --------------------------------------------------
+        btnAceptar.addActionListener(e -> {
+            String usuario = txtUsuario.getText().trim();
+            String clave = new String(txtClave.getPassword());
             if (chkServidor.isSelected()) {
                 entrarPorServidor(ventana, servicio, usuario, clave);
             } else {
                 entrarLocal(ventana, servicio, usuario, clave);
             }
         });
-        txtClave.addActionListener(e -> btnEntrar.doClick());
+        txtUsuario.addActionListener(e -> btnAceptar.doClick());
+        txtClave.addActionListener(e -> btnAceptar.doClick());
         btnCrear.addActionListener(e -> ventana.mostrarRegistro());
     }
 
-    private JComponent separadorO() {
-        JPanel fila = new JPanel(new GridBagLayout());
-        fila.setOpaque(false);
-        GridBagConstraints g = new GridBagConstraints();
-        g.fill = GridBagConstraints.HORIZONTAL;
-        g.weightx = 1;
-        fila.add(new JSeparator(), g);
-        JLabel o = new JLabel("  o  ");
-        o.setForeground(EstiloInsta.TEXTO_GRIS);
-        o.setFont(EstiloInsta.CHICA);
-        g.weightx = 0;
-        fila.add(o, g);
-        g.weightx = 1;
-        fila.add(new JSeparator(), g);
-        return fila;
+    // -----------------------------------------------------------------
+    //  Piezas visuales estilo Windows 98
+    // -----------------------------------------------------------------
+
+    private JComponent barraTitulo(String texto) {
+        JLabel titulo = new JLabel(texto);
+        titulo.setForeground(Estilo.TEXTO_CLARO);
+        titulo.setFont(Estilo.SUBTITULO);
+        titulo.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
+
+        JPanel barra = new JPanel(new BorderLayout());
+        barra.setBackground(Estilo.ACENTO);      // azul marino
+        barra.add(titulo, BorderLayout.WEST);
+        return barra;
     }
 
+    private JComponent formulario(JTextField usuario, JPasswordField clave,
+                                  JCheckBox servidor) {
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setOpaque(false);
+
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(3, 3, 3, 3);
+        c.anchor = GridBagConstraints.WEST;
+
+        JLabel ayuda = new JLabel("Escriba su nombre de usuario y su contrasena.");
+        ayuda.setFont(Estilo.NORMAL);
+        c.gridx = 0; c.gridy = 0; c.gridwidth = 2;
+        form.add(ayuda, c);
+        c.gridwidth = 1;
+
+        c.gridx = 0; c.gridy = 1; form.add(etiqueta("Nombre de usuario:"), c);
+        c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; form.add(usuario, c);
+        c.fill = GridBagConstraints.NONE;
+
+        c.gridx = 0; c.gridy = 2; form.add(etiqueta("Contrasena:"), c);
+        c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; form.add(clave, c);
+        c.fill = GridBagConstraints.NONE;
+
+        c.gridx = 1; c.gridy = 3; form.add(servidor, c);
+        return form;
+    }
+
+    private JLabel etiqueta(String texto) {
+        JLabel l = new JLabel(texto);
+        l.setFont(Estilo.NORMAL);
+        return l;
+    }
+
+    private JButton boton(String texto) {
+        JButton b = new JButton(texto);
+        b.setFont(Estilo.NORMAL);
+        b.setBackground(Estilo.PANEL);
+        b.setFocusPainted(false);
+        b.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createBevelBorder(BevelBorder.RAISED),
+                BorderFactory.createEmptyBorder(3, 14, 3, 14)));
+        return b;
+    }
+
+    private void campoHundido(JTextField campo) {
+        campo.setFont(Estilo.NORMAL);
+        campo.setBackground(Color.WHITE);
+        campo.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createBevelBorder(BevelBorder.LOWERED),
+                BorderFactory.createEmptyBorder(2, 4, 2, 4)));
+    }
+
+    /** El dibujo de la llave dorada, como el del logon de Windows 98. */
+    private static class PanelLlave extends JPanel {
+        PanelLlave() {
+            setPreferredSize(new Dimension(64, 64));
+            setOpaque(false);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Fondo azul con borde, como una "tarjeta" del logon.
+            g2.setColor(new Color(0, 0, 128));
+            g2.fillRect(2, 2, 58, 58);
+            g2.setColor(Color.WHITE);
+            g2.drawRect(2, 2, 58, 58);
+
+            // La llave dorada.
+            g2.setColor(new Color(255, 204, 0));
+            g2.setStroke(new BasicStroke(5f));
+            g2.drawOval(12, 16, 18, 18);          // anillo
+            g2.drawLine(29, 27, 50, 44);          // cana
+            g2.setStroke(new BasicStroke(4f));
+            g2.drawLine(46, 40, 52, 34);          // diente 1
+            g2.drawLine(40, 34, 46, 28);          // diente 2
+        }
+    }
+
+    // -----------------------------------------------------------------
+    //  Logica de login (igual que antes)
     // -----------------------------------------------------------------
 
     private void entrarLocal(VentanaPrincipal ventana, UsuarioServicio servicio,
