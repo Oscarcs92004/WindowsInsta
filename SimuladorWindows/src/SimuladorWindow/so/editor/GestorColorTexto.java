@@ -8,6 +8,7 @@
  *
  * @author oscar
  */
+package SimuladorWindow.so.editor;
 import javax.swing.JColorChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;

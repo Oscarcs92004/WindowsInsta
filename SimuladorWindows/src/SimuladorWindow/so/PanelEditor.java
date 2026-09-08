@@ -8,6 +8,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import SimuladorWindow.persistencia.Documento;
+import SimuladorWindow.persistencia.EdtException;
+import SimuladorWindow.persistencia.PersistenciaEDT;
+import SimuladorWindow.persistencia.Tabla;
 
 /**
  * Editor de texto (enunciado 3.4).

@@ -1,3 +1,4 @@
+package SimuladorWindow.so.editor;
 import java.awt.Component;
 import java.awt.GridLayout;
 import javax.swing.JLabel;

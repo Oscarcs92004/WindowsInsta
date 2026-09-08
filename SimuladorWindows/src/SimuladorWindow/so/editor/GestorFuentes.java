@@ -8,6 +8,7 @@
  *
  * @author oscar
  */
+package SimuladorWindow.so.editor;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.io.File;

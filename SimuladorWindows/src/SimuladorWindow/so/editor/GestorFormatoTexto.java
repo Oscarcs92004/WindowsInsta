@@ -8,6 +8,7 @@
  *
  * @author oscar
  */
+package SimuladorWindow.so.editor;
 import javax.swing.JTextPane;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;

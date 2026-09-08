@@ -1,3 +1,4 @@
+package SimuladorWindow.so.editor;
 public class TablaDoc {
 
     private int posicion;
