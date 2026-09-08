@@ -314,8 +314,9 @@ Cuando termines O1–O3: Alex hace `so/RendererArchivos.java` (un
 
 ## 6. Checklist de INSTA+ (Fase 4)
 
-- [x] Una sola pantalla con `CardLayout` y menú de 9 opciones (`PanelInsta`)
-- [x] Modelos `Publicacion`, `Mensaje`, `Sticker` (`Serializable`) e `InstaServicio` binario
+- [x] Una sola pantalla (formato teléfono) con `CardLayout` y barra de navegación inferior (`PanelInsta`)
+- [x] Cuentas de INSTA+ aparte de las de Windows (`users.ins`): la ventana de INSTA+ tiene su propio login/registro y una sesión de Windows puede usar dos cuentas de INSTA+ distintas
+- [x] Modelos `Publicacion` (texto/imagen/video), `Mensaje`, `Sticker` (`Serializable`) e `InstaServicio` binario
 - [x] Perfil con los 10 datos del enunciado; perfil ajeno con Seguir / Dejar de seguir
 - [x] Crear publicación: foto, reel (video) o solo texto — como el "+" de Instagram
 - [x] Foto/reel con descripción (máx. 220), carpeta personal, `#hashtags` y `@menciones`; texto máx. 140

@@ -1,7 +1,7 @@
 package SimuladorWindow.ui;
 
 import SimuladorWindow.insta.InstaServicio;
-import SimuladorWindow.insta.PanelInsta;
+import SimuladorWindow.insta.PanelInstaApp;
 import SimuladorWindow.modelo.Rol;
 import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.servicios.UsuarioServicio;
@@ -85,7 +85,7 @@ public class PanelEscritorio extends JPanel {
         apps.put("Visor de imagenes",() -> new PanelVisor(usuarioActual, carpetaRaiz));
         apps.put("Consola",          () -> new PanelConsola(usuarioActual, carpetaRaiz));
         apps.put("Reproductor",      () -> new PanelReproductor(usuarioActual, carpetaRaiz));
-        apps.put("INSTA+",           () -> new PanelInsta(insta, servicio, usuarioActual, ventana));
+        apps.put("INSTA+",           () -> new PanelInstaApp(insta));
         return apps;
     }
 
@@ -214,7 +214,7 @@ public class PanelEscritorio extends JPanel {
         JInternalFrame frame = new JInternalFrame(titulo, true, true, true, true);
         frame.setContentPane(contenido);
         if ("INSTA+".equals(titulo)) {
-            frame.setSize(390, 760);        // formato de telefono (vertical)
+            frame.setSize(404, 780);        // formato de telefono (vertical)
         } else {
             frame.setSize(600, 430);
         }

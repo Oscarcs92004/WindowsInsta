@@ -25,8 +25,18 @@ public class UsuarioServicio {
     /** El archivo binario donde vive la lista con TODOS los usuarios. */
     private final File archivo;
 
+    /** Registro de usuarios de Mini-Windows (usuarios.sop). */
     public UsuarioServicio(File carpetaDeDatos) {
-        this.archivo = new File(carpetaDeDatos, "usuarios.sop");
+        this(carpetaDeDatos, "usuarios.sop");
+    }
+
+    /**
+     * Igual, pero con otro archivo. INSTA+ lo usa con "users.ins" para tener
+     * sus cuentas aparte de las de Mini-Windows (una sesion de Windows puede
+     * usar dos cuentas de INSTA+ distintas).
+     */
+    public UsuarioServicio(File carpetaDeDatos, String nombreArchivo) {
+        this.archivo = new File(carpetaDeDatos, nombreArchivo);
     }
 
     /**

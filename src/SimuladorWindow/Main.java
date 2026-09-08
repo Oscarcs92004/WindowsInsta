@@ -17,8 +17,11 @@ public class Main {
     public static void main(String[] args) {
         File carpetaDatos = new File("datos");
 
+        // Usuarios de Mini-Windows (usuarios.sop) y, aparte, los de INSTA+
+        // (users.ins): son cuentas independientes.
         UsuarioServicio servicio = new UsuarioServicio(carpetaDatos);
-        InstaServicio insta = new InstaServicio(carpetaDatos, servicio);
+        UsuarioServicio usuariosInsta = new UsuarioServicio(carpetaDatos, "users.ins");
+        InstaServicio insta = new InstaServicio(carpetaDatos, usuariosInsta);
 
         try {
             servicio.asegurarAdmin();

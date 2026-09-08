@@ -24,7 +24,7 @@ import java.util.Set;
  */
 public class PanelTimeline extends JPanel {
 
-    private static final int ANCHO_FEED = 330;
+    private static final int ANCHO_FEED = 360;
 
     private final InstaServicio insta;
     private final UsuarioServicio usuarios;
@@ -45,7 +45,7 @@ public class PanelTimeline extends JPanel {
 
         feed.setLayout(new BoxLayout(feed, BoxLayout.Y_AXIS));
         feed.setBackground(EstiloInsta.FONDO);
-        feed.setBorder(EstiloInsta.margen(12, 0, 16, 0));
+        feed.setBorder(EstiloInsta.margen(0, 0, 16, 0));
 
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
@@ -64,7 +64,6 @@ public class PanelTimeline extends JPanel {
         boolean hay = false;
         for (Publicacion p : construirTimeline().comoLista()) {
             feed.add(tarjetaPublicacion(p));
-            feed.add(Box.createVerticalStrut(14));
             hay = true;
         }
         if (!hay) {
@@ -102,10 +101,12 @@ public class PanelTimeline extends JPanel {
     // -----------------------------------------------------------------
 
     private JComponent tarjetaPublicacion(Publicacion p) {
-        JPanel card = EstiloInsta.tarjeta();
+        JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBackground(EstiloInsta.BLANCO);
         card.setAlignmentX(CENTER_ALIGNMENT);
         card.setMaximumSize(new Dimension(ANCHO_FEED, Integer.MAX_VALUE));
+        card.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, EstiloInsta.BORDE));
 
         card.add(cabeceraPublicacion(p));
 
@@ -124,6 +125,7 @@ public class PanelTimeline extends JPanel {
 
         card.add(filaAcciones(p));
         card.add(pie(p));
+        card.add(Box.createVerticalStrut(4));
         return card;
     }
 
@@ -131,11 +133,11 @@ public class PanelTimeline extends JPanel {
         Usuario autor = usuarios.buscar(p.getAutor());
         String foto = (autor == null) ? null : autor.getFotoPerfil();
 
-        JPanel fila = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
+        JPanel fila = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
         fila.setOpaque(false);
         fila.setAlignmentX(LEFT_ALIGNMENT);
 
-        fila.add(new JLabel(EstiloInsta.avatar(foto, p.getAutor(), 28)));
+        fila.add(new JLabel(EstiloInsta.avatar(foto, p.getAutor(), 32)));
 
         JLabel usuario = new JLabel(p.getAutor());
         usuario.setFont(EstiloInsta.FUERTE);
@@ -201,15 +203,16 @@ public class PanelTimeline extends JPanel {
 
     /** Fila de acciones bajo la foto: me gusta y comentar (como Instagram). */
     private JComponent filaAcciones(Publicacion p) {
-        JPanel fila = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
+        JPanel fila = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 6));
         fila.setOpaque(false);
         fila.setAlignmentX(LEFT_ALIGNMENT);
 
         JButton like = new JButton(IconosInsta.icono(
-                IconosInsta.CORAZON, 22, meGusta.contains(p)));
+                IconosInsta.CORAZON, 26, meGusta.contains(p)));
         like.setContentAreaFilled(false);
         like.setBorderPainted(false);
         like.setFocusPainted(false);
+        like.setMargin(new Insets(0, 0, 0, 0));
         like.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         like.addActionListener(e -> {
             if (meGusta.contains(p)) {
@@ -220,24 +223,25 @@ public class PanelTimeline extends JPanel {
             recargar();
         });
 
-        JLabel comentar = new JLabel(IconosInsta.icono(IconosInsta.MENSAJE, 22, false));
+        JLabel comentar = new JLabel(IconosInsta.icono(IconosInsta.MENSAJE, 26, false));
 
         fila.add(like);
         fila.add(comentar);
-        if (meGusta.contains(p)) {
-            JLabel txt = new JLabel("Te gusta");
-            txt.setFont(EstiloInsta.CHICA);
-            txt.setForeground(EstiloInsta.TEXTO_GRIS);
-            fila.add(txt);
-        }
         return fila;
     }
 
     private JComponent pie(Publicacion p) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
-        panel.setBorder(EstiloInsta.margen(0, 10, 12, 10));
+        panel.setBorder(EstiloInsta.margen(0, 12, 12, 12));
         panel.setAlignmentX(LEFT_ALIGNMENT);
+
+        if (meGusta.contains(p)) {
+            JLabel likes = new JLabel("A ti te gusta esto");
+            likes.setFont(EstiloInsta.FUERTE);
+            likes.setForeground(EstiloInsta.TEXTO);
+            panel.add(likes, BorderLayout.NORTH);
+        }
 
         JTextArea texto = new JTextArea();
         texto.setEditable(false);
