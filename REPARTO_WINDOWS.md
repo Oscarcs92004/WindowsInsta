@@ -307,7 +307,7 @@ Cuando termines O1–O3: Alex hace `so/RendererArchivos.java` (un
 - [x] "Organizar" en segundo plano con `SwingWorker` y `ListaEnlazada` por tipo
 - [x] Editor con color, fuente y tamaño que se conservan al reabrir (formato binario `.edt`)
 - [x] Visor de imágenes con carga en `SwingWorker`
-- [x] Reproductor con Play / Pause / Stop, lista, carátula y descripción, en su hilo
+- [x] Reproductor `.mp3` (JLayer) y `.wav` con Play / Pause / Stop, lista, carátula y descripción, en su hilo
 - [x] Sockets: `LOGIN` (y `POST`, `FOLLOW`) de punta a punta por el servidor
 - [x] Foto de perfil en el registro
 - [x] La interfaz se parece a un sistema operativo real
