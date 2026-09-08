@@ -17,7 +17,7 @@ public class ComandoHelp implements Comando{
                 + "  Mfile <nombre.ext>          Crea un nuevo archivo\n"
                 + "  Rm <nombre>                 Elimina un archivo o carpeta\n"
                 + "  Cd <carpeta>                Cambia a la carpeta indicada\n"
-                + "  ..                          Regresa a la carpeta anterior\n"
+                + "  cd..  (o  ..)               Regresa a la carpeta anterior\n"
                 + "  Dir                         Lista archivos y carpetas\n"
                 + "  Date                        Muestra la fecha actual\n"
                 + "  Time                        Muestra la hora actual\n"
