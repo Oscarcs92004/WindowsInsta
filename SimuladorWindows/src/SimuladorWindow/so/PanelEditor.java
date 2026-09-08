@@ -1,17 +1,26 @@
 package SimuladorWindow.so;
 
 import SimuladorWindow.modelo.Usuario;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import SimuladorWindow.persistencia.Documento;
 import SimuladorWindow.persistencia.EdtException;
 import SimuladorWindow.persistencia.PersistenciaEDT;
 import SimuladorWindow.persistencia.Tabla;
+import SimuladorWindow.so.editor.*;
+
+import javax.swing.border.EmptyBorder;
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.undo.UndoManager;
+import javax.swing.text.*;
+import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
+
 
 /**
  * Editor de texto (enunciado 3.4).
@@ -24,98 +33,461 @@ import SimuladorWindow.persistencia.Tabla;
  */
 public class PanelEditor extends JPanel {
 
-    private Usuario usuarioActual;
+
+    private final Usuario usuarioActual;
     private final File carpetaRaiz;
-    private final JTextPane texto = new JTextPane();
-    private File archivoAbierto;
+    private final JTextPane textPane = new JTextPane();
+    private File archivoActual;
+    private final GestorFuentes gestorFuentes;
+    private final GestorFormatoTexto gestorFormato;
+    private final GestorColorTexto gestorColor;
+    private final GestorTablas gestorTablas;
+    private final UndoManager gestorDeshacer = new UndoManager();
+    private final JLabel etiquetaEstado = new JLabel("0 palabras");
+    private JComboBox<String> comboFuente;
+    private JComboBox<Integer> comboTamano;
+    private JToggleButton btnNegrita;
+    private JToggleButton btnCursiva;
+    private JToggleButton btnSubrayado;
+    private JToggleButton btnTachado;
+    private JButton btnColor;
 
     public PanelEditor(Usuario usuarioActual, File carpetaRaiz) {
         this.usuarioActual = usuarioActual;
         this.carpetaRaiz = carpetaRaiz;
-
+        gestorFuentes = new GestorFuentes();
+        gestorFormato = new GestorFormatoTexto(textPane);
+        gestorColor = new GestorColorTexto(textPane);
+        gestorTablas = new GestorTablas();
         setLayout(new BorderLayout());
-        add(new JScrollPane(texto), BorderLayout.CENTER);
-
-        JToolBar barra = new JToolBar();
-        barra.setFloatable(false);
-
-        JButton btnNuevo = new JButton("Nuevo");
-        JButton btnAbrir = new JButton("Abrir");
-        JButton btnGuardar = new JButton("Guardar");
-        JButton btnColor = new JButton("Color");
-        JButton btnFuente = new JButton("Fuente");
-        JButton btnTamano = new JButton("Tamano");
-
-        barra.add(btnNuevo);
-        barra.add(btnAbrir);
-        barra.add(btnGuardar);
-        barra.addSeparator();
-        barra.add(btnColor);
-        barra.add(btnFuente);
-        barra.add(btnTamano);
-        add(barra, BorderLayout.NORTH);
-
-        btnNuevo.addActionListener(e -> {
-            texto.setText("");
-            archivoAbierto = null;
-        });
-        btnAbrir.addActionListener(e -> abrir());
-        btnGuardar.addActionListener(e -> guardar());
-
-        // TODO (Oscar) - Iteracion 3.5: formato del editor.
-        //   Color:  Color c = JColorChooser.showDialog(...);  aplicar a la seleccion.
-        //   Fuente: elegir el nombre de la fuente y aplicarlo a la seleccion.
-        //   Tamano: elegir el tamano y aplicarlo a la seleccion.
-        //   Para aplicar formato a un tramo se usa un StyledDocument y
-        //   SimpleAttributeSet (StyleConstants.setForeground / setFontFamily /
-        //   setFontSize). Luego guardar la lista de TramoFormato en el .fmt.
-        btnColor.addActionListener(e -> pendiente());
-        btnFuente.addActionListener(e -> pendiente());
-        btnTamano.addActionListener(e -> pendiente());
+        construirMenu();
+        construirEditor();
+        construirEstado();
+        configurarAtajos();
+        actualizarEstado();
     }
 
-    private void abrir() {
-        JFileChooser chooser = new JFileChooser(carpetaRaiz);
+    private void construirMenu() {
+        JMenuBar menuBar = new JMenuBar();
+        int atajo = InputEvent.CTRL_DOWN_MASK;
+
+        JMenu menuArchivo = new JMenu("Archivo");
+        JMenuItem itemNuevo = crearItem("Nuevo", KeyEvent.VK_N, atajo);
+        JMenuItem itemAbrir = crearItem("Abrir...", KeyEvent.VK_O, atajo);
+        JMenuItem itemGuardar = crearItem("Guardar", KeyEvent.VK_S, atajo);
+        JMenuItem itemGuardarComo = crearItem("Guardar como...", KeyEvent.VK_S, atajo | InputEvent.SHIFT_DOWN_MASK);
+        JMenuItem itemSalir = new JMenuItem("Cerrar");
+
+        itemNuevo.addActionListener(e -> accionNuevo());
+        itemAbrir.addActionListener(e -> accionAbrir());
+        itemGuardar.addActionListener(e -> accionGuardar());
+        itemGuardarComo.addActionListener(e -> accionGuardarComo());
+        itemSalir.addActionListener(e -> accionCerrar());
+
+        menuArchivo.add(itemNuevo);
+        menuArchivo.add(itemAbrir);
+        menuArchivo.addSeparator();
+        menuArchivo.add(itemGuardar);
+        menuArchivo.add(itemGuardarComo);
+        menuArchivo.addSeparator();
+        menuArchivo.add(itemSalir);
+        JMenu menuEditar = new JMenu("Editar");
+        JMenuItem itemDeshacer = crearItem("Deshacer", KeyEvent.VK_Z, atajo);
+        JMenuItem itemRehacer = crearItem("Rehacer", KeyEvent.VK_Y, atajo);
+        JMenuItem itemSeleccionarTodo = crearItem("Seleccionar todo", KeyEvent.VK_A, atajo);
+
+        itemDeshacer.addActionListener(e -> {
+            if (gestorDeshacer.canUndo()) {
+                gestorDeshacer.undo();
+            }
+        });
+
+        itemRehacer.addActionListener(e -> {
+            if (gestorDeshacer.canRedo()) {
+                gestorDeshacer.redo();
+            }
+        });
+
+        itemSeleccionarTodo.addActionListener(
+                e -> textPane.selectAll()
+        );
+
+        menuEditar.add(itemDeshacer);
+        menuEditar.add(itemRehacer);
+        menuEditar.addSeparator();
+        menuEditar.add(itemSeleccionarTodo);
+
+        JMenu menuFormato = new JMenu("Formato");
+        JMenuItem itemColor = new JMenuItem("Color de texto");
+        JMenuItem itemFuente = new JMenuItem("Fuente");
+        JMenuItem itemTamano = new JMenuItem("Tamaño");
+
+        itemColor.addActionListener(
+                e -> seleccionarColor()
+        );
+
+        itemFuente.addActionListener(
+                e -> seleccionarFuente()
+        );
+
+        itemTamano.addActionListener(
+                e -> seleccionarTamano()
+        );
+
+        menuFormato.add(itemColor);
+        menuFormato.add(itemFuente);
+        menuFormato.add(itemTamano);
+
+        menuBar.add(menuArchivo);
+        menuBar.add(menuEditar);
+        menuBar.add(menuFormato);
+        JPanel panelSuperior = new JPanel(new BorderLayout());
+        panelSuperior.add(menuBar, BorderLayout.NORTH);
+        construirBarraHerramientas(panelSuperior);
+        add(panelSuperior, BorderLayout.NORTH);
+    }
+
+    private JMenuItem crearItem(String texto, int tecla, int modificadores) {
+        JMenuItem item = new JMenuItem(texto);
+        item.setAccelerator(KeyStroke.getKeyStroke(tecla, modificadores));
+        return item;
+    }
+
+    private void construirBarraHerramientas(JPanel panelSuperior) {
+        JToolBar barra = new JToolBar();
+        barra.setFloatable(false);
+        barra.setRollover(true);
+        comboFuente = new JComboBox<>();
+        comboFuente.setToolTipText("Tipo de fuente");
+        comboFuente.setPreferredSize(new Dimension(180, 30));
+        try {
+            String[] fuentes = gestorFuentes.obtenerNombres();
+            for (String fuente : fuentes) {
+                comboFuente.addItem(fuente);
+            }
+        } catch (Exception ex) {
+            comboFuente.addItem("Arial");
+            comboFuente.addItem("Serif");
+            comboFuente.addItem("SansSerif");
+            comboFuente.addItem("Monospaced");
+        }
+
+        if (comboFuente.getItemCount() > 0) {
+            comboFuente.setSelectedItem("Arial");
+            if (comboFuente.getSelectedIndex() < 0) {
+                comboFuente.setSelectedIndex(0);
+            }
+        }
+
+        comboFuente.addActionListener(e -> {
+            String fuente = (String) comboFuente.getSelectedItem();
+            if (fuente != null) {
+                aplicarFuente(fuente);
+            }
+        });
+        comboTamano = new JComboBox<>(new Integer[]{8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72});
+        comboTamano.setSelectedItem(14);
+        comboTamano.setPreferredSize(new Dimension(75, 30));
+        comboTamano.setToolTipText("Tamaño de fuente");
+        comboTamano.addActionListener(e -> {
+            Integer tamano = (Integer) comboTamano.getSelectedItem();
+            if (tamano != null) {
+                aplicarTamano(tamano);
+            }
+        });
+
+        btnNegrita = new JToggleButton("N");
+        btnNegrita.setToolTipText("Negrita");
+        btnNegrita.setPreferredSize(new Dimension(38, 30));
+
+        btnNegrita.addActionListener(
+                e -> gestorFormato.alternarNegrita()
+        );
+
+        btnCursiva = new JToggleButton("I");
+        btnCursiva.setToolTipText("Cursiva");
+        btnCursiva.setPreferredSize(new Dimension(38, 30));
+
+        btnCursiva.addActionListener(
+                e -> gestorFormato.alternarCursiva()
+        );
+
+        btnSubrayado = new JToggleButton("S");
+        btnSubrayado.setToolTipText("Subrayado");
+        btnSubrayado.setPreferredSize(new Dimension(38, 30));
+
+        btnSubrayado.addActionListener(
+                e -> gestorFormato.alternarSubrayado()
+        );
+
+        btnTachado = new JToggleButton("T");
+        btnTachado.setToolTipText("Tachado");
+        btnTachado.setPreferredSize(new Dimension(38, 30));
+
+        btnTachado.addActionListener(
+                e -> gestorFormato.alternarTachado()
+        );
+
+        btnColor = new JButton();
+        btnColor.setToolTipText("Color de texto");
+        btnColor.setPreferredSize(new Dimension(45, 30));
+        btnColor.setBackground(Color.BLACK);
+
+        btnColor.addActionListener(
+                e -> seleccionarColor()
+        );
+
+        JButton btnTabla =
+                new JButton("▦ Tabla");
+
+        btnTabla.setPreferredSize(
+                new Dimension(85, 30)
+        );
+
+        btnTabla.addActionListener(
+                e -> insertarTabla()
+        );
+
+        barra.add(comboFuente);
+        barra.add(comboTamano);
+        barra.addSeparator();
+        barra.add(btnNegrita);
+        barra.add(btnCursiva);
+        barra.add(btnSubrayado);
+        barra.add(btnTachado);
+        barra.addSeparator();
+        barra.add(btnColor);
+        barra.addSeparator();
+        barra.add(btnTabla);
+        panelSuperior.add(barra, BorderLayout.SOUTH);
+    }
+
+    private void construirEditor() {
+        textPane.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        textPane.setMargin(new Insets(40, 50, 40, 50));
+        textPane.setBackground(Color.WHITE);
+        textPane.setForeground(Color.BLACK);
+        textPane.setCaretColor(Color.BLACK);
+        JScrollPane scrollPane = new JScrollPane(textPane);
+        add(scrollPane, BorderLayout.CENTER);
+
+        textPane.getDocument().addUndoableEditListener(gestorDeshacer);
+
+        textPane.getDocument().addDocumentListener(
+                        new javax.swing.event.DocumentListener() {
+                            @Override
+                            public void insertUpdate(
+                                    javax.swing.event.DocumentEvent e) {actualizarEstado();
+                            }
+                            @Override
+                            public void removeUpdate(
+                                    javax.swing.event.DocumentEvent e) {actualizarEstado();
+                            }
+                            @Override
+                            public void changedUpdate(
+                                    javax.swing.event.DocumentEvent e) {actualizarEstado();
+                            }
+                        }
+                );
+    }
+
+    private void construirEstado() {
+        JPanel panelEstado = new JPanel(new BorderLayout());
+
+        panelEstado.setBorder(new EmptyBorder(3, 8, 3, 8));
+
+        panelEstado.add(etiquetaEstado, BorderLayout.WEST);
+
+        add(panelEstado, BorderLayout.SOUTH);
+    }
+
+    private void actualizarEstado() {
+        String contenido = textPane.getText().trim();
+
+        if (contenido.isEmpty()) {
+            etiquetaEstado.setText("0 palabras");
+            return;
+        }
+
+        String[] palabras = contenido.split("\\s+");
+
+        etiquetaEstado.setText(palabras.length + " palabras");
+    }
+
+    private void aplicarFuente(String fuente) {
+        int inicio = textPane.getSelectionStart();
+
+        int fin = textPane.getSelectionEnd();
+
+        StyledDocument doc = textPane.getStyledDocument();
+
+        SimpleAttributeSet atributos = new SimpleAttributeSet();
+
+        StyleConstants.setFontFamily(atributos, fuente);
+
+        if (inicio == fin) {
+            textPane.setCharacterAttributes(atributos, false);
+        } else {
+            doc.setCharacterAttributes(inicio, fin - inicio, atributos, false);
+        }
+    }
+
+    private void aplicarTamano(int tamano) {
+        int inicio = textPane.getSelectionStart();
+        int fin = textPane.getSelectionEnd();
+        StyledDocument doc = textPane.getStyledDocument();
+        SimpleAttributeSet atributos = new SimpleAttributeSet();
+        StyleConstants.setFontSize(atributos, tamano);
+
+        if (inicio == fin) {
+            textPane.setCharacterAttributes(atributos, false);
+        } else {
+            doc.setCharacterAttributes(inicio, fin - inicio, atributos, false);
+        }
+    }
+
+    private void seleccionarColor() {
+        Color color = JColorChooser.showDialog(this, "Seleccionar color", Color.BLACK);
+        if (color == null) {
+            return;
+        }
+
+        btnColor.setBackground(color);
+        gestorColor.aplicarColor(color);
+    }
+
+    private void seleccionarFuente() {
+        if (comboFuente != null) {
+            comboFuente.requestFocus();
+            comboFuente.showPopup();
+        }
+    }
+
+    private void seleccionarTamano() {
+        if (comboTamano != null) {
+            comboTamano.requestFocus();
+            comboTamano.showPopup();
+        }
+    }
+
+    private void insertarTabla() {
+        DialogoTabla dialogo = new DialogoTabla();
+
+        if (!dialogo.mostrar(this)) {
+            return;
+        }
+
+        gestorTablas.insertar(textPane, dialogo.getFilas(), dialogo.getColumnas());
+    }
+
+    private void accionNuevo() {
+        int respuesta = JOptionPane.showConfirmDialog(this, "¿Deseas crear un documento nuevo?", "Nuevo documento", JOptionPane.YES_NO_OPTION);
+
+        if (respuesta != JOptionPane.YES_OPTION) {
+            return;
+        }
+        textPane.setText("");
+        archivoActual = null;
+        actualizarEstado();
+    }
+
+    private void accionAbrir() {
+        JFileChooser chooser = crearChooser();
+
         if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
             return;
         }
+
         File archivo = chooser.getSelectedFile();
         try {
-            String contenido = Files.readString(archivo.toPath(), StandardCharsets.UTF_8);
-            texto.setText(contenido);
-            archivoAbierto = archivo;
-            // TODO (Oscar): aqui tambien hay que leer el .fmt y aplicar el formato.
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "No se pudo abrir el archivo.");
+            Documento documento = PersistenciaEDT.abrir(archivo);
+            PersistenciaEDT.aplicarA(documento, textPane.getStyledDocument());
+            archivoActual = archivo;
+            actualizarEstado();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "No se pudo abrir el documento:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void guardar() {
-        File destino = archivoAbierto;
+    private void accionGuardar() {
+        if (archivoActual == null) {
+            accionGuardarComo();
+            return;
+        }
+        guardarDocumento(archivoActual);
+    }
 
-        if (destino == null) {
-            JFileChooser chooser = new JFileChooser(carpetaRaiz);
-            if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
-                return;
-            }
-            destino = chooser.getSelectedFile();
-            if (!destino.getName().toLowerCase().endsWith(".txt")) {
-                destino = new File(destino.getParentFile(), destino.getName() + ".txt");
-            }
+    private void accionGuardarComo() {
+        JFileChooser chooser = crearChooser();
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
         }
 
+        File archivo = chooser.getSelectedFile();
+
+        if (!archivo.getName().toLowerCase().endsWith(".edt")) {
+            archivo = new File(archivo.getParentFile(), archivo.getName() + ".edt");
+        }
+        guardarDocumento(archivo);
+    }
+
+    private void guardarDocumento(File archivo) {
         try {
-            Files.writeString(destino.toPath(), texto.getText(), StandardCharsets.UTF_8);
-            archivoAbierto = destino;
-            JOptionPane.showMessageDialog(this, "Guardado: " + destino.getName());
-            // TODO (Oscar): aqui tambien hay que guardar el .fmt con el formato.
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "No se pudo guardar el archivo.");
+            Documento documento = PersistenciaEDT.desdeStyledDocument(textPane.getStyledDocument());
+            PersistenciaEDT.guardar(documento, archivo);
+            archivoActual = archivo;
+            JOptionPane.showMessageDialog(this, "Documento guardado correctamente.", "Guardar", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "No se pudo guardar el documento:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void pendiente() {
-        JOptionPane.showMessageDialog(this,
-                "Formato: falta implementarlo (ver el comentario TODO en PanelEditor).");
+    private JFileChooser crearChooser() {
+        JFileChooser chooser = new JFileChooser(carpetaRaiz);
+
+        chooser.setFileFilter(new FileNameExtensionFilter("Documentos EDT (*.edt)", "edt"));
+
+        return chooser;
+    }
+
+    private void accionCerrar() {
+        Container padre = getParent();
+
+        if (padre != null) {
+            padre.remove(this);
+            padre.revalidate();
+            padre.repaint();
+        }
+    }
+
+    private void configurarAtajos() {
+        InputMap inputMap = textPane.getInputMap(JComponent.WHEN_FOCUSED);
+        ActionMap actionMap = textPane.getActionMap();
+        int ctrl = InputEvent.CTRL_DOWN_MASK;
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_B, ctrl), "negrita");
+        actionMap.put("negrita", new AbstractAction() {
+                    @Override
+                    public void actionPerformed(java.awt.event.ActionEvent e) {
+                        btnNegrita.doClick();
+                    }
+                }
+        );
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_I, ctrl), "cursiva");
+        actionMap.put("cursiva", new AbstractAction() {
+                    @Override
+                    public void actionPerformed(java.awt.event.ActionEvent e) {
+                        btnCursiva.doClick();
+                    }
+                }
+        );
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U, ctrl), "subrayado");
+        actionMap.put("subrayado", new AbstractAction() {
+                    @Override
+                    public void actionPerformed(java.awt.event.ActionEvent e) {
+                        btnSubrayado.doClick();
+                    }
+                }
+        );
     }
 }

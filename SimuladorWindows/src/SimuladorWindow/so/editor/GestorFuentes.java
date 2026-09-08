@@ -29,7 +29,7 @@ public class GestorFuentes {
     
     public void cargarFuentes() {
         try {
-            URL recurso = getClass().getClassLoader().getResource("PackFuentes");
+            URL recurso = getClass().getClassLoader().getResource("SimuladorWindow/recursos/PackFuentes");
 
             if (recurso == null) {
                 System.err.println("ERROR: No se encontró PackFuentes.");

@@ -33,7 +33,7 @@ public class GestorColorTexto {
         }
     }
 
-    private void aplicarColor(Color color) {
+    public void aplicarColor(Color color) {
         StyledDocument documento = textPane.getStyledDocument();
         int inicio = textPane.getSelectionStart();
         int fin = textPane.getSelectionEnd();
