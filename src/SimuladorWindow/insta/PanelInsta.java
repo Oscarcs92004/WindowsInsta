@@ -18,6 +18,9 @@ public class PanelInsta extends JPanel {
     private final CardLayout cartas = new CardLayout();
     private final JPanel contenedor = new JPanel(cartas);
 
+    /** Boton "Inbox" del menu; el hilo de notificaciones le cambia el texto. */
+    private JButton botonInbox;
+
     private final PanelPerfil panelPerfil;
     private final PanelCargarImagenes panelCargar;
     private final PanelTimeline panelTimeline;
@@ -55,6 +58,33 @@ public class PanelInsta extends JPanel {
         add(contenedor, BorderLayout.CENTER);
 
         mostrar("PERFIL");
+        iniciarHiloNotificaciones(insta, usuarioActual.getUsername());
+    }
+
+    /**
+     * Hilo demonio que cada 5 segundos cuenta los mensajes no leidos y muestra
+     * el aviso en el boton "Inbox" (enunciado 4.11 - notificacion de mensajes
+     * nuevos; checklist - hilo de revision del Inbox).
+     */
+    private void iniciarHiloNotificaciones(InstaServicio insta, String username) {
+        Thread vigilante = new Thread(() -> {
+            while (true) {
+                int noLeidos = insta.contarNoLeidos(username);
+                String texto = noLeidos > 0 ? "Inbox (" + noLeidos + ")" : "Inbox";
+                SwingUtilities.invokeLater(() -> {
+                    if (botonInbox != null) {
+                        botonInbox.setText(texto);
+                    }
+                });
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }
+        });
+        vigilante.setDaemon(true);   // no impide cerrar la aplicacion
+        vigilante.start();
     }
 
     private JScrollPane envolver(JComponent panel) {
@@ -71,7 +101,7 @@ public class PanelInsta extends JPanel {
         agregarBoton(menu, "Interacciones",  () -> { panelInteracciones.recargar(); mostrar("INTERACCIONES"); });
         agregarBoton(menu, "Buscar Profile", () -> mostrar("BUSCAR_PERFIL"));
         agregarBoton(menu, "Buscar Hashtag", () -> mostrar("BUSCAR_HASHTAG"));
-        agregarBoton(menu, "Inbox",          () -> { panelInbox.recargar(); mostrar("INBOX"); });
+        botonInbox = agregarBoton(menu, "Inbox", () -> { panelInbox.recargar(); mostrar("INBOX"); });
         agregarBoton(menu, "Editar perfil",  () -> { panelEditar.recargar(); mostrar("EDITAR"); });
         agregarBoton(menu, "Cerrar sesion",  () -> cerrarSesion(ventana));
 
@@ -81,10 +111,11 @@ public class PanelInsta extends JPanel {
         return contenedorMenu;
     }
 
-    private void agregarBoton(JPanel menu, String texto, Runnable accion) {
+    private JButton agregarBoton(JPanel menu, String texto, Runnable accion) {
         JButton boton = new JButton(texto);
         boton.addActionListener(e -> accion.run());
         menu.add(boton);
+        return boton;
     }
 
     private void cerrarSesion(VentanaPrincipal ventana) {
