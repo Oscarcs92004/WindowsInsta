@@ -9,28 +9,31 @@ import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Feed / Comentarios / Timeline (enunciado 4.3 y 4.7), con el aspecto de
- * Instagram: una columna centrada de "publicaciones" (avatar + usuario arriba,
- * imagen, y el pie con el texto).
+ * Feed / Comentarios / Timeline (enunciado 4.7), con el aspecto del feed de
+ * Instagram: una columna de publicaciones, cada una con la cabecera
+ * (avatar + usuario + hace X), la foto o el video (reel), la fila de acciones
+ * (me gusta / comentar) y el pie con el texto (#hashtags y @menciones).
  *
- * Arriba hay una tarjeta para publicar un insta de texto (maximo 140).
  * El feed son mis publicaciones y las de quienes sigo, de la mas nueva a la
  * mas vieja, armadas en una ListaEnlazada propia.
  */
 public class PanelTimeline extends JPanel {
 
-    private static final int MAX_TEXTO = 140;
-    private static final int ANCHO_FEED = 348;
+    private static final int ANCHO_FEED = 330;
 
     private final InstaServicio insta;
     private final UsuarioServicio usuarios;
     private final Usuario usuarioActual;
 
-    private final JTextArea cajaNueva = new JTextArea(2, 24);
     private final JPanel feed = new JPanel();
+
+    /** Publicaciones a las que el usuario les dio "me gusta" en esta sesion. */
+    private final Set<Publicacion> meGusta = new HashSet<>();
 
     public PanelTimeline(InstaServicio insta, UsuarioServicio usuarios, Usuario usuarioActual) {
         this.insta = insta;
@@ -42,12 +45,12 @@ public class PanelTimeline extends JPanel {
 
         feed.setLayout(new BoxLayout(feed, BoxLayout.Y_AXIS));
         feed.setBackground(EstiloInsta.FONDO);
-        feed.setBorder(EstiloInsta.margen(16, 0, 16, 0));
+        feed.setBorder(EstiloInsta.margen(12, 0, 16, 0));
 
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 0;
-        c.anchor = GridBagConstraints.PAGE_START;   // arriba y centrado
+        c.anchor = GridBagConstraints.PAGE_START;
         c.weightx = 1;
         c.weighty = 1;
         add(feed, c);
@@ -55,64 +58,17 @@ public class PanelTimeline extends JPanel {
         recargar();
     }
 
-    private JComponent cajaPublicar() {
-        JPanel caja = EstiloInsta.tarjeta();
-        caja.setLayout(new BorderLayout(8, 8));
-        caja.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(EstiloInsta.BORDE, 1, true),
-                EstiloInsta.margen(12, 12, 12, 12)));
-        caja.setAlignmentX(CENTER_ALIGNMENT);
-        caja.setMaximumSize(new Dimension(ANCHO_FEED, 130));
-
-        JLabel titulo = new JLabel("Crear publicacion  (max " + MAX_TEXTO + ")");
-        titulo.setFont(EstiloInsta.FUERTE);
-        titulo.setForeground(EstiloInsta.TEXTO);
-        caja.add(titulo, BorderLayout.NORTH);
-
-        cajaNueva.setLineWrap(true);
-        cajaNueva.setWrapStyleWord(true);
-        EstiloInsta.estiloCampo(cajaNueva);
-        caja.add(new JScrollPane(cajaNueva), BorderLayout.CENTER);
-
-        JButton btnPublicar = EstiloInsta.botonPrimario("Publicar");
-        btnPublicar.addActionListener(e -> publicar());
-        JPanel derecha = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-        derecha.setOpaque(false);
-        derecha.add(btnPublicar);
-        caja.add(derecha, BorderLayout.SOUTH);
-        return caja;
-    }
-
-    private void publicar() {
-        String texto = cajaNueva.getText().trim();
-        if (texto.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Escribe algo para publicar.");
-            return;
-        }
-        if (texto.length() > MAX_TEXTO) {
-            JOptionPane.showMessageDialog(this,
-                    "El texto no puede pasar de " + MAX_TEXTO + " caracteres.");
-            return;
-        }
-        insta.publicar(usuarioActual.getUsername(),
-                new Publicacion(usuarioActual.getUsername(), texto, null));
-        cajaNueva.setText("");
-        recargar();
-    }
-
     public void recargar() {
         feed.removeAll();
-        feed.add(cajaPublicar());
-        feed.add(Box.createVerticalStrut(16));
 
         boolean hay = false;
         for (Publicacion p : construirTimeline().comoLista()) {
             feed.add(tarjetaPublicacion(p));
-            feed.add(Box.createVerticalStrut(16));
+            feed.add(Box.createVerticalStrut(14));
             hay = true;
         }
         if (!hay) {
-            JLabel vacio = new JLabel("Todavia no hay publicaciones. Publica algo o sigue a alguien.");
+            JLabel vacio = new JLabel("Todavia no hay publicaciones. Crea una o sigue a alguien.");
             vacio.setForeground(EstiloInsta.TEXTO_GRIS);
             vacio.setAlignmentX(CENTER_ALIGNMENT);
             feed.add(vacio);
@@ -153,7 +109,9 @@ public class PanelTimeline extends JPanel {
 
         card.add(cabeceraPublicacion(p));
 
-        if (p.tieneImagen()) {
+        if (p.esVideo()) {
+            card.add(tarjetaVideo(p));
+        } else if (p.tieneImagen()) {
             ImageIcon icono = ConfigInsta.escalarParaFeed(new File(p.getRutaImagen()));
             JLabel imagen = new JLabel(icono != null ? icono : new ImageIcon(),
                     SwingConstants.CENTER);
@@ -164,6 +122,7 @@ public class PanelTimeline extends JPanel {
             card.add(imagen);
         }
 
+        card.add(filaAcciones(p));
         card.add(pie(p));
         return card;
     }
@@ -176,7 +135,7 @@ public class PanelTimeline extends JPanel {
         fila.setOpaque(false);
         fila.setAlignmentX(LEFT_ALIGNMENT);
 
-        fila.add(new JLabel(EstiloInsta.avatar(foto, p.getAutor(), 30)));
+        fila.add(new JLabel(EstiloInsta.avatar(foto, p.getAutor(), 28)));
 
         JLabel usuario = new JLabel(p.getAutor());
         usuario.setFont(EstiloInsta.FUERTE);
@@ -190,10 +149,94 @@ public class PanelTimeline extends JPanel {
         return fila;
     }
 
+    /** El "player" del reel: fondo oscuro, un triangulo de play y el nombre. */
+    private JComponent tarjetaVideo(Publicacion p) {
+        JPanel video = new JPanel(new GridBagLayout());
+        video.setBackground(new Color(20, 20, 20));
+        video.setAlignmentX(LEFT_ALIGNMENT);
+        video.setPreferredSize(new Dimension(ANCHO_FEED, 200));
+        video.setMaximumSize(new Dimension(ANCHO_FEED, 200));
+
+        JLabel play = new JLabel("▶");     // triangulo "play"
+        play.setForeground(Color.WHITE);
+        play.setFont(new Font("SansSerif", Font.BOLD, 44));
+
+        JLabel nombre = new JLabel("REEL · " + new File(p.getRutaVideo()).getName());
+        nombre.setForeground(new Color(220, 220, 220));
+        nombre.setFont(EstiloInsta.CHICA);
+
+        JPanel centro = new JPanel();
+        centro.setOpaque(false);
+        centro.setLayout(new BoxLayout(centro, BoxLayout.Y_AXIS));
+        play.setAlignmentX(CENTER_ALIGNMENT);
+        nombre.setAlignmentX(CENTER_ALIGNMENT);
+        centro.add(play);
+        centro.add(Box.createVerticalStrut(6));
+        centro.add(nombre);
+        video.add(centro);
+
+        video.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        video.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                reproducirVideo(new File(p.getRutaVideo()));
+            }
+        });
+        return video;
+    }
+
+    /** Abre el video con el reproductor del sistema (Java no reproduce video). */
+    private void reproducirVideo(File archivo) {
+        if (!archivo.exists()) {
+            JOptionPane.showMessageDialog(this, "El video ya no esta disponible.");
+            return;
+        }
+        try {
+            Desktop.getDesktop().open(archivo);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "No se pudo abrir el video: " + ex.getMessage());
+        }
+    }
+
+    /** Fila de acciones bajo la foto: me gusta y comentar (como Instagram). */
+    private JComponent filaAcciones(Publicacion p) {
+        JPanel fila = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
+        fila.setOpaque(false);
+        fila.setAlignmentX(LEFT_ALIGNMENT);
+
+        JButton like = new JButton(IconosInsta.icono(
+                IconosInsta.CORAZON, 22, meGusta.contains(p)));
+        like.setContentAreaFilled(false);
+        like.setBorderPainted(false);
+        like.setFocusPainted(false);
+        like.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        like.addActionListener(e -> {
+            if (meGusta.contains(p)) {
+                meGusta.remove(p);
+            } else {
+                meGusta.add(p);
+            }
+            recargar();
+        });
+
+        JLabel comentar = new JLabel(IconosInsta.icono(IconosInsta.MENSAJE, 22, false));
+
+        fila.add(like);
+        fila.add(comentar);
+        if (meGusta.contains(p)) {
+            JLabel txt = new JLabel("Te gusta");
+            txt.setFont(EstiloInsta.CHICA);
+            txt.setForeground(EstiloInsta.TEXTO_GRIS);
+            fila.add(txt);
+        }
+        return fila;
+    }
+
     private JComponent pie(Publicacion p) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
-        panel.setBorder(EstiloInsta.margen(6, 10, 12, 10));
+        panel.setBorder(EstiloInsta.margen(0, 10, 12, 10));
         panel.setAlignmentX(LEFT_ALIGNMENT);
 
         JTextArea texto = new JTextArea();
