@@ -29,16 +29,27 @@ public class PanelEditarPerfil extends JPanel {
         this.usuarios = usuarios;
         this.usuarioActual = usuarioActual;
 
+        setBackground(EstiloInsta.FONDO);
         setLayout(new GridBagLayout());
+        setBorder(EstiloInsta.margen(24, 28, 24, 28));
         GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(4, 4, 4, 4);
+        c.insets = new Insets(6, 4, 6, 4);
         c.anchor = GridBagConstraints.WEST;
 
         txtFoto.setEditable(false);
-        JButton btnFoto = new JButton("Elegir foto");
+        EstiloInsta.estiloCampo(txtNombre);
+        EstiloInsta.estiloCampo(txtEdad);
+        EstiloInsta.estiloCampo(txtClave);
+        EstiloInsta.estiloCampo(txtFoto);
+        JButton btnFoto = EstiloInsta.botonSecundario("Elegir foto");
         btnFoto.addActionListener(e -> elegirFoto());
 
         int fila = 0;
+        JLabel titulo = new JLabel("Editar perfil");
+        titulo.setFont(EstiloInsta.TITULO);
+        c.gridx = 0; c.gridy = fila; c.gridwidth = 3; add(titulo, c);
+        c.gridwidth = 1;
+        fila++;
         c.gridx = 0; c.gridy = fila; add(new JLabel("Nombre completo:"), c);
         c.gridx = 1; add(txtNombre, c);
         fila++;
@@ -52,14 +63,14 @@ public class PanelEditarPerfil extends JPanel {
         c.gridx = 1; add(txtFoto, c);
         c.gridx = 2; add(btnFoto, c);
         fila++;
-        JButton btnGuardar = new JButton("Guardar cambios");
+        JButton btnGuardar = EstiloInsta.botonPrimario("Guardar cambios");
         btnGuardar.addActionListener(e -> guardar());
         c.gridx = 1; c.gridy = fila; add(btnGuardar, c);
         fila++;
         c.gridx = 0; c.gridy = fila; add(new JLabel("Estado de la cuenta:"), c);
         c.gridx = 1; add(lblEstado, c);
         fila++;
-        JButton btnEstado = new JButton("Activar / Desactivar cuenta");
+        JButton btnEstado = EstiloInsta.botonSecundario("Activar / Desactivar cuenta");
         btnEstado.addActionListener(e -> cambiarEstado());
         c.gridx = 1; c.gridy = fila; add(btnEstado, c);
 

@@ -6,20 +6,25 @@ import SimuladorWindow.ui.VentanaPrincipal;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * INSTA+ dentro de una sola vista (enunciado 4.1 y 4.4).
- *
- * A la izquierda un menu con las 9 opciones; a la derecha un CardLayout que
- * muestra una "pantalla" a la vez, sin abrir ventanas nuevas.
+ * INSTA+ dentro de una sola vista (enunciado 4.1 y 4.4), con el aspecto de
+ * Instagram: barra lateral blanca con el logo y las 9 opciones, y a la
+ * derecha un CardLayout que muestra una "pantalla" a la vez, sin ventanas
+ * nuevas.
  */
 public class PanelInsta extends JPanel {
 
     private final CardLayout cartas = new CardLayout();
     private final JPanel contenedor = new JPanel(cartas);
 
-    /** Boton "Inbox" del menu; el hilo de notificaciones le cambia el texto. */
+    /** Boton "Inbox" de la barra; el hilo de notificaciones le cambia el texto. */
     private JButton botonInbox;
+    /** Todos los botones de la barra, para resaltar el que esta activo. */
+    private final List<JButton> botonesMenu = new ArrayList<>();
+    private JButton botonActivo;
 
     private final PanelPerfil panelPerfil;
     private final PanelCargarImagenes panelCargar;
@@ -37,13 +42,14 @@ public class PanelInsta extends JPanel {
 
         panelPerfil        = new PanelPerfil(insta, usuarios, usuarioActual, this);
         panelCargar        = new PanelCargarImagenes(insta, usuarioActual);
-        panelTimeline      = new PanelTimeline(insta, usuarioActual);
+        panelTimeline      = new PanelTimeline(insta, usuarios, usuarioActual);
         panelInteracciones = new PanelInteracciones(insta, usuarioActual);
         panelBuscarPerfil  = new PanelBuscarPerfil(insta, usuarios, usuarioActual, this);
         panelBuscarHashtag = new PanelBuscarHashtag(insta, usuarios);
         panelInbox         = new PanelInbox(insta, usuarios, usuarioActual);
         panelEditar        = new PanelEditarPerfil(insta, usuarios, usuarioActual);
 
+        contenedor.setBackground(EstiloInsta.FONDO);
         contenedor.add(envolver(panelPerfil),        "PERFIL");
         contenedor.add(envolver(panelCargar),        "CARGAR");
         contenedor.add(envolver(panelTimeline),      "TIMELINE");
@@ -54,7 +60,8 @@ public class PanelInsta extends JPanel {
         contenedor.add(envolver(panelEditar),        "EDITAR");
 
         setLayout(new BorderLayout());
-        add(crearMenu(ventana), BorderLayout.WEST);
+        setBackground(EstiloInsta.FONDO);
+        add(crearBarraLateral(ventana), BorderLayout.WEST);
         add(contenedor, BorderLayout.CENTER);
 
         mostrar("PERFIL");
@@ -88,34 +95,80 @@ public class PanelInsta extends JPanel {
     }
 
     private JScrollPane envolver(JComponent panel) {
-        return new JScrollPane(panel);
+        JScrollPane scroll = new JScrollPane(panel);
+        scroll.setBorder(null);
+        scroll.getViewport().setBackground(EstiloInsta.FONDO);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        return scroll;
     }
 
-    private JComponent crearMenu(VentanaPrincipal ventana) {
-        JPanel menu = new JPanel(new GridLayout(0, 1, 4, 4));
-        menu.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+    // -----------------------------------------------------------------
+    //  Barra lateral estilo Instagram
+    // -----------------------------------------------------------------
 
-        agregarBoton(menu, "Perfil",         () -> { panelPerfil.mostrarMio(); mostrar("PERFIL"); });
-        agregarBoton(menu, "Cargar imagenes",() -> { panelCargar.recargar();   mostrar("CARGAR"); });
-        agregarBoton(menu, "Comentarios",    () -> { panelTimeline.recargar(); mostrar("TIMELINE"); });
-        agregarBoton(menu, "Interacciones",  () -> { panelInteracciones.recargar(); mostrar("INTERACCIONES"); });
-        agregarBoton(menu, "Buscar Profile", () -> mostrar("BUSCAR_PERFIL"));
-        agregarBoton(menu, "Buscar Hashtag", () -> mostrar("BUSCAR_HASHTAG"));
-        botonInbox = agregarBoton(menu, "Inbox", () -> { panelInbox.recargar(); mostrar("INBOX"); });
-        agregarBoton(menu, "Editar perfil",  () -> { panelEditar.recargar(); mostrar("EDITAR"); });
-        agregarBoton(menu, "Cerrar sesion",  () -> cerrarSesion(ventana));
+    private JComponent crearBarraLateral(VentanaPrincipal ventana) {
+        JPanel barra = new JPanel();
+        barra.setLayout(new BoxLayout(barra, BoxLayout.Y_AXIS));
+        barra.setBackground(EstiloInsta.BLANCO);
+        barra.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 0, 1, EstiloInsta.BORDE),
+                EstiloInsta.margen(24, 14, 14, 14)));
+        barra.setPreferredSize(new Dimension(210, 0));
 
-        JPanel contenedorMenu = new JPanel(new BorderLayout());
-        contenedorMenu.add(new JLabel("  INSTA+"), BorderLayout.NORTH);
-        contenedorMenu.add(menu, BorderLayout.CENTER);
-        return contenedorMenu;
+        JLabel logo = new JLabel("Simulador W.");
+        logo.setFont(EstiloInsta.LOGO.deriveFont(19f));
+        logo.setForeground(EstiloInsta.TEXTO);
+        logo.setAlignmentX(LEFT_ALIGNMENT);
+        logo.setBorder(EstiloInsta.margen(0, 6, 20, 0));
+        barra.add(logo);
+
+        agregarItem(barra, "Inicio",         () -> { panelTimeline.recargar(); mostrar("TIMELINE"); });
+        botonInbox = agregarItem(barra, "Inbox", () -> { panelInbox.recargar(); mostrar("INBOX"); });
+        agregarItem(barra, "Buscar",         () -> mostrar("BUSCAR_PERFIL"));
+        agregarItem(barra, "Explorar tags",  () -> mostrar("BUSCAR_HASHTAG"));
+        agregarItem(barra, "Interacciones",  () -> { panelInteracciones.recargar(); mostrar("INTERACCIONES"); });
+        agregarItem(barra, "Crear",          () -> { panelCargar.recargar(); mostrar("CARGAR"); });
+        agregarItem(barra, "Perfil",         () -> { panelPerfil.mostrarMio(); mostrar("PERFIL"); });
+        agregarItem(barra, "Editar perfil",  () -> { panelEditar.recargar(); mostrar("EDITAR"); });
+
+        barra.add(Box.createVerticalGlue());
+
+        JButton salir = agregarItem(barra, "Cerrar sesion", () -> cerrarSesion(ventana));
+        salir.setForeground(EstiloInsta.ROJO);
+
+        return barra;
     }
 
-    private JButton agregarBoton(JPanel menu, String texto, Runnable accion) {
-        JButton boton = new JButton(texto);
-        boton.addActionListener(e -> accion.run());
-        menu.add(boton);
-        return boton;
+    private JButton agregarItem(JPanel barra, String texto, Runnable accion) {
+        JButton item = new JButton(texto);
+        item.setHorizontalAlignment(SwingConstants.LEFT);
+        item.setFont(EstiloInsta.NORMAL);
+        item.setForeground(EstiloInsta.TEXTO);
+        item.setBackground(EstiloInsta.BLANCO);
+        item.setBorder(EstiloInsta.margen(10, 6, 10, 6));
+        item.setContentAreaFilled(false);
+        item.setOpaque(true);
+        item.setFocusPainted(false);
+        item.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        item.setAlignmentX(LEFT_ALIGNMENT);
+        item.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        item.addActionListener(e -> {
+            marcarActivo(item);
+            accion.run();
+        });
+        barra.add(item);
+        botonesMenu.add(item);
+        return item;
+    }
+
+    private void marcarActivo(JButton item) {
+        if (botonActivo != null) {
+            botonActivo.setFont(EstiloInsta.NORMAL);
+            botonActivo.setBackground(EstiloInsta.BLANCO);
+        }
+        item.setFont(EstiloInsta.FUERTE);
+        item.setBackground(new Color(240, 240, 240));
+        botonActivo = item;
     }
 
     private void cerrarSesion(VentanaPrincipal ventana) {
@@ -136,5 +189,11 @@ public class PanelInsta extends JPanel {
     public void verPerfilDe(String username) {
         panelPerfil.mostrarPerfilDe(username);
         mostrar("PERFIL");
+    }
+
+    /** La usa el boton "Editar perfil" del propio perfil. */
+    public void irAEditarPerfil() {
+        panelEditar.recargar();
+        mostrar("EDITAR");
     }
 }

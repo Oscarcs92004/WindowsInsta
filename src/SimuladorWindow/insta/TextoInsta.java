@@ -1,6 +1,8 @@
 package SimuladorWindow.insta;
 
 import SimuladorWindow.estructuras.ListaEnlazada;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -29,6 +31,19 @@ public final class TextoInsta {
             texto = texto + "\n[imagen adjunta]";
         }
         return texto;
+    }
+
+    /** Tiempo transcurrido en corto, estilo Instagram: "hace 5 min", "hace 2 h". */
+    public static String hace(LocalDateTime fecha) {
+        LocalDateTime ahora = LocalDateTime.now();
+        long minutos = ChronoUnit.MINUTES.between(fecha, ahora);
+        if (minutos < 1)  return "ahora";
+        if (minutos < 60) return "hace " + minutos + " min";
+        long horas = minutos / 60;
+        if (horas < 24)   return "hace " + horas + " h";
+        long dias = horas / 24;
+        if (dias < 7)     return "hace " + dias + " d";
+        return FECHA.format(fecha);
     }
 
     /** Devuelve true si el texto contiene el hashtag dado (sin el #). */

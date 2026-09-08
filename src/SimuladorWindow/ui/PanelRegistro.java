@@ -1,6 +1,7 @@
 package SimuladorWindow.ui;
 
 import SimuladorWindow.excepciones.UsernameDuplicadoException;
+import SimuladorWindow.insta.EstiloInsta;
 import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.servicios.UsuarioServicio;
 
@@ -21,46 +22,69 @@ public class PanelRegistro extends JPanel {
     private String rutaFoto = null;
 
     public PanelRegistro(VentanaPrincipal ventana, UsuarioServicio servicio) {
+        setBackground(EstiloInsta.FONDO);
         setLayout(new GridBagLayout());
 
+        JPanel caja = EstiloInsta.tarjeta();
+        caja.setLayout(new GridBagLayout());
+        caja.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(EstiloInsta.BORDE, 1, true),
+                EstiloInsta.margen(28, 40, 24, 40)));
+
         GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(4, 4, 4, 4);
+        c.insets = new Insets(6, 4, 6, 4);
         c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
 
         JTextField txtNombre = new JTextField(18);
         JComboBox<String> cmbGenero = new JComboBox<>(new String[] {"M", "F"});
         JTextField txtUsuario = new JTextField(18);
         JPasswordField txtClave = new JPasswordField(18);
         JTextField txtEdad = new JTextField(4);
-        JButton btnFoto = new JButton("Elegir foto");
+        EstiloInsta.estiloCampo(txtNombre);
+        EstiloInsta.estiloCampo(txtUsuario);
+        EstiloInsta.estiloCampo(txtClave);
+        EstiloInsta.estiloCampo(txtEdad);
+        JButton btnFoto = EstiloInsta.botonSecundario("Elegir foto");
         JLabel lblFoto = new JLabel("Sin foto");
-        JButton btnCrear = new JButton("Crear");
-        JButton btnVolver = new JButton("Volver al login");
+        JButton btnCrear = EstiloInsta.botonPrimario("Crear cuenta");
+        JButton btnVolver = EstiloInsta.enlace("Volver al login");
 
         int fila = 0;
-        c.gridx = 0; c.gridy = fila; add(new JLabel("Nombre completo:"), c);
-        c.gridx = 1; add(txtNombre, c);
+        JLabel titulo = new JLabel("Crear una cuenta nueva", SwingConstants.CENTER);
+        titulo.setFont(EstiloInsta.LOGO.deriveFont(19f));
+        titulo.setForeground(EstiloInsta.TEXTO);
+        c.gridx = 0; c.gridy = fila; c.gridwidth = 2;
+        caja.add(titulo, c);
+        c.gridwidth = 1;
         fila++;
-        c.gridx = 0; c.gridy = fila; add(new JLabel("Genero:"), c);
-        c.gridx = 1; add(cmbGenero, c);
+        c.gridx = 1; caja.add(txtNombre, c);
         fila++;
-        c.gridx = 0; c.gridy = fila; add(new JLabel("Username:"), c);
-        c.gridx = 1; add(txtUsuario, c);
+        c.gridx = 0; c.gridy = fila; caja.add(new JLabel("Genero:"), c);
+        c.gridx = 1; caja.add(cmbGenero, c);
         fila++;
-        c.gridx = 0; c.gridy = fila; add(new JLabel("Contrasena:"), c);
-        c.gridx = 1; add(txtClave, c);
+        c.gridx = 0; c.gridy = fila; caja.add(new JLabel("Username:"), c);
+        c.gridx = 1; caja.add(txtUsuario, c);
         fila++;
-        c.gridx = 0; c.gridy = fila; add(new JLabel("Edad:"), c);
-        c.gridx = 1; add(txtEdad, c);
+        c.gridx = 0; c.gridy = fila; caja.add(new JLabel("Contrasena:"), c);
+        c.gridx = 1; caja.add(txtClave, c);
         fila++;
-        c.gridx = 0; c.gridy = fila; add(new JLabel("Foto de perfil:"), c);
-        c.gridx = 1; add(btnFoto, c);
+        c.gridx = 0; c.gridy = fila; caja.add(new JLabel("Edad:"), c);
+        c.gridx = 1; caja.add(txtEdad, c);
         fila++;
-        c.gridx = 1; c.gridy = fila; add(lblFoto, c);
+        c.gridx = 0; c.gridy = fila; caja.add(new JLabel("Foto de perfil:"), c);
+        c.gridx = 1; caja.add(btnFoto, c);
         fila++;
-        c.gridx = 1; c.gridy = fila; add(btnCrear, c);
+        c.gridx = 1; c.gridy = fila; caja.add(lblFoto, c);
         fila++;
-        c.gridx = 1; c.gridy = fila; add(btnVolver, c);
+        c.gridx = 0; c.gridy = fila; c.gridwidth = 2; c.insets = new Insets(14, 4, 4, 4);
+        caja.add(btnCrear, c);
+        fila++;
+        c.gridy = fila; c.insets = new Insets(2, 4, 0, 4);
+        caja.add(btnVolver, c);
+        c.gridwidth = 1;
+
+        add(caja, new GridBagConstraints());
 
         btnFoto.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();

@@ -32,22 +32,34 @@ public class PanelBuscarPerfil extends JPanel {
         this.usuarioActual = usuarioActual;
         this.panelInsta = panelInsta;
 
+        setBackground(EstiloInsta.FONDO);
         setLayout(new BorderLayout());
+        setBorder(EstiloInsta.margen(20, 24, 20, 24));
 
-        JPanel arriba = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton btnBuscar = new JButton("Buscar");
+        JPanel arriba = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        arriba.setOpaque(false);
+        EstiloInsta.estiloCampo(txtBuscar);
+        JButton btnBuscar = EstiloInsta.botonPrimario("Buscar");
         btnBuscar.addActionListener(e -> buscar());
         txtBuscar.addActionListener(e -> buscar());
-        arriba.add(new JLabel("Buscar persona:"));
+        JLabel titulo = new JLabel("Buscar persona");
+        titulo.setFont(EstiloInsta.FUERTE);
+        arriba.add(titulo);
         arriba.add(txtBuscar);
         arriba.add(btnBuscar);
         add(arriba, BorderLayout.NORTH);
 
-        add(new JScrollPane(resultados), BorderLayout.CENTER);
+        resultados.setFont(EstiloInsta.NORMAL);
+        JScrollPane scroll = new JScrollPane(resultados);
+        scroll.setBorder(BorderFactory.createLineBorder(EstiloInsta.BORDE));
+        add(scroll, BorderLayout.CENTER);
 
-        JButton btnVer = new JButton("Entrar al perfil");
+        JButton btnVer = EstiloInsta.botonSecundario("Entrar al perfil");
         btnVer.addActionListener(e -> entrarAlPerfil());
-        add(btnVer, BorderLayout.SOUTH);
+        JPanel abajo = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 6));
+        abajo.setOpaque(false);
+        abajo.add(btnVer);
+        add(abajo, BorderLayout.SOUTH);
     }
 
     private void buscar() {
