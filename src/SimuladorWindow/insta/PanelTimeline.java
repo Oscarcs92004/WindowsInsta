@@ -23,7 +23,7 @@ import java.util.List;
 public class PanelTimeline extends JPanel {
 
     private static final int MAX_TEXTO = 140;
-    private static final int ANCHO_FEED = 480;
+    private static final int ANCHO_FEED = 348;
 
     private final InstaServicio insta;
     private final UsuarioServicio usuarios;

@@ -52,14 +52,17 @@ public class PanelPerfil extends JPanel {
         JPanel centro = new JPanel();
         centro.setOpaque(false);
         centro.setLayout(new BoxLayout(centro, BoxLayout.Y_AXIS));
-        centro.setBorder(EstiloInsta.margen(28, 28, 28, 28));
+        centro.setBorder(EstiloInsta.margen(14, 14, 14, 14));
 
-        centro.add(cabecera(u));
-        centro.add(Box.createVerticalStrut(20));
+        for (JComponent parte : cabecera(u)) {
+            parte.setAlignmentX(LEFT_ALIGNMENT);
+            centro.add(parte);
+            centro.add(Box.createVerticalStrut(8));
+        }
         JSeparator sep = new JSeparator();
         sep.setAlignmentX(LEFT_ALIGNMENT);
         centro.add(sep);
-        centro.add(Box.createVerticalStrut(12));
+        centro.add(Box.createVerticalStrut(10));
         JComponent grid = grid(u);
         grid.setAlignmentX(LEFT_ALIGNMENT);
         centro.add(grid);
@@ -71,80 +74,69 @@ public class PanelPerfil extends JPanel {
 
     // -----------------------------------------------------------------
 
-    private JComponent cabecera(Usuario u) {
+    /** Las piezas de la cabecera del perfil, apiladas (formato telefono). */
+    private java.util.List<JComponent> cabecera(Usuario u) {
         boolean esOtro = !u.getUsername().equalsIgnoreCase(usuarioActual.getUsername());
+        java.util.List<JComponent> partes = new java.util.ArrayList<>();
 
-        JLabel foto = new JLabel(EstiloInsta.avatar(u.getFotoPerfil(), u.getUsername(), 140));
-        foto.setBorder(EstiloInsta.margen(0, 0, 0, 30));
-
-        JPanel datos = new JPanel();
-        datos.setOpaque(false);
-        datos.setLayout(new BoxLayout(datos, BoxLayout.Y_AXIS));
-
-        // Fila 1: username + boton de accion.
-        JPanel fila1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
-        fila1.setOpaque(false);
-        fila1.setAlignmentX(LEFT_ALIGNMENT);
-        JLabel username = new JLabel(u.getUsername());
-        username.setFont(EstiloInsta.TITULO);
-        username.setForeground(EstiloInsta.TEXTO);
-        fila1.add(username);
-        fila1.add(botonAccion(u, esOtro));
-        datos.add(fila1);
-        datos.add(Box.createVerticalStrut(14));
-
-        // Fila 2: contadores.
+        // Fila 1: avatar + los 3 contadores al lado.
         int publicaciones = insta.contarPublicaciones(u.getUsername());
         int followers = insta.seguidoresDe(u.getUsername()).size();
         int following = insta.aQuienesSigue(u.getUsername()).size();
 
-        JPanel fila2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 22, 0));
-        fila2.setOpaque(false);
-        fila2.setAlignmentX(LEFT_ALIGNMENT);
-        fila2.add(contador(publicaciones + " publicaciones", null));
-        fila2.add(contador(followers + " followers",
+        JPanel fila1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 14, 0));
+        fila1.setOpaque(false);
+        fila1.add(new JLabel(EstiloInsta.avatar(u.getFotoPerfil(), u.getUsername(), 78)));
+        JPanel stats = new JPanel(new GridLayout(1, 3, 6, 0));
+        stats.setOpaque(false);
+        stats.add(contador(publicaciones, "posts", null));
+        stats.add(contador(followers, "followers",
                 () -> mostrarLista("Followers de " + u.getUsername(),
                         insta.listaFollowers(u.getUsername()))));
-        fila2.add(contador(following + " following",
+        stats.add(contador(following, "following",
                 () -> mostrarLista("Following de " + u.getUsername(),
                         insta.listaFollowing(u.getUsername()))));
-        datos.add(fila2);
-        datos.add(Box.createVerticalStrut(12));
+        fila1.add(stats);
+        partes.add(fila1);
 
-        // Fila 3: nombre completo + genero + fecha + estado.
+        // Nombre y username.
+        JLabel username = new JLabel(u.getUsername());
+        username.setFont(EstiloInsta.FUERTE);
+        username.setForeground(EstiloInsta.TEXTO);
+        partes.add(username);
+
         JLabel nombre = new JLabel(u.getNombreCompleto());
-        nombre.setFont(EstiloInsta.FUERTE);
+        nombre.setFont(EstiloInsta.NORMAL);
         nombre.setForeground(EstiloInsta.TEXTO);
-        nombre.setAlignmentX(LEFT_ALIGNMENT);
-        datos.add(nombre);
+        partes.add(nombre);
 
         JLabel extra = new JLabel(u.getGenero() + " · " + u.getEdad() + " años · desde "
                 + u.getFechaRegistro() + (u.isActiva() ? "" : "  · CUENTA INACTIVA"));
         extra.setFont(EstiloInsta.CHICA);
         extra.setForeground(u.isActiva() ? EstiloInsta.TEXTO_GRIS : EstiloInsta.ROJO);
-        extra.setAlignmentX(LEFT_ALIGNMENT);
-        datos.add(extra);
+        partes.add(extra);
 
-        JPanel cabecera = new JPanel(new BorderLayout());
-        cabecera.setOpaque(false);
-        cabecera.setAlignmentX(LEFT_ALIGNMENT);
-        cabecera.add(foto, BorderLayout.WEST);
-        cabecera.add(datos, BorderLayout.CENTER);
-        cabecera.setMaximumSize(new Dimension(720, 220));
-        return cabecera;
+        // Botones de accion, a lo ancho.
+        partes.add(botonAccion(u, esOtro));
+        return partes;
     }
 
     private JComponent botonAccion(Usuario u, boolean esOtro) {
+        JPanel fila = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        fila.setOpaque(false);
+
         if (!esOtro) {
             JButton editar = EstiloInsta.botonSecundario("Editar perfil");
             editar.addActionListener(e -> panelInsta.irAEditarPerfil());
-            return editar;
+            JButton salir = EstiloInsta.enlace("Cerrar sesion");
+            salir.setForeground(EstiloInsta.ROJO);
+            salir.addActionListener(e -> panelInsta.cerrarSesion());
+            fila.add(editar);
+            fila.add(salir);
+            return fila;
         }
 
         boolean sigo = insta.sigo(usuarioActual.getUsername(), u.getUsername());
-        JPanel acciones = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        acciones.setOpaque(false);
-
         JButton seguir = sigo
                 ? EstiloInsta.botonSecundario("Dejar de seguir")
                 : EstiloInsta.botonPrimario("Seguir");
@@ -166,42 +158,48 @@ public class PanelPerfil extends JPanel {
         JButton ver = EstiloInsta.botonSecundario("Ver publicaciones");
         ver.addActionListener(e -> verPublicaciones(u.getUsername()));
 
-        acciones.add(seguir);
-        acciones.add(ver);
-        return acciones;
+        fila.add(seguir);
+        fila.add(ver);
+        return fila;
     }
 
-    private JComponent contador(String texto, Runnable accion) {
-        if (accion == null) {
-            JLabel etiqueta = new JLabel(texto);
-            etiqueta.setFont(EstiloInsta.NORMAL);
-            etiqueta.setForeground(EstiloInsta.TEXTO);
-            return etiqueta;
+    /** Un contador del perfil: numero en negrita y la etiqueta debajo. */
+    private JComponent contador(int numero, String etiqueta, Runnable accion) {
+        JLabel n = new JLabel(String.valueOf(numero), SwingConstants.CENTER);
+        n.setFont(EstiloInsta.FUERTE);
+        n.setForeground(EstiloInsta.TEXTO);
+        JLabel t = new JLabel(etiqueta, SwingConstants.CENTER);
+        t.setFont(EstiloInsta.CHICA);
+        t.setForeground(EstiloInsta.TEXTO_GRIS);
+
+        JPanel p = new JPanel(new BorderLayout());
+        p.setOpaque(false);
+        p.add(n, BorderLayout.CENTER);
+        p.add(t, BorderLayout.SOUTH);
+        if (accion != null) {
+            p.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            p.addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
+                public void mouseClicked(java.awt.event.MouseEvent e) {
+                    accion.run();
+                }
+            });
         }
-        JButton boton = new JButton(texto);
-        boton.setBorderPainted(false);
-        boton.setContentAreaFilled(false);
-        boton.setFocusPainted(false);
-        boton.setMargin(new Insets(0, 0, 0, 0));
-        boton.setFont(EstiloInsta.NORMAL);
-        boton.setForeground(EstiloInsta.TEXTO);
-        boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        boton.addActionListener(e -> accion.run());
-        return boton;
+        return p;
     }
 
     /** Grid de 3 columnas con las imagenes publicadas (enunciado 4.6). */
     private JComponent grid(Usuario u) {
-        JPanel grid = new JPanel(new GridLayout(0, ConfigInsta.COLUMNAS_GRID, 4, 4));
+        JPanel grid = new JPanel(new GridLayout(0, ConfigInsta.COLUMNAS_GRID, 3, 3));
         grid.setOpaque(false);
-        grid.setMaximumSize(new Dimension(720, Integer.MAX_VALUE));
+        grid.setMaximumSize(new Dimension(360, Integer.MAX_VALUE));
 
         int puestas = 0;
         for (Publicacion p : insta.publicacionesDe(u.getUsername())) {
             if (!p.tieneImagen()) {
                 continue;
             }
-            ImageIcon mini = ConfigInsta.miniatura(new File(p.getRutaImagen()), 220);
+            ImageIcon mini = ConfigInsta.miniatura(new File(p.getRutaImagen()), 112);
             JLabel celda = new JLabel();
             if (mini != null) {
                 celda.setIcon(mini);

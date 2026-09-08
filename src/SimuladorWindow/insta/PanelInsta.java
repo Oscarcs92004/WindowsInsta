@@ -6,25 +6,21 @@ import SimuladorWindow.ui.VentanaPrincipal;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * INSTA+ dentro de una sola vista (enunciado 4.1 y 4.4), con el aspecto de
- * Instagram: barra lateral blanca con el logo y las 9 opciones, y a la
- * derecha un CardLayout que muestra una "pantalla" a la vez, sin ventanas
- * nuevas.
+ * INSTA+ como una app de telefono (enunciado 4.1 y 4.4, MODO_MOBILE):
+ * una sola pantalla vertical con la cabecera "Instagram" arriba, el contenido
+ * en el centro (CardLayout, una vista a la vez, sin ventanas nuevas) y la
+ * barra de navegacion con iconos abajo, igual que la app real.
  */
 public class PanelInsta extends JPanel {
 
     private final CardLayout cartas = new CardLayout();
     private final JPanel contenedor = new JPanel(cartas);
+    private final VentanaPrincipal ventana;
 
-    /** Boton "Inbox" de la barra; el hilo de notificaciones le cambia el texto. */
-    private JButton botonInbox;
-    /** Todos los botones de la barra, para resaltar el que esta activo. */
-    private final List<JButton> botonesMenu = new ArrayList<>();
-    private JButton botonActivo;
+    /** Icono de mensajes de la cabecera; el hilo le pone el numero de no leidos. */
+    private JButton botonMensajes;
 
     private final PanelPerfil panelPerfil;
     private final PanelCargarImagenes panelCargar;
@@ -35,9 +31,12 @@ public class PanelInsta extends JPanel {
     private final PanelInbox panelInbox;
     private final PanelEditarPerfil panelEditar;
 
+    private final JButton[] navBotones = new JButton[5];
+    private int navActivo = 0;
+
     public PanelInsta(InstaServicio insta, UsuarioServicio usuarios,
                       Usuario usuarioActual, VentanaPrincipal ventana) {
-
+        this.ventana = ventana;
         insta.asegurarCarpetaUsuario(usuarioActual.getUsername());
 
         panelPerfil        = new PanelPerfil(insta, usuarios, usuarioActual, this);
@@ -47,40 +46,120 @@ public class PanelInsta extends JPanel {
         panelBuscarPerfil  = new PanelBuscarPerfil(insta, usuarios, usuarioActual, this);
         panelBuscarHashtag = new PanelBuscarHashtag(insta, usuarios);
         panelInbox         = new PanelInbox(insta, usuarios, usuarioActual);
-        panelEditar        = new PanelEditarPerfil(insta, usuarios, usuarioActual);
+        panelEditar        = new PanelEditarPerfil(insta, usuarios, usuarioActual, this);
 
         contenedor.setBackground(EstiloInsta.FONDO);
         contenedor.add(envolver(panelPerfil),        "PERFIL");
         contenedor.add(envolver(panelCargar),        "CARGAR");
         contenedor.add(envolver(panelTimeline),      "TIMELINE");
         contenedor.add(envolver(panelInteracciones), "INTERACCIONES");
-        contenedor.add(envolver(panelBuscarPerfil),  "BUSCAR_PERFIL");
-        contenedor.add(envolver(panelBuscarHashtag), "BUSCAR_HASHTAG");
+        contenedor.add(envolver(buscarConPestanas()), "BUSCAR");
         contenedor.add(envolver(panelInbox),         "INBOX");
         contenedor.add(envolver(panelEditar),        "EDITAR");
 
         setLayout(new BorderLayout());
-        setBackground(EstiloInsta.FONDO);
-        add(crearBarraLateral(ventana), BorderLayout.WEST);
+        setBackground(EstiloInsta.BLANCO);
+        add(cabecera(), BorderLayout.NORTH);
         add(contenedor, BorderLayout.CENTER);
+        add(barraInferior(), BorderLayout.SOUTH);
 
-        mostrar("PERFIL");
+        irA("TIMELINE", 0);
         iniciarHiloNotificaciones(insta, usuarioActual.getUsername());
     }
 
+    // -----------------------------------------------------------------
+    //  Cabecera: "Instagram" a la izquierda, mensajes a la derecha
+    // -----------------------------------------------------------------
+
+    private JComponent cabecera() {
+        JPanel barra = new JPanel(new BorderLayout());
+        barra.setBackground(EstiloInsta.BLANCO);
+        barra.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, EstiloInsta.BORDE),
+                EstiloInsta.margen(8, 14, 8, 14)));
+
+        JLabel logo = new JLabel("Instagram");
+        logo.setFont(EstiloInsta.LOGO.deriveFont(22f));
+        logo.setForeground(EstiloInsta.TEXTO);
+        barra.add(logo, BorderLayout.WEST);
+
+        botonMensajes = new JButton(IconosInsta.icono(IconosInsta.MENSAJE, 24, false));
+        planoIcono(botonMensajes);
+        botonMensajes.addActionListener(e -> { panelInbox.recargar(); irA("INBOX", -1); });
+        barra.add(botonMensajes, BorderLayout.EAST);
+        return barra;
+    }
+
+    // -----------------------------------------------------------------
+    //  Barra de navegacion inferior (5 iconos, como Instagram movil)
+    // -----------------------------------------------------------------
+
+    private JComponent barraInferior() {
+        JPanel barra = new JPanel(new GridLayout(1, 5));
+        barra.setBackground(EstiloInsta.BLANCO);
+        barra.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, EstiloInsta.BORDE));
+
+        navBotones[0] = navBoton(IconosInsta.CASA,    () -> { panelTimeline.recargar();      irA("TIMELINE", 0); });
+        navBotones[1] = navBoton(IconosInsta.LUPA,    () -> irA("BUSCAR", 1));
+        navBotones[2] = navBoton(IconosInsta.MAS,     () -> { panelCargar.recargar();        irA("CARGAR", 2); });
+        navBotones[3] = navBoton(IconosInsta.CORAZON, () -> { panelInteracciones.recargar(); irA("INTERACCIONES", 3); });
+        navBotones[4] = navBoton(IconosInsta.PERSONA, () -> { panelPerfil.mostrarMio();      irA("PERFIL", 4); });
+
+        for (JButton b : navBotones) {
+            barra.add(b);
+        }
+        return barra;
+    }
+
+    private JButton navBoton(String icono, Runnable accion) {
+        JButton b = new JButton(IconosInsta.icono(icono, 26, false));
+        b.putClientProperty("icono", icono);
+        planoIcono(b);
+        b.setBorder(EstiloInsta.margen(10, 0, 10, 0));
+        b.addActionListener(e -> accion.run());
+        return b;
+    }
+
+    private void planoIcono(JButton b) {
+        b.setContentAreaFilled(false);
+        b.setBorderPainted(false);
+        b.setFocusPainted(false);
+        b.setOpaque(false);
+        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }
+
+    // -----------------------------------------------------------------
+
+    private JComponent buscarConPestanas() {
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.setFont(EstiloInsta.NORMAL);
+        tabs.addTab("Personas", panelBuscarPerfil);
+        tabs.addTab("Hashtags", panelBuscarHashtag);
+        return tabs;
+    }
+
+    private JScrollPane envolver(JComponent panel) {
+        JScrollPane scroll = new JScrollPane(panel,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setBorder(null);
+        scroll.getViewport().setBackground(EstiloInsta.FONDO);
+        scroll.getVerticalScrollBar().setUnitIncrement(18);
+        return scroll;
+    }
+
     /**
-     * Hilo demonio que cada 5 segundos cuenta los mensajes no leidos y muestra
-     * el aviso en el boton "Inbox" (enunciado 4.11 - notificacion de mensajes
-     * nuevos; checklist - hilo de revision del Inbox).
+     * Hilo demonio que cada 5 segundos cuenta los mensajes no leidos y los
+     * muestra en el icono de mensajes de la cabecera (enunciado 4.11 -
+     * notificacion de mensajes nuevos; checklist - hilo de revision del Inbox).
      */
     private void iniciarHiloNotificaciones(InstaServicio insta, String username) {
         Thread vigilante = new Thread(() -> {
             while (true) {
                 int noLeidos = insta.contarNoLeidos(username);
-                String texto = noLeidos > 0 ? "Inbox (" + noLeidos + ")" : "Inbox";
                 SwingUtilities.invokeLater(() -> {
-                    if (botonInbox != null) {
-                        botonInbox.setText(texto);
+                    if (botonMensajes != null) {
+                        botonMensajes.setText(noLeidos > 0 ? " " + noLeidos : "");
                     }
                 });
                 try {
@@ -90,110 +169,48 @@ public class PanelInsta extends JPanel {
                 }
             }
         });
-        vigilante.setDaemon(true);   // no impide cerrar la aplicacion
+        vigilante.setDaemon(true);
         vigilante.start();
     }
 
-    private JScrollPane envolver(JComponent panel) {
-        JScrollPane scroll = new JScrollPane(panel);
-        scroll.setBorder(null);
-        scroll.getViewport().setBackground(EstiloInsta.FONDO);
-        scroll.getVerticalScrollBar().setUnitIncrement(16);
-        return scroll;
-    }
-
-    // -----------------------------------------------------------------
-    //  Barra lateral estilo Instagram
     // -----------------------------------------------------------------
 
-    private JComponent crearBarraLateral(VentanaPrincipal ventana) {
-        JPanel barra = new JPanel();
-        barra.setLayout(new BoxLayout(barra, BoxLayout.Y_AXIS));
-        barra.setBackground(EstiloInsta.BLANCO);
-        barra.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 0, 1, EstiloInsta.BORDE),
-                EstiloInsta.margen(24, 14, 14, 14)));
-        barra.setPreferredSize(new Dimension(210, 0));
-
-        JLabel logo = new JLabel("Simulador W.");
-        logo.setFont(EstiloInsta.LOGO.deriveFont(19f));
-        logo.setForeground(EstiloInsta.TEXTO);
-        logo.setAlignmentX(LEFT_ALIGNMENT);
-        logo.setBorder(EstiloInsta.margen(0, 6, 20, 0));
-        barra.add(logo);
-
-        agregarItem(barra, "Inicio",         () -> { panelTimeline.recargar(); mostrar("TIMELINE"); });
-        botonInbox = agregarItem(barra, "Inbox", () -> { panelInbox.recargar(); mostrar("INBOX"); });
-        agregarItem(barra, "Buscar",         () -> mostrar("BUSCAR_PERFIL"));
-        agregarItem(barra, "Explorar tags",  () -> mostrar("BUSCAR_HASHTAG"));
-        agregarItem(barra, "Interacciones",  () -> { panelInteracciones.recargar(); mostrar("INTERACCIONES"); });
-        agregarItem(barra, "Crear",          () -> { panelCargar.recargar(); mostrar("CARGAR"); });
-        agregarItem(barra, "Perfil",         () -> { panelPerfil.mostrarMio(); mostrar("PERFIL"); });
-        agregarItem(barra, "Editar perfil",  () -> { panelEditar.recargar(); mostrar("EDITAR"); });
-
-        barra.add(Box.createVerticalGlue());
-
-        JButton salir = agregarItem(barra, "Cerrar sesion", () -> cerrarSesion(ventana));
-        salir.setForeground(EstiloInsta.ROJO);
-
-        return barra;
-    }
-
-    private JButton agregarItem(JPanel barra, String texto, Runnable accion) {
-        JButton item = new JButton(texto);
-        item.setHorizontalAlignment(SwingConstants.LEFT);
-        item.setFont(EstiloInsta.NORMAL);
-        item.setForeground(EstiloInsta.TEXTO);
-        item.setBackground(EstiloInsta.BLANCO);
-        item.setBorder(EstiloInsta.margen(10, 6, 10, 6));
-        item.setContentAreaFilled(false);
-        item.setOpaque(true);
-        item.setFocusPainted(false);
-        item.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        item.setAlignmentX(LEFT_ALIGNMENT);
-        item.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        item.addActionListener(e -> {
-            marcarActivo(item);
-            accion.run();
-        });
-        barra.add(item);
-        botonesMenu.add(item);
-        return item;
-    }
-
-    private void marcarActivo(JButton item) {
-        if (botonActivo != null) {
-            botonActivo.setFont(EstiloInsta.NORMAL);
-            botonActivo.setBackground(EstiloInsta.BLANCO);
-        }
-        item.setFont(EstiloInsta.FUERTE);
-        item.setBackground(new Color(240, 240, 240));
-        botonActivo = item;
-    }
-
-    private void cerrarSesion(VentanaPrincipal ventana) {
-        int op = JOptionPane.showConfirmDialog(this, "Cerrar sesion?",
-                "Confirmar", JOptionPane.YES_NO_OPTION);
-        if (op == JOptionPane.YES_OPTION) {
-            ventana.mostrarLogin();
-        }
-    }
-
-    // -----------------------------------------------------------------
-
-    private void mostrar(String carta) {
+    /** Cambia de vista y marca el icono de la barra inferior (o -1 si ninguno). */
+    private void irA(String carta, int indiceNav) {
         cartas.show(contenedor, carta);
+        if (indiceNav >= 0 && indiceNav < navBotones.length) {
+            navActivo = indiceNav;
+        }
+        for (int i = 0; i < navBotones.length; i++) {
+            String ic = (String) navBotones[i].getClientProperty("icono");
+            navBotones[i].setIcon(IconosInsta.icono(ic, 26, i == navActivo));
+        }
     }
 
-    /** La usan Buscar Profile e Interacciones para abrir el perfil de otro. */
+    /** La usan Buscar e Interacciones para abrir el perfil de otro. */
     public void verPerfilDe(String username) {
         panelPerfil.mostrarPerfilDe(username);
-        mostrar("PERFIL");
+        irA("PERFIL", 4);
     }
 
     /** La usa el boton "Editar perfil" del propio perfil. */
     public void irAEditarPerfil() {
         panelEditar.recargar();
-        mostrar("EDITAR");
+        irA("EDITAR", -1);
+    }
+
+    /** La usa el boton "Volver" de Editar perfil. */
+    public void volverAlPerfil() {
+        panelPerfil.mostrarMio();
+        irA("PERFIL", 4);
+    }
+
+    /** La usa el boton "Cerrar sesion" del propio perfil. */
+    public void cerrarSesion() {
+        int op = JOptionPane.showConfirmDialog(this, "Cerrar sesion?",
+                "Confirmar", JOptionPane.YES_NO_OPTION);
+        if (op == JOptionPane.YES_OPTION) {
+            ventana.mostrarLogin();
+        }
     }
 }

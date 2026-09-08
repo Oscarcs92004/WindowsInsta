@@ -214,7 +214,7 @@ public class PanelEscritorio extends JPanel {
         JInternalFrame frame = new JInternalFrame(titulo, true, true, true, true);
         frame.setContentPane(contenido);
         if ("INSTA+".equals(titulo)) {
-            frame.setSize(880, 580);
+            frame.setSize(390, 760);        // formato de telefono (vertical)
         } else {
             frame.setSize(600, 430);
         }

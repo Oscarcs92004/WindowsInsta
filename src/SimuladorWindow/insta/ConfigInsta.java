@@ -33,7 +33,7 @@ public final class ConfigInsta {
     private static final int ANCHO_EN_PANTALLA = 260;
 
     /** Ancho de la imagen dentro de una publicacion del feed (como Instagram). */
-    private static final int ANCHO_EN_FEED = 460;
+    private static final int ANCHO_EN_FEED = 330;
 
     /** Imagen escalada al tamaño que corresponde a su orientacion (lista chica). */
     public static ImageIcon escalarParaVista(File imagen) {
