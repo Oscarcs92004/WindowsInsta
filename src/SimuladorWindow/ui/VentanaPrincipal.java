@@ -23,9 +23,13 @@ public class VentanaPrincipal extends JFrame {
         this.insta = insta;
 
         setTitle("Simulador Windows");
-        setSize(1920, 1080);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);   // centrada en la pantalla
+
+        // Ocupar toda la pantalla PERO sin taparse con la barra de tareas de
+        // Windows, para que se vea nuestra propia barra de tareas de abajo.
+        Rectangle libre = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                .getMaximumWindowBounds();
+        setBounds(libre);
 
         Image icono = Iconos.imagen("file.png");
         if (icono != null) {
