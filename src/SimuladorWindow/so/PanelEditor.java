@@ -6,6 +6,7 @@ import SimuladorWindow.persistencia.EdtException;
 import SimuladorWindow.persistencia.PersistenciaEDT;
 import SimuladorWindow.persistencia.Tabla;
 import SimuladorWindow.so.editor.*;
+import SimuladorWindow.ui.Estilo;
 
 import javax.swing.border.EmptyBorder;
 import javax.swing.*;
@@ -270,7 +271,12 @@ public class PanelEditor extends JPanel {
         textPane.setForeground(Color.BLACK);
         textPane.setCaretColor(Color.BLACK);
         JScrollPane scrollPane = new JScrollPane(textPane);
-        add(scrollPane, BorderLayout.CENTER);
+        JPanel marco = new JPanel(new BorderLayout());
+        marco.setBackground(Estilo.PANEL);
+        marco.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+        scrollPane.setBorder(Estilo.hundido());
+        marco.add(scrollPane, BorderLayout.CENTER);
+        add(marco, BorderLayout.CENTER);
 
         textPane.getDocument().addUndoableEditListener(gestorDeshacer);
 
@@ -295,8 +301,12 @@ public class PanelEditor extends JPanel {
     private void construirEstado() {
         JPanel panelEstado = new JPanel(new BorderLayout());
 
-        panelEstado.setBorder(new EmptyBorder(3, 8, 3, 8));
+        panelEstado.setBackground(Estilo.PANEL);
+        panelEstado.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, Estilo.SOMBRA),
+                new EmptyBorder(3, 8, 3, 8)));
 
+        etiquetaEstado.setFont(Estilo.NORMAL);
         panelEstado.add(etiquetaEstado, BorderLayout.WEST);
 
         add(panelEstado, BorderLayout.SOUTH);

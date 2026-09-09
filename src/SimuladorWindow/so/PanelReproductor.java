@@ -1,6 +1,7 @@
 package SimuladorWindow.so;
 
 import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.ui.Estilo;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,17 +32,35 @@ public class PanelReproductor extends JPanel {
 
     public PanelReproductor(Usuario usuarioActual, File carpetaRaiz) {
         setLayout(new BorderLayout());
+        setBackground(Estilo.PANEL);
 
-        add(new JScrollPane(lista), BorderLayout.WEST);
+        lista.setFont(Estilo.NORMAL);
+        JScrollPane scrollLista = new JScrollPane(lista);
+        scrollLista.setBorder(Estilo.hundido());
+        scrollLista.setPreferredSize(new Dimension(180, 10));
+        add(scrollLista, BorderLayout.WEST);
 
-        JPanel centro = new JPanel(new BorderLayout());
-        centro.add(caratula, BorderLayout.CENTER);
+        caratula.setOpaque(true);
+        caratula.setBackground(Color.WHITE);
+        caratula.setBorder(Estilo.hundido());
+        caratula.setFont(Estilo.NORMAL);
+
         descripcion.setEditable(false);
-        centro.add(new JScrollPane(descripcion), BorderLayout.SOUTH);
+        descripcion.setFont(Estilo.MONOESPACIADA);
+        JScrollPane scrollDesc = new JScrollPane(descripcion);
+        scrollDesc.setBorder(Estilo.hundido());
+
+        JPanel centro = new JPanel(new BorderLayout(4, 4));
+        centro.setBackground(Estilo.PANEL);
+        centro.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        centro.add(caratula, BorderLayout.CENTER);
+        centro.add(scrollDesc, BorderLayout.SOUTH);
         add(centro, BorderLayout.CENTER);
 
         JToolBar barra = new JToolBar();
         barra.setFloatable(false);
+        barra.setRollover(true);
+        barra.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Estilo.SOMBRA));
 
         JButton btnAgregar = new JButton("Agregar cancion");
         JButton btnPlay = new JButton("Play");
