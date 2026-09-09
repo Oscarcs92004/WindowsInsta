@@ -136,7 +136,6 @@ public class PanelConsola extends JPanel {
 
         salida.append("Consola de Simulador Windows.\n");
         salida.append("Escriba Help para ver los comandos.\n\n");
-        salida.append(fs.rutaActual() + "> ");
         mostrarPrompt();
 
         // Cuando el usuario pulsa Enter en la caja de entrada.
