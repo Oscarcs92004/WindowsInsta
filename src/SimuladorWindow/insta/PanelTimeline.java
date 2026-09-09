@@ -24,7 +24,7 @@ import java.util.Set;
  */
 public class PanelTimeline extends JPanel {
 
-    private static final int ANCHO_FEED = 360;
+    private static final int ANCHO_FEED = 380;
 
     private final InstaServicio insta;
     private final UsuarioServicio usuarios;
@@ -51,6 +51,7 @@ public class PanelTimeline extends JPanel {
         c.gridx = 0;
         c.gridy = 0;
         c.anchor = GridBagConstraints.PAGE_START;
+        c.fill = GridBagConstraints.HORIZONTAL;   // el feed ocupa todo el ancho
         c.weightx = 1;
         c.weighty = 1;
         add(feed, c);
@@ -104,8 +105,7 @@ public class PanelTimeline extends JPanel {
         JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBackground(EstiloInsta.BLANCO);
-        card.setAlignmentX(CENTER_ALIGNMENT);
-        card.setMaximumSize(new Dimension(ANCHO_FEED, Integer.MAX_VALUE));
+        card.setAlignmentX(LEFT_ALIGNMENT);
         card.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, EstiloInsta.BORDE));
 
         card.add(cabeceraPublicacion(p));
@@ -120,12 +120,17 @@ public class PanelTimeline extends JPanel {
                 imagen.setText("[imagen no disponible]");
             }
             imagen.setAlignmentX(LEFT_ALIGNMENT);
+            imagen.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
             card.add(imagen);
         }
 
         card.add(filaAcciones(p));
         card.add(pie(p));
-        card.add(Box.createVerticalStrut(4));
+        card.add(Box.createVerticalStrut(6));
+
+        // El feed ocupa todo el ancho; la tarjeta no debe estirarse a lo alto.
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE,
+                card.getPreferredSize().height));
         return card;
     }
 
@@ -157,7 +162,7 @@ public class PanelTimeline extends JPanel {
         video.setBackground(new Color(20, 20, 20));
         video.setAlignmentX(LEFT_ALIGNMENT);
         video.setPreferredSize(new Dimension(ANCHO_FEED, 200));
-        video.setMaximumSize(new Dimension(ANCHO_FEED, 200));
+        video.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
 
         JLabel play = new JLabel("▶");     // triangulo "play"
         play.setForeground(Color.WHITE);
@@ -231,27 +236,50 @@ public class PanelTimeline extends JPanel {
     }
 
     private JComponent pie(Publicacion p) {
-        JPanel panel = new JPanel(new BorderLayout());
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setOpaque(false);
-        panel.setBorder(EstiloInsta.margen(0, 12, 12, 12));
+        panel.setBorder(EstiloInsta.margen(2, 12, 12, 12));
         panel.setAlignmentX(LEFT_ALIGNMENT);
 
-        if (meGusta.contains(p)) {
-            JLabel likes = new JLabel("A ti te gusta esto");
-            likes.setFont(EstiloInsta.FUERTE);
-            likes.setForeground(EstiloInsta.TEXTO);
-            panel.add(likes, BorderLayout.NORTH);
-        }
+        JLabel likes = new JLabel(meGusta.contains(p)
+                ? "Te gusta y a alguien mas"
+                : "Se el primero en indicar que te gusta");
+        likes.setFont(EstiloInsta.FUERTE);
+        likes.setForeground(EstiloInsta.TEXTO);
+        likes.setAlignmentX(LEFT_ALIGNMENT);
+        panel.add(likes);
+        panel.add(Box.createVerticalStrut(3));
 
-        JTextArea texto = new JTextArea();
-        texto.setEditable(false);
-        texto.setOpaque(false);
-        texto.setLineWrap(true);
-        texto.setWrapStyleWord(true);
+        // El pie de foto: el usuario en negrita y a continuacion el texto,
+        // igual que Instagram. Se usa una etiqueta HTML con ancho fijo para
+        // que el texto largo baje de linea en vez de cortarse.
+        JLabel texto = new JLabel("<html><div style='width:" + (ANCHO_FEED - 30) + "px'>"
+                + "<b>" + escaparHtml(p.getAutor()) + "</b> "
+                + resaltar(escaparHtml(p.getTexto())) + "</div></html>");
         texto.setFont(EstiloInsta.NORMAL);
         texto.setForeground(EstiloInsta.TEXTO);
-        texto.setText(p.getAutor() + "  " + p.getTexto());
-        panel.add(texto, BorderLayout.CENTER);
+        texto.setAlignmentX(LEFT_ALIGNMENT);
+        panel.add(texto);
         return panel;
+    }
+
+    /** Escapa los caracteres que romperian el HTML de una etiqueta. */
+    private static String escaparHtml(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    /** Pinta de azul los #hashtags y las @menciones, como Instagram. */
+    private static String resaltar(String texto) {
+        StringBuilder sb = new StringBuilder();
+        for (String palabra : texto.split(" ")) {
+            if (palabra.startsWith("#") || palabra.startsWith("@")) {
+                sb.append("<font color='#0095F6'>").append(palabra).append("</font>");
+            } else {
+                sb.append(palabra);
+            }
+            sb.append(' ');
+        }
+        return sb.toString().trim();
     }
 }
