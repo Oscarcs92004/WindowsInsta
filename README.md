@@ -1,9 +1,9 @@
-# Simulador de Sistema Operativo (Mini-Windows) + INSTA+
+# Windows 98 + Instagram
 
 Proyecto II de Programación II. Una aplicación de escritorio en Java + Swing que
-simula un sistema operativo (explorador de archivos, editor de texto con formato,
-visor de imágenes, consola de comandos y reproductor de música) y que además
-integra INSTA+, una red social estilo Instagram que guarda todo en archivos
+imita Windows 98 (explorador de archivos, editor de texto con formato, visor de
+imágenes, consola de comandos y reproductor de música) y que además integra
+Instagram, una red social clon de Instagram que guarda todo en archivos
 binarios.
 
 ## Qué necesitas
@@ -37,7 +37,10 @@ publicaciones, mensajes...). No se sube a git.
 ## Usuario administrador
 
 La primera vez que arranca se crea el usuario `admin` con contraseña `admin`.
-El administrador puede crear usuarios y ver las carpetas de todos.
+Las cuentas de Windows 98 solo las crea el administrador: al iniciar sesión como
+`admin`, en el menú **Inicio → Crear usuario** se abre el formulario donde se
+elige el nombre, la contraseña y el **tipo de cuenta** (estándar o
+administrador). En la pantalla de login ya no hay botón de "crear cuenta".
 
 ## Servidor de sockets (opcional)
 

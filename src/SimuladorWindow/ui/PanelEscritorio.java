@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 /**
- * El escritorio de Mini-Windows: imita un sistema operativo real.
+ * El escritorio de Windows 98: imita un sistema operativo real.
  *
  *  - Al centro un JDesktopPane (el "fondo de pantalla") con iconos.
  *  - Cada herramienta se abre como una ventana interna (JInternalFrame) que

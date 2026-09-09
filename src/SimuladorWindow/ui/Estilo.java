@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * La paleta, las fuentes y las piezas visuales de Mini-Windows en un solo lugar.
+ * La paleta, las fuentes y las piezas visuales de Windows 98 en un solo lugar.
  *
  * El sistema imita el aspecto de Windows 98: superficies gris "hueso", escritorio
  * verde-azulado (teal), barras de titulo con degradado azul y letra pequena
@@ -160,6 +160,33 @@ public final class Estilo {
                 relieve(),
                 BorderFactory.createEmptyBorder(4, 14, 4, 14)));
         return b;
+    }
+
+    /**
+     * Envuelve un campo de contrasena (ya con estilo de {@link #aplicarCampo})
+     * junto a un boton "Mostrar / Ocultar" que deja ver o esconde lo que se
+     * escribe.
+     */
+    public static JComponent campoClaveConToggle(JPasswordField clave) {
+        final char eco = clave.getEchoChar();
+
+        JToggleButton ver = new JToggleButton("Mostrar");
+        ver.setFont(NORMAL);
+        ver.setFocusable(false);
+        ver.setBackground(PANEL);
+        ver.setBorder(BorderFactory.createCompoundBorder(
+                relieve(), BorderFactory.createEmptyBorder(2, 8, 2, 8)));
+        ver.addActionListener(e -> {
+            boolean visible = ver.isSelected();
+            clave.setEchoChar(visible ? (char) 0 : eco);
+            ver.setText(visible ? "Ocultar" : "Mostrar");
+        });
+
+        JPanel fila = new JPanel(new BorderLayout(4, 0));
+        fila.setOpaque(false);
+        fila.add(clave, BorderLayout.CENTER);
+        fila.add(ver, BorderLayout.EAST);
+        return fila;
     }
 
     // ------------------------------------------------------------------

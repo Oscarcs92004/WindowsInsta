@@ -22,7 +22,7 @@ public class VentanaPrincipal extends JFrame {
         this.servicio = servicio;
         this.insta = insta;
 
-        setTitle("Simulador Windows");
+        setTitle("Windows 98");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         // Ocupar toda la pantalla PERO sin taparse con la barra de tareas de
