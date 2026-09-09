@@ -14,8 +14,10 @@ import java.awt.*;
  * escritorio teal, con barra de titulo de degradado azul, el dibujo de una
  * llave dorada a la izquierda, los campos hundidos y los botones con relieve.
  *
- * El login siempre intenta primero por sockets contra el Servidor (Pilar 4).
- * Si el servidor no esta encendido, se hace en local automaticamente.
+ * Aqui solo se inicia sesion: las cuentas las crea el administrador desde el
+ * menu Inicio, no hay boton de "crear cuenta". El login siempre intenta primero
+ * por sockets contra el Servidor (Pilar 4); si el servidor no esta encendido,
+ * se hace en local automaticamente.
  */
 public class PanelLogin extends JPanel {
 
@@ -29,8 +31,9 @@ public class PanelLogin extends JPanel {
         Estilo.aplicarCampo(txtClave);
 
         JButton btnAceptar = Estilo.boton("Aceptar");
-        JButton btnCrear = Estilo.boton("Crear cuenta");
-        igualarAncho(btnAceptar, btnCrear);
+        btnAceptar.setPreferredSize(new Dimension(
+                Math.max(90, btnAceptar.getPreferredSize().width),
+                btnAceptar.getPreferredSize().height));
 
         // --- El "dialogo" que flota sobre el escritorio --------------------
         JPanel dialogo = new JPanel(new BorderLayout());
@@ -38,10 +41,9 @@ public class PanelLogin extends JPanel {
         dialogo.setBorder(BorderFactory.createCompoundBorder(
                 Estilo.bordeSombra(6), Estilo.ventana()));
 
-        dialogo.add(Estilo.barraTitulo("Iniciar la sesion en Simulador Windows",
+        dialogo.add(Estilo.barraTitulo("Iniciar la sesion en Windows 98",
                 Estilo.iconoWindows(16)), BorderLayout.NORTH);
-        dialogo.add(cuerpo(txtUsuario, txtClave, btnAceptar, btnCrear),
-                BorderLayout.CENTER);
+        dialogo.add(cuerpo(txtUsuario, txtClave, btnAceptar), BorderLayout.CENTER);
 
         add(dialogo, new GridBagConstraints());
 
@@ -53,7 +55,6 @@ public class PanelLogin extends JPanel {
         });
         txtUsuario.addActionListener(e -> btnAceptar.doClick());
         txtClave.addActionListener(e -> btnAceptar.doClick());
-        btnCrear.addActionListener(e -> ventana.mostrarRegistro());
 
         // El cursor arranca en el campo de usuario.
         SwingUtilities.invokeLater(txtUsuario::requestFocusInWindow);
@@ -64,7 +65,7 @@ public class PanelLogin extends JPanel {
     // -----------------------------------------------------------------
 
     private JComponent cuerpo(JTextField usuario, JPasswordField clave,
-                              JButton aceptar, JButton crear) {
+                              JButton aceptar) {
         JPanel cuerpo = new JPanel(new BorderLayout(16, 0));
         cuerpo.setOpaque(false);
         cuerpo.setBorder(BorderFactory.createEmptyBorder(18, 18, 14, 18));
@@ -102,7 +103,6 @@ public class PanelLogin extends JPanel {
         botones.setAlignmentX(LEFT_ALIGNMENT);
         botones.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
         botones.add(aceptar);
-        botones.add(crear);
         centro.add(botones);
 
         cuerpo.add(centro, BorderLayout.CENTER);
@@ -128,7 +128,7 @@ public class PanelLogin extends JPanel {
         form.add(etiqueta("Contrasena:"), c);
         c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1;
         c.insets = new Insets(3, 6, 3, 0);
-        form.add(clave, c);
+        form.add(Estilo.campoClaveConToggle(clave), c);
 
         return form;
     }
@@ -137,20 +137,6 @@ public class PanelLogin extends JPanel {
         JLabel l = new JLabel(texto);
         l.setFont(Estilo.NORMAL);
         return l;
-    }
-
-    /** Deja los botones del mismo ancho (el del texto mas largo, minimo 90 px). */
-    private void igualarAncho(JButton... botones) {
-        int ancho = 90;
-        int alto = 0;
-        for (JButton b : botones) {
-            ancho = Math.max(ancho, b.getPreferredSize().width);
-            alto = Math.max(alto, b.getPreferredSize().height);
-        }
-        Dimension d = new Dimension(ancho, alto);
-        for (JButton b : botones) {
-            b.setPreferredSize(d);
-        }
     }
 
     /** El dibujo de la llave dorada sobre una placa azul, como el logon de Windows 98. */
@@ -235,7 +221,7 @@ public class PanelLogin extends JPanel {
         } else if (respuesta.contains("desactivada")) {
             JOptionPane.showMessageDialog(this, "La cuenta esta desactivada.");
         } else {
-            ofrecerRegistro(ventana);
+            error();
         }
     }
 
@@ -244,7 +230,7 @@ public class PanelLogin extends JPanel {
         try {
             Usuario u = servicio.login(usuario, clave);
             if (u == null) {
-                ofrecerRegistro(ventana);
+                error();
             } else {
                 ventana.mostrarEscritorio(u);
             }
@@ -253,13 +239,9 @@ public class PanelLogin extends JPanel {
         }
     }
 
-    private void ofrecerRegistro(VentanaPrincipal ventana) {
-        int op = JOptionPane.showConfirmDialog(this,
-                "Usuario o contrasena incorrectos.\n"
-                + "Quieres crear una cuenta nueva?",
-                "Error", JOptionPane.YES_NO_OPTION);
-        if (op == JOptionPane.YES_OPTION) {
-            ventana.mostrarRegistro();
-        }
+    private void error() {
+        JOptionPane.showMessageDialog(this,
+                "Usuario o contrasena incorrectos.",
+                "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
