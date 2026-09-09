@@ -7,7 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * INSTA+ como una app de telefono (enunciado 4.1 y 4.4, MODO_MOBILE):
+ * Instagram como una app de telefono (enunciado 4.1 y 4.4, MODO_MOBILE):
  * una sola pantalla vertical con la cabecera "Instagram" arriba, el contenido
  * en el centro (CardLayout, una vista a la vez, sin ventanas nuevas) y la
  * barra de navegacion con iconos abajo, igual que la app real.
@@ -18,7 +18,7 @@ public class PanelInsta extends JPanel {
     private final JPanel contenedor = new JPanel(cartas);
     private final Runnable alCerrarSesion;
 
-    /** Mientras esta sesion de INSTA+ este activa, el hilo de avisos corre. */
+    /** Mientras esta sesion de Instagram este activa, el hilo de avisos corre. */
     private volatile boolean sesionActiva = true;
 
     /** Icono de mensajes de la cabecera; el hilo le pone el numero de no leidos. */
@@ -208,9 +208,9 @@ public class PanelInsta extends JPanel {
     }
 
     /** La usa el boton "Cerrar sesion" del propio perfil: vuelve al login de
-     *  INSTA+ (no cierra la sesion de Windows). */
+     *  Instagram (no cierra la sesion de Windows). */
     public void cerrarSesion() {
-        int op = JOptionPane.showConfirmDialog(this, "Cerrar sesion de INSTA+?",
+        int op = JOptionPane.showConfirmDialog(this, "Cerrar sesion de Instagram?",
                 "Confirmar", JOptionPane.YES_NO_OPTION);
         if (op == JOptionPane.YES_OPTION) {
             sesionActiva = false;         // corta el hilo de avisos

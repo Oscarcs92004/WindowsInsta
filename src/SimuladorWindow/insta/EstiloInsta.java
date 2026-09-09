@@ -10,7 +10,7 @@ import java.io.File;
 
 /**
  * Colores, fuentes y componentes con el aspecto de Instagram, en un solo
- * lugar, para que INSTA+ se vea parecido a la app real.
+ * lugar, para que la app se vea parecida a Instagram real.
  *
  * Es una clase de solo metodos estaticos.
  */
@@ -192,6 +192,38 @@ public final class EstiloInsta {
 
     public static Border margen(int arriba, int izq, int abajo, int der) {
         return BorderFactory.createEmptyBorder(arriba, izq, abajo, der);
+    }
+
+    // ------------------------------------------------------------------
+    //  Icono de la app para el escritorio de Windows 98
+    // ------------------------------------------------------------------
+
+    /**
+     * Un cuadrado redondeado con el degradado de Instagram (amarillo -> rosa ->
+     * morado) y el dibujo de una camara en blanco, como el icono real de la app.
+     */
+    public static ImageIcon iconoApp(int tam) {
+        BufferedImage img = new BufferedImage(tam, tam, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = img.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
+        int r = Math.max(4, tam / 4);
+        g.setPaint(new GradientPaint(0, tam, new Color(254, 218, 117),
+                tam, 0, new Color(129, 52, 175)));
+        g.fillRoundRect(0, 0, tam - 1, tam - 1, r, r);
+
+        g.setColor(Color.WHITE);
+        g.setStroke(new BasicStroke(Math.max(1.5f, tam / 12f)));
+        int m = tam / 5;
+        g.drawRoundRect(m, m, tam - 2 * m, tam - 2 * m, tam / 5, tam / 5);
+        int c = tam / 4;
+        g.drawOval((tam - c) / 2, (tam - c) / 2, c, c);
+        int p = Math.max(2, tam / 12);
+        g.fillOval(tam - m - p - 1, m + 2, p, p);
+
+        g.dispose();
+        return new ImageIcon(img);
     }
 
     // ------------------------------------------------------------------

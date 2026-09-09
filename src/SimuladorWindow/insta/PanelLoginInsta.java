@@ -12,10 +12,10 @@ import java.io.File;
 import java.util.function.Consumer;
 
 /**
- * Login y registro de INSTA+ (enunciado 4.2), con el aspecto del login de
- * Instagram. Las cuentas viven en users.ins, aparte de las de Mini-Windows,
+ * Login y registro de Instagram (enunciado 4.2), con el aspecto del login de
+ * Instagram real. Las cuentas viven en users.ins, aparte de las de Windows 98,
  * asi que en una misma sesion de Windows se pueden usar dos cuentas de
- * INSTA+ distintas: solo hay que cerrar sesion y entrar con la otra.
+ * Instagram distintas: solo hay que cerrar sesion y entrar con la otra.
  */
 public class PanelLoginInsta extends JPanel {
 

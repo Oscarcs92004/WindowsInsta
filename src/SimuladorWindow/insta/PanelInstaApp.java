@@ -7,12 +7,12 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * La ventana de INSTA+ dentro de Mini-Windows.
+ * La ventana de Instagram dentro de Windows 98.
  *
- * Primero muestra el login de INSTA+ (cuentas en users.ins, aparte de las de
+ * Primero muestra el login de Instagram (cuentas en users.ins, aparte de las de
  * Windows). Al entrar, muestra la app (PanelInsta) con esa cuenta. Al cerrar
  * sesion vuelve al login, sin tocar la sesion de Windows, asi que se puede
- * entrar con otra cuenta de INSTA+ distinta.
+ * entrar con otra cuenta de Instagram distinta.
  */
 public class PanelInstaApp extends JPanel {
 

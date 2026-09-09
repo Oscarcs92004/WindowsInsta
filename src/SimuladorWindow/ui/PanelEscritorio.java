@@ -1,5 +1,6 @@
 package SimuladorWindow.ui;
 
+import SimuladorWindow.insta.EstiloInsta;
 import SimuladorWindow.insta.InstaServicio;
 import SimuladorWindow.insta.PanelInstaApp;
 import SimuladorWindow.modelo.Rol;
@@ -85,7 +86,7 @@ public class PanelEscritorio extends JPanel {
         apps.put("Visor de imagenes",() -> new PanelVisor(usuarioActual, carpetaRaiz));
         apps.put("Consola",          () -> new PanelConsola(usuarioActual, carpetaRaiz));
         apps.put("Reproductor",      () -> new PanelReproductor(usuarioActual, carpetaRaiz));
-        apps.put("INSTA+",           () -> new PanelInstaApp(insta));
+        apps.put("Instagram",        () -> new PanelInstaApp(insta));
         return apps;
     }
 
@@ -97,9 +98,16 @@ public class PanelEscritorio extends JPanel {
             case "Visor de imagenes": return "camera.png";
             case "Consola":           return "console.png";
             case "Reproductor":       return "musica.png";
-            case "INSTA+":            return "camera.png";
             default:                  return null;
         }
+    }
+
+    /** El icono de una app: dibujado para Instagram, de archivo para el resto. */
+    private static ImageIcon iconoApp(String app, int tam) {
+        if ("Instagram".equals(app)) {
+            return EstiloInsta.iconoApp(tam);
+        }
+        return Iconos.cargar(archivoIcono(app), tam);
     }
 
     // ------------------------------------------------------------------
@@ -127,7 +135,7 @@ public class PanelEscritorio extends JPanel {
     private JComponent iconoEscritorio(String nombre, Supplier<JComponent> fabrica) {
         JLabel imagen = new JLabel();
         imagen.setAlignmentX(Component.CENTER_ALIGNMENT);
-        ImageIcon img = Iconos.cargar(archivoIcono(nombre), Iconos.GRANDE);
+        ImageIcon img = iconoApp(nombre, Iconos.GRANDE);
         if (img != null) {
             imagen.setIcon(img);
         }
@@ -248,7 +256,7 @@ public class PanelEscritorio extends JPanel {
             String nombre = app.getKey();
             Supplier<JComponent> fabrica = app.getValue();
             JMenuItem item = menu.add(nombre);
-            ImageIcon img = Iconos.cargar(archivoIcono(nombre), Iconos.PEQUENO);
+            ImageIcon img = iconoApp(nombre, Iconos.PEQUENO);
             if (img != null) {
                 item.setIcon(img);
             }
@@ -278,11 +286,11 @@ public class PanelEscritorio extends JPanel {
     // ------------------------------------------------------------------
 
     private void abrirApp(String titulo, JComponent contenido) {
-        ImageIcon icono = Iconos.cargar(archivoIcono(titulo), Iconos.PEQUENO);
+        ImageIcon icono = iconoApp(titulo, Iconos.PEQUENO);
 
         JInternalFrame frame = new JInternalFrame(titulo, true, true, true, true);
         frame.setContentPane(contenido);
-        if ("INSTA+".equals(titulo)) {
+        if ("Instagram".equals(titulo)) {
             frame.setSize(404, 780);        // formato de telefono (vertical)
         } else {
             frame.setSize(600, 430);
