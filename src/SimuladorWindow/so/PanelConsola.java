@@ -149,7 +149,7 @@ public class PanelConsola extends JPanel {
         marco.add(entrada, BorderLayout.SOUTH);
         add(marco, BorderLayout.CENTER);
 
-        salida.append("Consola de Simulador Windows.\n");
+        salida.append("Consola de Windows 98.\n");
         salida.append("Escriba Help para ver los comandos.\n\n");
         mostrarPrompt();
 
