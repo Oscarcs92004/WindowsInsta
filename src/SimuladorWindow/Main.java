@@ -17,7 +17,7 @@ public class Main {
     public static void main(String[] args) {
         File carpetaDatos = new File("datos");
 
-        // Usuarios de Windows 98 (usuarios.sop) y, aparte, los de Instagram
+        // Usuarios de Windows 98 (usuarios.sop) y, aparte, los de INSTA+
         // (users.ins): son cuentas independientes.
         UsuarioServicio servicio = new UsuarioServicio(carpetaDatos);
         UsuarioServicio usuariosInsta = new UsuarioServicio(carpetaDatos, "users.ins");
