@@ -2,6 +2,7 @@ package SimuladorWindow.so;
 
 import SimuladorWindow.estructuras.ListaEnlazada;
 import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.ui.Estilo;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -40,27 +41,43 @@ public class PanelExplorador extends JPanel {
 
     private final JProgressBar barraProgreso;
     private final JLabel       etiquetaProgreso;
+    private final JLabel       lblConteo = new JLabel();
 
     public PanelExplorador(Usuario usuarioActual, File carpetaRaiz) {
         this.carpetaRaiz = carpetaRaiz;
 
         setLayout(new BorderLayout());
+        setBackground(Estilo.PANEL);
 
         arbol = new JTree(construirModelo());
         arbol.setCellRenderer(new RendererSoloNombre());
-        add(new JScrollPane(arbol), BorderLayout.CENTER);
+        arbol.setBackground(Color.WHITE);
+        arbol.setRowHeight(19);
+        arbol.setShowsRootHandles(true);
+        JScrollPane scroll = new JScrollPane(arbol);
+        scroll.setBorder(Estilo.hundido());
+        add(scroll, BorderLayout.CENTER);
 
         barraProgreso    = new JProgressBar(0, 100);
         etiquetaProgreso = new JLabel("  ");
+        lblConteo.setFont(Estilo.NORMAL);
+        lblConteo.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 8));
         JPanel panelSur  = new JPanel(new BorderLayout());
+        panelSur.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, Estilo.SOMBRA),
+                BorderFactory.createEmptyBorder(1, 0, 0, 0)));
         panelSur.add(etiquetaProgreso, BorderLayout.WEST);
         panelSur.add(barraProgreso,    BorderLayout.CENTER);
+        panelSur.add(lblConteo,        BorderLayout.EAST);
         barraProgreso.setVisible(false);
         etiquetaProgreso.setVisible(false);
         add(panelSur, BorderLayout.SOUTH);
+        actualizarConteo();
 
         JToolBar barra = new JToolBar();
         barra.setFloatable(false);
+        barra.setRollover(true);
+        barra.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Estilo.SOMBRA));
 
         JButton btnRefrescar = new JButton("Refrescar");
         JButton btnNueva = new JButton("Nueva carpeta");
@@ -410,6 +427,29 @@ public class PanelExplorador extends JPanel {
 
     private void refrescar() {
         arbol.setModel(construirModelo());
+        actualizarConteo();
+    }
+
+    /** Pone en la barra de estado cuantas carpetas y archivos hay en total. */
+    private void actualizarConteo() {
+        int[] cuenta = {0, 0};   // [carpetas, archivos]
+        contar(carpetaRaiz, cuenta);
+        lblConteo.setText(cuenta[0] + " carpetas, " + cuenta[1] + " archivos");
+    }
+
+    private void contar(File carpeta, int[] cuenta) {
+        File[] hijos = carpeta.listFiles();
+        if (hijos == null) {
+            return;
+        }
+        for (File hijo : hijos) {
+            if (hijo.isDirectory()) {
+                cuenta[0]++;
+                contar(hijo, cuenta);
+            } else {
+                cuenta[1]++;
+            }
+        }
     }
 
     private DefaultTreeModel construirModelo() {

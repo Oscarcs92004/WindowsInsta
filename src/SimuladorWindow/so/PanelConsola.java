@@ -2,6 +2,7 @@ package SimuladorWindow.so;
 
 import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.terminal.ControladorTerminal;
+import SimuladorWindow.ui.Estilo;
 
 import javax.swing.*;
 import java.awt.*;
@@ -119,20 +120,34 @@ public class PanelConsola extends JPanel {
         this.fs = new SistemaArchivos(carpetaRaiz);
 
         setLayout(new BorderLayout());
+        setBackground(Estilo.PANEL);
+
+        // Gris claro sobre negro, como la consola (CMD) de Windows.
+        Color letra = new Color(200, 200, 200);
 
         salida.setEditable(false);
         salida.setBackground(Color.BLACK);
-        salida.setForeground(Color.WHITE);
-        salida.setCaretColor(Color.WHITE);
-        salida.setFont(new Font("Monospaced", Font.PLAIN, 13));
+        salida.setForeground(letra);
+        salida.setCaretColor(letra);
+        salida.setFont(Estilo.MONOESPACIADA);
+        salida.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
 
         entrada.setBackground(Color.BLACK);
         entrada.setForeground(Color.WHITE);
         entrada.setCaretColor(Color.WHITE);
-        entrada.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
+        entrada.setFont(Estilo.MONOESPACIADA);
+        entrada.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(80, 80, 80)),
+                BorderFactory.createEmptyBorder(3, 6, 3, 6)));
 
-        add(new JScrollPane(salida), BorderLayout.CENTER);
-        add(entrada, BorderLayout.SOUTH);
+        JScrollPane scroll = new JScrollPane(salida);
+        scroll.setBorder(Estilo.hundido());
+        JPanel marco = new JPanel(new BorderLayout());
+        marco.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+        marco.setBackground(Estilo.PANEL);
+        marco.add(scroll, BorderLayout.CENTER);
+        marco.add(entrada, BorderLayout.SOUTH);
+        add(marco, BorderLayout.CENTER);
 
         salida.append("Consola de Simulador Windows.\n");
         salida.append("Escriba Help para ver los comandos.\n\n");

@@ -1,6 +1,7 @@
 package SimuladorWindow.so;
 
 import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.ui.Estilo;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +27,7 @@ public class PanelVisor extends JPanel {
 
     private final JLabel etiqueta = new JLabel("Elige una carpeta con imagenes.",
             SwingConstants.CENTER);
+    private final JLabel estado = new JLabel(" ");
 
     private final JButton btnCarpeta = new JButton("Elegir carpeta");
     private final JButton btnAnterior = new JButton("Anterior");
@@ -35,10 +37,28 @@ public class PanelVisor extends JPanel {
         this.carpetaRaiz = carpetaRaiz;
 
         setLayout(new BorderLayout());
-        add(new JScrollPane(etiqueta), BorderLayout.CENTER);
+        setBackground(Estilo.PANEL);
+
+        etiqueta.setOpaque(true);
+        etiqueta.setBackground(Color.WHITE);
+        JScrollPane scroll = new JScrollPane(etiqueta);
+        scroll.setBorder(Estilo.hundido());
+        JPanel centro = new JPanel(new BorderLayout());
+        centro.setBackground(Estilo.PANEL);
+        centro.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+        centro.add(scroll, BorderLayout.CENTER);
+        add(centro, BorderLayout.CENTER);
+
+        estado.setFont(Estilo.NORMAL);
+        estado.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, Estilo.SOMBRA),
+                BorderFactory.createEmptyBorder(2, 8, 2, 8)));
+        add(estado, BorderLayout.SOUTH);
 
         JToolBar barra = new JToolBar();
         barra.setFloatable(false);
+        barra.setRollover(true);
+        barra.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Estilo.SOMBRA));
 
         barra.add(btnCarpeta);
         barra.add(btnAnterior);
@@ -83,6 +103,7 @@ public class PanelVisor extends JPanel {
         File f = imagenes.get(indice);
         etiqueta.setText("");
         etiqueta.setIcon(new ImageIcon(f.getPath()));
+        estado.setText((indice + 1) + " / " + imagenes.size() + "   -   " + f.getName());
     }
 
     private class CargaCarpetaWorker extends SwingWorker<List<File>, Void> {
@@ -124,6 +145,7 @@ public class PanelVisor extends JPanel {
                 if (imagenes.isEmpty()) {
                     etiqueta.setIcon(null);
                     etiqueta.setText("No hay imagenes en esa carpeta.");
+                    estado.setText(" ");
                 } else {
                     mostrarActual();
                 }
