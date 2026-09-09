@@ -1,6 +1,7 @@
 package SimuladorWindow.ui;
 
 import SimuladorWindow.excepciones.UsernameDuplicadoException;
+import SimuladorWindow.modelo.Rol;
 import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.servicios.UsuarioServicio;
 
@@ -10,22 +11,29 @@ import java.awt.*;
 import java.io.File;
 
 /**
- * Pantalla para crear una cuenta nueva (enunciado 4.2b), con el mismo aspecto
- * de Windows 98 que el login: un cuadro gris con sombra que flota sobre el
- * escritorio, barra de titulo con degradado azul, el dibujo de una ficha de
- * usuario a la izquierda, campos hundidos y botones con relieve.
+ * Formulario para crear una cuenta nueva (enunciado 4.2b). Solo lo abre el
+ * administrador desde el menu Inicio: en la pantalla de login ya no hay boton
+ * de "crear cuenta". Aqui se elige tambien el tipo de cuenta (estandar o
+ * administrador).
+ *
+ * Mismo aspecto de Windows 98 que el login: un cuadro gris con sombra que flota
+ * sobre el escritorio, barra de titulo con degradado azul, el dibujo de una
+ * ficha de usuario a la izquierda, campos hundidos y botones con relieve.
  */
 public class PanelRegistro extends JPanel {
 
     /** Ruta de la foto de perfil elegida, o null si no eligio ninguna. */
     private String rutaFoto = null;
 
-    public PanelRegistro(VentanaPrincipal ventana, UsuarioServicio servicio) {
+    public PanelRegistro(VentanaPrincipal ventana, UsuarioServicio servicio,
+                         Usuario administrador) {
         setBackground(Estilo.FONDO_ESCRITORIO);
         setLayout(new GridBagLayout());
 
         JTextField txtNombre = new JTextField(16);
         JComboBox<String> cmbGenero = new JComboBox<>(new String[] {"M", "F"});
+        JComboBox<String> cmbTipo = new JComboBox<>(
+                new String[] {"Estandar", "Administrador"});
         JTextField txtUsuario = new JTextField(16);
         JPasswordField txtClave = new JPasswordField(16);
         JTextField txtEdad = new JTextField(4);
@@ -35,26 +43,27 @@ public class PanelRegistro extends JPanel {
         Estilo.aplicarCampo(txtEdad);
         cmbGenero.setFont(Estilo.NORMAL);
         cmbGenero.setBackground(Color.WHITE);
+        cmbTipo.setFont(Estilo.NORMAL);
+        cmbTipo.setBackground(Color.WHITE);
 
         JButton btnFoto = Estilo.boton("Elegir foto...");
         JLabel lblFoto = new JLabel("(sin foto)");
         lblFoto.setFont(Estilo.NORMAL);
         JButton btnCrear = Estilo.boton("Crear");
-        JButton btnVolver = Estilo.boton("Volver al login");
+        JButton btnVolver = Estilo.boton("Volver al escritorio");
         igualarAncho(btnCrear, btnVolver);
 
         // --- Formulario ------------------------------------------------
         JPanel form = new JPanel(new GridBagLayout());
         form.setOpaque(false);
         GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(3, 0, 3, 0);
-        c.anchor = GridBagConstraints.EAST;
 
         int fila = 0;
         agregar(form, c, fila++, "Nombre completo:", txtNombre);
         agregar(form, c, fila++, "Genero:", cmbGenero);
+        agregar(form, c, fila++, "Tipo de cuenta:", cmbTipo);
         agregar(form, c, fila++, "Nombre de usuario:", txtUsuario);
-        agregar(form, c, fila++, "Contrasena:", txtClave);
+        agregar(form, c, fila++, "Contrasena:", Estilo.campoClaveConToggle(txtClave));
         agregar(form, c, fila++, "Edad:", txtEdad);
         agregar(form, c, fila++, "Foto de perfil:", btnFoto);
         c.gridx = 1; c.gridy = fila++; c.fill = GridBagConstraints.NONE; c.weightx = 0;
@@ -83,8 +92,8 @@ public class PanelRegistro extends JPanel {
         centro.setOpaque(false);
         centro.setLayout(new BoxLayout(centro, BoxLayout.Y_AXIS));
 
-        JLabel ayuda = new JLabel("<html>Rellene sus datos para crear una cuenta<br>"
-                + "nueva en el sistema.</html>");
+        JLabel ayuda = new JLabel("<html>Solo el administrador puede crear cuentas.<br>"
+                + "Rellene los datos de la cuenta nueva.</html>");
         ayuda.setFont(Estilo.NORMAL);
         ayuda.setAlignmentX(LEFT_ALIGNMENT);
         centro.add(ayuda);
@@ -141,11 +150,13 @@ public class PanelRegistro extends JPanel {
 
                 Usuario nuevo = new Usuario(nombre, genero, usuario, clave, edad);
                 nuevo.setFotoPerfil(rutaFoto);
+                nuevo.setRol(cmbTipo.getSelectedIndex() == 1
+                        ? Rol.ADMINISTRADOR : Rol.ESTANDAR);
                 servicio.registrar(nuevo);
 
                 JOptionPane.showMessageDialog(this,
-                        "Cuenta creada. Ya puedes iniciar sesion.");
-                ventana.mostrarLogin();
+                        "Cuenta \"" + usuario + "\" creada.");
+                ventana.mostrarEscritorio(administrador);
 
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "La edad debe ser un numero.");
@@ -154,7 +165,7 @@ public class PanelRegistro extends JPanel {
             }
         });
 
-        btnVolver.addActionListener(e -> ventana.mostrarLogin());
+        btnVolver.addActionListener(e -> ventana.mostrarEscritorio(administrador));
     }
 
     // -----------------------------------------------------------------

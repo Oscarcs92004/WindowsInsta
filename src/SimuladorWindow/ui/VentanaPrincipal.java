@@ -43,8 +43,10 @@ public class VentanaPrincipal extends JFrame {
         cambiarPanel(new PanelLogin(this, servicio));
     }
 
-    public void mostrarRegistro() {
-        cambiarPanel(new PanelRegistro(this, servicio));
+    /** Formulario para crear una cuenta. Solo lo abre el administrador desde
+     *  el menu Inicio; al terminar se vuelve a su escritorio. */
+    public void mostrarRegistro(Usuario administrador) {
+        cambiarPanel(new PanelRegistro(this, servicio, administrador));
     }
 
     public void mostrarEscritorio(Usuario usuarioActual) {

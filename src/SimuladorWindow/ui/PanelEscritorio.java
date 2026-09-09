@@ -258,7 +258,8 @@ public class PanelEscritorio extends JPanel {
         menu.addSeparator();
 
         if (usuarioActual.getRol() == Rol.ADMINISTRADOR) {
-            menu.add("Crear usuario").addActionListener(e -> ventana.mostrarRegistro());
+            menu.add("Crear usuario").addActionListener(
+                    e -> ventana.mostrarRegistro(usuarioActual));
         }
 
         menu.add("Cerrar sesion").addActionListener(e -> {
