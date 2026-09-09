@@ -15,8 +15,8 @@ import java.awt.*;
  * marino, el dibujo de una llave a la izquierda, los campos hundidos y los
  * botones con relieve.
  *
- * Si se marca "Usar servidor", el login se hace por sockets contra el
- * Servidor (Pilar 4). Sin marcar, se hace en local.
+ * El login siempre intenta primero por sockets contra el Servidor (Pilar 4).
+ * Si el servidor no esta encendido, se hace en local automaticamente.
  */
 public class PanelLogin extends JPanel {
 
@@ -31,9 +31,6 @@ public class PanelLogin extends JPanel {
 
         JButton btnAceptar = boton("Aceptar");
         JButton btnCrear = boton("Crear cuenta");
-        JCheckBox chkServidor = new JCheckBox("Usar servidor (sockets)");
-        chkServidor.setOpaque(false);
-        chkServidor.setFont(Estilo.NORMAL);
 
         // --- El "dialogo" ------------------------------------------------
         JPanel dialogo = new JPanel(new BorderLayout());
@@ -46,7 +43,7 @@ public class PanelLogin extends JPanel {
         cuerpo.setOpaque(false);
         cuerpo.setBorder(BorderFactory.createEmptyBorder(14, 14, 10, 14));
         cuerpo.add(new PanelLlave(), BorderLayout.WEST);
-        cuerpo.add(formulario(txtUsuario, txtClave, chkServidor), BorderLayout.CENTER);
+        cuerpo.add(formulario(txtUsuario, txtClave), BorderLayout.CENTER);
         dialogo.add(cuerpo, BorderLayout.CENTER);
 
         JPanel botones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 8));
@@ -61,11 +58,7 @@ public class PanelLogin extends JPanel {
         btnAceptar.addActionListener(e -> {
             String usuario = txtUsuario.getText().trim();
             String clave = new String(txtClave.getPassword());
-            if (chkServidor.isSelected()) {
-                entrarPorServidor(ventana, servicio, usuario, clave);
-            } else {
-                entrarLocal(ventana, servicio, usuario, clave);
-            }
+            entrar(ventana, servicio, usuario, clave);
         });
         txtUsuario.addActionListener(e -> btnAceptar.doClick());
         txtClave.addActionListener(e -> btnAceptar.doClick());
@@ -88,8 +81,7 @@ public class PanelLogin extends JPanel {
         return barra;
     }
 
-    private JComponent formulario(JTextField usuario, JPasswordField clave,
-                                  JCheckBox servidor) {
+    private JComponent formulario(JTextField usuario, JPasswordField clave) {
         JPanel form = new JPanel(new GridBagLayout());
         form.setOpaque(false);
 
@@ -111,7 +103,6 @@ public class PanelLogin extends JPanel {
         c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; form.add(clave, c);
         c.fill = GridBagConstraints.NONE;
 
-        c.gridx = 1; c.gridy = 3; form.add(servidor, c);
         return form;
     }
 
@@ -172,8 +163,29 @@ public class PanelLogin extends JPanel {
     }
 
     // -----------------------------------------------------------------
-    //  Logica de login (igual que antes)
+    //  Logica de login
     // -----------------------------------------------------------------
+
+    /**
+     * Intenta entrar. Primero prueba por el servidor de sockets; si no
+     * responde (no esta encendido), cae en el login local.
+     */
+    private void entrar(VentanaPrincipal ventana, UsuarioServicio servicio,
+                        String usuario, String clave) {
+        String respuesta = Cliente.intentar("LOGIN;" + usuario + ";" + clave);
+
+        if (respuesta == null) {
+            entrarLocal(ventana, servicio, usuario, clave);   // servidor apagado
+            return;
+        }
+        if (respuesta.startsWith("OK")) {
+            ventana.mostrarEscritorio(servicio.buscar(usuario));
+        } else if (respuesta.contains("desactivada")) {
+            JOptionPane.showMessageDialog(this, "La cuenta esta desactivada.");
+        } else {
+            ofrecerRegistro(ventana);
+        }
+    }
 
     private void entrarLocal(VentanaPrincipal ventana, UsuarioServicio servicio,
                              String usuario, String clave) {
@@ -186,25 +198,6 @@ public class PanelLogin extends JPanel {
             }
         } catch (CuentaDesactivadaException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage());
-        }
-    }
-
-    private void entrarPorServidor(VentanaPrincipal ventana, UsuarioServicio servicio,
-                                   String usuario, String clave) {
-        String respuesta = Cliente.intentar("LOGIN;" + usuario + ";" + clave);
-
-        if (respuesta == null) {
-            JOptionPane.showMessageDialog(this,
-                    "No hay conexion con el servidor.\n"
-                    + "Arranca SimuladorWindow.red.Servidor o desmarca 'Usar servidor'.");
-            return;
-        }
-        if (respuesta.startsWith("OK")) {
-            ventana.mostrarEscritorio(servicio.buscar(usuario));
-        } else if (respuesta.contains("desactivada")) {
-            JOptionPane.showMessageDialog(this, "La cuenta esta desactivada.");
-        } else {
-            ofrecerRegistro(ventana);
         }
     }
 
