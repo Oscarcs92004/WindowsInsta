@@ -47,10 +47,14 @@ public class PanelLoginInsta extends JPanel {
         JPasswordField clave = new JPasswordField(16);
         EstiloInsta.estiloCampo(usuario);
         EstiloInsta.estiloCampo(clave);
+        EstiloInsta.placeholder(usuario, "Usuario");
+        EstiloInsta.placeholder(clave, "Contrasena");
 
         JButton entrar = EstiloInsta.botonPrimario("Entrar");
         entrar.addActionListener(e -> intentarLogin(
-                usuario.getText().trim(), new String(clave.getPassword())));
+                EstiloInsta.valorReal(usuario).trim(),
+                EstiloInsta.valorReal(clave)));
+        usuario.addActionListener(e -> entrar.doClick());
         clave.addActionListener(e -> entrar.doClick());
 
         JButton irRegistro = EstiloInsta.enlace("Crear cuenta nueva");
@@ -81,6 +85,10 @@ public class PanelLoginInsta extends JPanel {
         EstiloInsta.estiloCampo(usuario);
         EstiloInsta.estiloCampo(clave);
         EstiloInsta.estiloCampo(edad);
+        EstiloInsta.placeholder(nombre, "Nombre completo");
+        EstiloInsta.placeholder(usuario, "Nombre de usuario");
+        EstiloInsta.placeholder(clave, "Contrasena");
+        EstiloInsta.placeholder(edad, "Edad");
 
         JButton foto = EstiloInsta.botonSecundario("Elegir foto");
         JLabel fotoNom = new JLabel("(sin foto)");
@@ -96,11 +104,11 @@ public class PanelLoginInsta extends JPanel {
 
         JButton crear = EstiloInsta.botonPrimario("Registrarme");
         crear.addActionListener(e -> intentarRegistro(
-                nombre.getText().trim(),
+                EstiloInsta.valorReal(nombre).trim(),
                 genero.getSelectedItem().toString().charAt(0),
-                usuario.getText().trim(),
-                new String(clave.getPassword()),
-                edad.getText().trim()));
+                EstiloInsta.valorReal(usuario).trim(),
+                EstiloInsta.valorReal(clave),
+                EstiloInsta.valorReal(edad).trim()));
 
         JButton volver = EstiloInsta.enlace("Ya tengo cuenta");
         volver.addActionListener(e -> cartas.show(contenido, "IN"));
