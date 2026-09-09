@@ -1,9 +1,9 @@
-# Windows 98 + Instagram
+# Windows 98 + INSTA+
 
 Proyecto II de Programación II. Una aplicación de escritorio en Java + Swing que
 imita Windows 98 (explorador de archivos, editor de texto con formato, visor de
 imágenes, consola de comandos y reproductor de música) y que además integra
-Instagram, una red social clon de Instagram que guarda todo en archivos
+INSTA+, una red social con el aspecto de Instagram que guarda todo en archivos
 binarios.
 
 ## Qué necesitas

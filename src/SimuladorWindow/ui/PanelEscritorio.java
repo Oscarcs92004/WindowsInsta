@@ -86,7 +86,7 @@ public class PanelEscritorio extends JPanel {
         apps.put("Visor de imagenes",() -> new PanelVisor(usuarioActual, carpetaRaiz));
         apps.put("Consola",          () -> new PanelConsola(usuarioActual, carpetaRaiz));
         apps.put("Reproductor",      () -> new PanelReproductor(usuarioActual, carpetaRaiz));
-        apps.put("Instagram",        () -> new PanelInstaApp(insta));
+        apps.put("INSTA+",           () -> new PanelInstaApp(insta));
         return apps;
     }
 
@@ -102,9 +102,9 @@ public class PanelEscritorio extends JPanel {
         }
     }
 
-    /** El icono de una app: dibujado para Instagram, de archivo para el resto. */
+    /** El icono de una app: dibujado para INSTA+, de archivo para el resto. */
     private static ImageIcon iconoApp(String app, int tam) {
-        if ("Instagram".equals(app)) {
+        if ("INSTA+".equals(app)) {
             return EstiloInsta.iconoApp(tam);
         }
         return Iconos.cargar(archivoIcono(app), tam);
@@ -290,7 +290,7 @@ public class PanelEscritorio extends JPanel {
 
         JInternalFrame frame = new JInternalFrame(titulo, true, true, true, true);
         frame.setContentPane(contenido);
-        if ("Instagram".equals(titulo)) {
+        if ("INSTA+".equals(titulo)) {
             frame.setSize(404, 780);        // formato de telefono (vertical)
         } else {
             frame.setSize(600, 430);

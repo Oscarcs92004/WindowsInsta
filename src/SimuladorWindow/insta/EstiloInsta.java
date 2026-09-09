@@ -10,7 +10,7 @@ import java.io.File;
 
 /**
  * Colores, fuentes y componentes con el aspecto de Instagram, en un solo
- * lugar, para que la app se vea parecida a Instagram real.
+ * lugar, para que INSTA+ se vea parecido a la app real de Instagram.
  *
  * Es una clase de solo metodos estaticos.
  */
