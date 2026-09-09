@@ -355,13 +355,10 @@ public final class Estilo {
             }
         }
 
-        // Que los cuadros de dialogo (JOptionPane, JFileChooser) tambien usen
-        // la fuente pequena de Windows 98.
+        // Que los cuadros de dialogo (JOptionPane) usen la fuente pequena de
+        // Windows 98. No tocamos "Label.font" ni "Button.font" globales para no
+        // cambiar el aspecto de INSTA+, que imita a Instagram.
         UIManager.put("OptionPane.messageFont", NORMAL);
         UIManager.put("OptionPane.buttonFont", NORMAL);
-        UIManager.put("Label.font", NORMAL);
-        UIManager.put("Button.font", NORMAL);
-        UIManager.put("TextField.font", NORMAL);
-        UIManager.put("ToolTip.font", NORMAL);
     }
 }
