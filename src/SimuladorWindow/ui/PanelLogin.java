@@ -6,14 +6,13 @@ import SimuladorWindow.red.Cliente;
 import SimuladorWindow.servicios.UsuarioServicio;
 
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
 import java.awt.*;
 
 /**
  * Pantalla de inicio de sesion (enunciado 4.2a), con el aspecto del cuadro de
- * "Iniciar la sesion" de Windows 98: un dialogo gris con barra de titulo azul
- * marino, el dibujo de una llave a la izquierda, los campos hundidos y los
- * botones con relieve.
+ * "Iniciar la sesion" de Windows 98: un dialogo gris que flota sobre el
+ * escritorio teal, con barra de titulo de degradado azul, el dibujo de una
+ * llave dorada a la izquierda, los campos hundidos y los botones con relieve.
  *
  * El login siempre intenta primero por sockets contra el Servidor (Pilar 4).
  * Si el servidor no esta encendido, se hace en local automaticamente.
@@ -21,40 +20,32 @@ import java.awt.*;
 public class PanelLogin extends JPanel {
 
     public PanelLogin(VentanaPrincipal ventana, UsuarioServicio servicio) {
-        setBackground(Estilo.FONDO_ESCRITORIO);   // escritorio teal de Windows 98
+        setBackground(Estilo.FONDO_ESCRITORIO);
         setLayout(new GridBagLayout());
 
         JTextField txtUsuario = new JTextField(16);
         JPasswordField txtClave = new JPasswordField(16);
-        campoHundido(txtUsuario);
-        campoHundido(txtClave);
+        Estilo.aplicarCampo(txtUsuario);
+        Estilo.aplicarCampo(txtClave);
 
-        JButton btnAceptar = boton("Aceptar");
-        JButton btnCrear = boton("Crear cuenta");
+        JButton btnAceptar = Estilo.boton("Aceptar");
+        JButton btnCrear = Estilo.boton("Crear cuenta");
+        igualarAncho(btnAceptar, btnCrear);
 
-        // --- El "dialogo" ------------------------------------------------
+        // --- El "dialogo" que flota sobre el escritorio --------------------
         JPanel dialogo = new JPanel(new BorderLayout());
         dialogo.setBackground(Estilo.PANEL);
-        dialogo.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+        dialogo.setBorder(BorderFactory.createCompoundBorder(
+                Estilo.bordeSombra(6), Estilo.ventana()));
 
-        dialogo.add(barraTitulo("Iniciar la sesion en Simulador Windows"), BorderLayout.NORTH);
-
-        JPanel cuerpo = new JPanel(new BorderLayout(12, 0));
-        cuerpo.setOpaque(false);
-        cuerpo.setBorder(BorderFactory.createEmptyBorder(14, 14, 10, 14));
-        cuerpo.add(new PanelLlave(), BorderLayout.WEST);
-        cuerpo.add(formulario(txtUsuario, txtClave), BorderLayout.CENTER);
-        dialogo.add(cuerpo, BorderLayout.CENTER);
-
-        JPanel botones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 8));
-        botones.setOpaque(false);
-        botones.add(btnAceptar);
-        botones.add(btnCrear);
-        dialogo.add(botones, BorderLayout.SOUTH);
+        dialogo.add(Estilo.barraTitulo("Iniciar la sesion en Simulador Windows",
+                Estilo.iconoWindows(16)), BorderLayout.NORTH);
+        dialogo.add(cuerpo(txtUsuario, txtClave, btnAceptar, btnCrear),
+                BorderLayout.CENTER);
 
         add(dialogo, new GridBagConstraints());
 
-        // --- Acciones --------------------------------------------------
+        // --- Acciones -----------------------------------------------------
         btnAceptar.addActionListener(e -> {
             String usuario = txtUsuario.getText().trim();
             String clave = new String(txtClave.getPassword());
@@ -63,22 +54,59 @@ public class PanelLogin extends JPanel {
         txtUsuario.addActionListener(e -> btnAceptar.doClick());
         txtClave.addActionListener(e -> btnAceptar.doClick());
         btnCrear.addActionListener(e -> ventana.mostrarRegistro());
+
+        // El cursor arranca en el campo de usuario.
+        SwingUtilities.invokeLater(txtUsuario::requestFocusInWindow);
     }
 
     // -----------------------------------------------------------------
     //  Piezas visuales estilo Windows 98
     // -----------------------------------------------------------------
 
-    private JComponent barraTitulo(String texto) {
-        JLabel titulo = new JLabel(texto);
-        titulo.setForeground(Estilo.TEXTO_CLARO);
-        titulo.setFont(Estilo.SUBTITULO);
-        titulo.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
+    private JComponent cuerpo(JTextField usuario, JPasswordField clave,
+                              JButton aceptar, JButton crear) {
+        JPanel cuerpo = new JPanel(new BorderLayout(16, 0));
+        cuerpo.setOpaque(false);
+        cuerpo.setBorder(BorderFactory.createEmptyBorder(18, 18, 14, 18));
 
-        JPanel barra = new JPanel(new BorderLayout());
-        barra.setBackground(Estilo.ACENTO);      // azul marino
-        barra.add(titulo, BorderLayout.WEST);
-        return barra;
+        // La llave dorada, alineada arriba.
+        JPanel oeste = new JPanel(new BorderLayout());
+        oeste.setOpaque(false);
+        oeste.add(new PanelLlave(), BorderLayout.NORTH);
+        cuerpo.add(oeste, BorderLayout.WEST);
+
+        JPanel centro = new JPanel();
+        centro.setOpaque(false);
+        centro.setLayout(new BoxLayout(centro, BoxLayout.Y_AXIS));
+
+        JLabel ayuda = new JLabel("<html>Escriba su nombre de usuario y su contrasena<br>"
+                + "para iniciar la sesion en el sistema.</html>");
+        ayuda.setFont(Estilo.NORMAL);
+        ayuda.setAlignmentX(LEFT_ALIGNMENT);
+        centro.add(ayuda);
+        centro.add(Box.createVerticalStrut(12));
+
+        JComponent form = formulario(usuario, clave);
+        form.setAlignmentX(LEFT_ALIGNMENT);
+        centro.add(form);
+        centro.add(Box.createVerticalStrut(12));
+
+        JComponent sep = Estilo.separador();
+        sep.setAlignmentX(LEFT_ALIGNMENT);
+        sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2));
+        centro.add(sep);
+        centro.add(Box.createVerticalStrut(8));
+
+        JPanel botones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        botones.setOpaque(false);
+        botones.setAlignmentX(LEFT_ALIGNMENT);
+        botones.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
+        botones.add(aceptar);
+        botones.add(crear);
+        centro.add(botones);
+
+        cuerpo.add(centro, BorderLayout.CENTER);
+        return cuerpo;
     }
 
     private JComponent formulario(JTextField usuario, JPasswordField clave) {
@@ -86,22 +114,21 @@ public class PanelLogin extends JPanel {
         form.setOpaque(false);
 
         GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(3, 3, 3, 3);
-        c.anchor = GridBagConstraints.WEST;
+        c.anchor = GridBagConstraints.EAST;
+        c.insets = new Insets(3, 0, 3, 0);
 
-        JLabel ayuda = new JLabel("Escriba su nombre de usuario y su contrasena.");
-        ayuda.setFont(Estilo.NORMAL);
-        c.gridx = 0; c.gridy = 0; c.gridwidth = 2;
-        form.add(ayuda, c);
-        c.gridwidth = 1;
+        c.gridx = 0; c.gridy = 0;
+        form.add(etiqueta("Nombre de usuario:"), c);
+        c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1;
+        c.insets = new Insets(3, 6, 3, 0);
+        form.add(usuario, c);
 
-        c.gridx = 0; c.gridy = 1; form.add(etiqueta("Nombre de usuario:"), c);
-        c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; form.add(usuario, c);
-        c.fill = GridBagConstraints.NONE;
-
-        c.gridx = 0; c.gridy = 2; form.add(etiqueta("Contrasena:"), c);
-        c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; form.add(clave, c);
-        c.fill = GridBagConstraints.NONE;
+        c.gridx = 0; c.gridy = 1; c.fill = GridBagConstraints.NONE; c.weightx = 0;
+        c.insets = new Insets(3, 0, 3, 0);
+        form.add(etiqueta("Contrasena:"), c);
+        c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1;
+        c.insets = new Insets(3, 6, 3, 0);
+        form.add(clave, c);
 
         return form;
     }
@@ -112,53 +139,78 @@ public class PanelLogin extends JPanel {
         return l;
     }
 
-    private JButton boton(String texto) {
-        JButton b = new JButton(texto);
-        b.setFont(Estilo.NORMAL);
-        b.setBackground(Estilo.PANEL);
-        b.setFocusPainted(false);
-        b.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createBevelBorder(BevelBorder.RAISED),
-                BorderFactory.createEmptyBorder(3, 14, 3, 14)));
-        return b;
+    /** Deja los botones del mismo ancho (el del texto mas largo, minimo 90 px). */
+    private void igualarAncho(JButton... botones) {
+        int ancho = 90;
+        int alto = 0;
+        for (JButton b : botones) {
+            ancho = Math.max(ancho, b.getPreferredSize().width);
+            alto = Math.max(alto, b.getPreferredSize().height);
+        }
+        Dimension d = new Dimension(ancho, alto);
+        for (JButton b : botones) {
+            b.setPreferredSize(d);
+        }
     }
 
-    private void campoHundido(JTextField campo) {
-        campo.setFont(Estilo.NORMAL);
-        campo.setBackground(Color.WHITE);
-        campo.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createBevelBorder(BevelBorder.LOWERED),
-                BorderFactory.createEmptyBorder(2, 4, 2, 4)));
-    }
-
-    /** El dibujo de la llave dorada, como el del logon de Windows 98. */
+    /** El dibujo de la llave dorada sobre una placa azul, como el logon de Windows 98. */
     private static class PanelLlave extends JPanel {
+
         PanelLlave() {
-            setPreferredSize(new Dimension(64, 64));
+            setPreferredSize(new Dimension(76, 76));
             setOpaque(false);
         }
 
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            Graphics2D g2 = (Graphics2D) g;
+            Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+                    RenderingHints.VALUE_STROKE_PURE);
 
-            // Fondo azul con borde, como una "tarjeta" del logon.
-            g2.setColor(new Color(0, 0, 128));
-            g2.fillRect(2, 2, 58, 58);
-            g2.setColor(Color.WHITE);
-            g2.drawRect(2, 2, 58, 58);
+            int s = 72;
+
+            // Placa azul con relieve, como el fondo del icono del logon.
+            g2.setPaint(new GradientPaint(2, 2, new Color(0, 10, 170),
+                    s, s, new Color(0, 0, 96)));
+            g2.fillRoundRect(2, 2, s, s, 14, 14);
+            g2.setColor(new Color(130, 150, 245));
+            g2.drawRoundRect(2, 2, s - 1, s - 1, 14, 14);
+
+            // Sombra de la llave, un poco desplazada.
+            g2.translate(3, 4);
+            pintarLlave(g2, new Color(0, 0, 0, 85));
+            g2.translate(-3, -4);
 
             // La llave dorada.
-            g2.setColor(new Color(255, 204, 0));
-            g2.setStroke(new BasicStroke(5f));
-            g2.drawOval(12, 16, 18, 18);          // anillo
-            g2.drawLine(29, 27, 50, 44);          // cana
-            g2.setStroke(new BasicStroke(4f));
-            g2.drawLine(46, 40, 52, 34);          // diente 1
-            g2.drawLine(40, 34, 46, 28);          // diente 2
+            pintarLlave(g2, null);
+
+            g2.dispose();
+        }
+
+        /** Dibuja la llave. Si {@code plano} es null usa el degradado dorado. */
+        private void pintarLlave(Graphics2D g2, Color plano) {
+            if (plano != null) {
+                g2.setColor(plano);
+            } else {
+                g2.setPaint(new GradientPaint(14, 14, new Color(255, 234, 150),
+                        60, 62, new Color(196, 134, 20)));
+            }
+
+            // Anillo (la parte que se agarra).
+            g2.setStroke(new BasicStroke(7f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g2.drawOval(13, 13, 24, 24);
+
+            // Cana.
+            g2.setStroke(new BasicStroke(6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g2.drawLine(33, 33, 57, 57);
+
+            // Dientes.
+            g2.setStroke(new BasicStroke(4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g2.drawLine(52, 52, 59, 45);
+            g2.drawLine(46, 46, 52, 40);
         }
     }
 
