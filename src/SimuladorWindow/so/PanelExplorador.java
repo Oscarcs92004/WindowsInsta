@@ -20,10 +20,10 @@ import java.util.List;
 /**
  * Explorador de archivos con JTree (enunciado 3.3).
  *
- * YA FUNCIONA: mostrar el arbol de carpetas, refrescar y crear una carpeta
- * nueva dentro de la carpeta seleccionada.
- *
- * FALTA (ver los TODO de abajo): renombrar, copiar, pegar, ordenar y organizar.
+ * Funciones: mostrar el arbol de carpetas, refrescar, crear carpeta o archivo
+ * nuevo dentro de la carpeta seleccionada, renombrar, copiar, pegar, ordenar
+ * (por nombre / fecha / tipo / tamaño) y organizar la carpeta moviendo cada
+ * archivo a una subcarpeta segun su tipo.
  */
 public class PanelExplorador extends JPanel {
 
@@ -64,6 +64,7 @@ public class PanelExplorador extends JPanel {
 
         JButton btnRefrescar = new JButton("Refrescar");
         JButton btnNueva = new JButton("Nueva carpeta");
+        JButton btnNuevoArchivo = new JButton("Nuevo archivo");
         JButton btnRenombrar = new JButton("Renombrar");
         JButton btnCopiar = new JButton("Copiar");
         JButton btnPegar = new JButton("Pegar");
@@ -74,6 +75,7 @@ public class PanelExplorador extends JPanel {
 
         barra.add(btnRefrescar);
         barra.add(btnNueva);
+        barra.add(btnNuevoArchivo);
         barra.add(btnRenombrar);
         barra.add(btnCopiar);
         barra.add(btnPegar);
@@ -96,6 +98,26 @@ public class PanelExplorador extends JPanel {
                 }
                 refrescar();
             }
+        });
+
+        btnNuevoArchivo.addActionListener(e -> {
+            String nombre = JOptionPane.showInputDialog(this, "Nombre del archivo:");
+            if (nombre == null || nombre.trim().isEmpty()) {
+                return;
+            }
+            File nuevo = new File(carpetaDestino(), nombre.trim());
+            if (nuevo.exists()) {
+                JOptionPane.showMessageDialog(this, "Ya existe un archivo con ese nombre.");
+                return;
+            }
+            try {
+                if (!nuevo.createNewFile()) {
+                    JOptionPane.showMessageDialog(this, "No se pudo crear el archivo.");
+                }
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Error al crear el archivo: " + ex.getMessage());
+            }
+            refrescar();
         });
 
         // TODO (Alex) - Iteracion 3.2b: RENOMBRAR
