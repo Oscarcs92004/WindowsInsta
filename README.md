@@ -41,17 +41,16 @@ El administrador puede crear usuarios y ver las carpetas de todos.
 
 ## Servidor de sockets (opcional)
 
-Para que el login pase por la red, primero arranca el servidor en otra terminal:
+Para que el login pase por la red, arranca el servidor en otra terminal:
 
 ```
 java -cp "out;lib/jlayer-1.0.1.jar" SimuladorWindow.red.Servidor
 ```
 
-En la pantalla de login marca **"Usar servidor (sockets)"** para que el inicio
-de sesión pase por el servidor.
+El login siempre intenta primero por el servidor; si no está encendido, la
+aplicación inicia sesión en modo local automáticamente (no hay que marcar nada).
 
-Entiende los comandos `LOGIN`, `POST` y `FOLLOW`. Si el servidor no está
-encendido, la aplicación inicia sesión en modo local.
+Entiende los comandos `LOGIN`, `POST` y `FOLLOW`.
 
 ## Documentación
 
