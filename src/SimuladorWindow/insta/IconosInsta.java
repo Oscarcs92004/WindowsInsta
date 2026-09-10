@@ -125,6 +125,17 @@ public final class IconosInsta {
                 }
                 break;
             }
+            case "grid": {
+                // Cuadrícula de 3x3, como la pestaña de publicaciones del perfil.
+                double celda = s / 3;
+                for (int fx = 0; fx < 3; fx++) {
+                    for (int fy = 0; fy < 3; fy++) {
+                        g.draw(new java.awt.geom.Rectangle2D.Double(
+                                p + fx * celda, p + fy * celda, celda, celda));
+                    }
+                }
+                break;
+            }
             default:
                 break;
         }

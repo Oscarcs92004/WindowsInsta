@@ -55,7 +55,7 @@ public class PanelInsta extends JPanel {
         panelEditar        = new PanelEditarPerfil(insta, usuarios, usuarioActual, this);
 
         contenedor.setBackground(EstiloInsta.FONDO);
-        contenedor.add(envolver(panelPerfil),   "PERFIL");
+        contenedor.add(panelPerfil,             "PERFIL");        // trae su propio scroll
         contenedor.add(envolver(panelCrear),    "CARGAR");
         contenedor.add(panelTimeline,           "TIMELINE");      // trae su propio scroll
         contenedor.add(panelInteracciones,      "INTERACCIONES"); // trae su propio scroll
