@@ -353,8 +353,8 @@ public final class EstiloInsta {
         g.drawOval(0, 0, tam - 1, tam - 1);
 
         int badge = Math.round(tam * 0.34f);
-        int bx = tam - badge;
-        int by = tam - badge;
+        int bx = tam - badge - 3;                 // -3: que el aro blanco no se corte
+        int by = tam - badge - 3;
         g.setColor(BLANCO);                       // aro blanco que separa el "+" de la foto
         g.fillOval(bx - 3, by - 3, badge + 6, badge + 6);
         g.setColor(AZUL);

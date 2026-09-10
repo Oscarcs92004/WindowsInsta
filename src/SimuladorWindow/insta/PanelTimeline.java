@@ -61,10 +61,17 @@ public class PanelTimeline extends JPanel {
             hay = true;
         }
         if (!hay) {
-            JLabel vacio = new JLabel("Todavía no hay publicaciones. Crea una o sigue a alguien.");
+            // Ojo: mismo alineado (LEFT) que la fila de historias y que las
+            // tarjetas. Si este cartel va CENTER, el BoxLayout mezcla alineados
+            // y empuja la fila de historias hacia la derecha, dejándola estrecha.
+            JLabel vacio = new JLabel(
+                    "Todavía no hay publicaciones. Crea una o sigue a alguien.",
+                    SwingConstants.CENTER);
             vacio.setForeground(EstiloInsta.TEXTO_GRIS);
             vacio.setBorder(EstiloInsta.margen(24, 12, 24, 12));
-            vacio.setAlignmentX(CENTER_ALIGNMENT);
+            vacio.setAlignmentX(LEFT_ALIGNMENT);
+            vacio.setMaximumSize(new Dimension(Integer.MAX_VALUE,
+                    vacio.getPreferredSize().height));
             feed.add(vacio);
         }
         feed.add(Box.createVerticalGlue());
@@ -126,6 +133,7 @@ public class PanelTimeline extends JPanel {
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scroll.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, EstiloInsta.BORDE));
         scroll.setAlignmentX(LEFT_ALIGNMENT);
+        scroll.getViewport().setBackground(EstiloInsta.BLANCO);
         scroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, alto));
         scroll.setPreferredSize(new Dimension(ANCHO_FEED, alto));
         EstiloInsta.scrollFino(scroll);
@@ -142,8 +150,14 @@ public class PanelTimeline extends JPanel {
         circulo.setBorderPainted(false);
         circulo.setFocusPainted(false);
         circulo.setMargin(new Insets(0, 0, 0, 0));
+        // Sin borde: si no, el borde del Look&Feel deja unos pixeles de margen
+        // dentro del boton y la foto (56x56) no queda centrada respecto al
+        // nombre de abajo. Fijamos el tamano al de la imagen.
+        circulo.setBorder(BorderFactory.createEmptyBorder());
         circulo.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         circulo.setAlignmentX(CENTER_ALIGNMENT);
+        circulo.setPreferredSize(new Dimension(CIRCULO, CIRCULO));
+        circulo.setMinimumSize(new Dimension(CIRCULO, CIRCULO));
         circulo.setMaximumSize(new Dimension(CIRCULO, CIRCULO));
         circulo.addActionListener(e -> panelInsta.verPerfilDe(username));
 
