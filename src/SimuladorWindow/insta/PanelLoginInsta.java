@@ -14,8 +14,8 @@ import java.util.function.Consumer;
 /**
  * Login y registro de INSTA+ (enunciado 4.2), con el aspecto del login de
  * Instagram real. Las cuentas viven en users.ins, aparte de las de Windows 98,
- * asi que en una misma sesion de Windows se pueden usar dos cuentas de
- * INSTA+ distintas: solo hay que cerrar sesion y entrar con la otra.
+ * así que en una misma sesión de Windows se pueden usar dos cuentas de
+ * INSTA+ distintas: solo hay que cerrar sesión y entrar con la otra.
  */
 public class PanelLoginInsta extends JPanel {
 
@@ -48,7 +48,7 @@ public class PanelLoginInsta extends JPanel {
         EstiloInsta.estiloCampo(usuario);
         EstiloInsta.estiloCampo(clave);
         EstiloInsta.placeholder(usuario, "Usuario");
-        EstiloInsta.placeholder(clave, "Contrasena");
+        EstiloInsta.placeholder(clave, "Contraseña");
 
         JButton entrar = EstiloInsta.botonPrimario("Entrar");
         entrar.addActionListener(e -> intentarLogin(
@@ -57,21 +57,28 @@ public class PanelLoginInsta extends JPanel {
         usuario.addActionListener(e -> entrar.doClick());
         clave.addActionListener(e -> entrar.doClick());
 
+        JButton olvido = EstiloInsta.enlace("¿Olvidaste tu contraseña?");
+        olvido.setFont(EstiloInsta.CHICA);
+        olvido.addActionListener(e -> JOptionPane.showMessageDialog(this,
+                "Pide al administrador del sistema que te ayude a recuperarla."));
+
         JButton irRegistro = EstiloInsta.enlace("Crear cuenta nueva");
         irRegistro.addActionListener(e -> cartas.show(contenido, "UP"));
 
         JPanel col = columna();
-        col.add(logo());
-        col.add(Box.createVerticalStrut(24));
-        col.add(campo(usuario, "Usuario"));
+        col.add(EstiloInsta.wordmark(42f));
+        col.add(Box.createVerticalStrut(28));
+        col.add(anchoCompleto(usuario));
         col.add(Box.createVerticalStrut(8));
-        col.add(campo(clave, "Contrasena"));
+        col.add(anchoCompleto(clave));
         col.add(Box.createVerticalStrut(14));
         col.add(anchoCompleto(entrar));
-        col.add(Box.createVerticalStrut(18));
+        col.add(Box.createVerticalStrut(14));
+        col.add(centrado(olvido));
+        col.add(Box.createVerticalStrut(20));
         col.add(separador());
-        col.add(Box.createVerticalStrut(10));
-        col.add(irRegistro);
+        col.add(Box.createVerticalStrut(14));
+        col.add(centrado(irRegistro));
         return col;
     }
 
@@ -87,15 +94,16 @@ public class PanelLoginInsta extends JPanel {
         EstiloInsta.estiloCampo(edad);
         EstiloInsta.placeholder(nombre, "Nombre completo");
         EstiloInsta.placeholder(usuario, "Nombre de usuario");
-        EstiloInsta.placeholder(clave, "Contrasena");
+        EstiloInsta.placeholder(clave, "Contraseña");
         EstiloInsta.placeholder(edad, "Edad");
 
         JButton foto = EstiloInsta.botonSecundario("Elegir foto");
         JLabel fotoNom = new JLabel("(sin foto)");
         fotoNom.setFont(EstiloInsta.CHICA);
+        fotoNom.setForeground(EstiloInsta.TEXTO_GRIS);
         foto.addActionListener(e -> {
             JFileChooser ch = new JFileChooser();
-            ch.setFileFilter(new FileNameExtensionFilter("Imagenes (png, jpg)", "png", "jpg", "jpeg"));
+            ch.setFileFilter(new FileNameExtensionFilter("Imágenes (png, jpg)", "png", "jpg", "jpeg"));
             if (ch.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 rutaFoto = ch.getSelectedFile().getPath();
                 fotoNom.setText(new File(rutaFoto).getName());
@@ -114,33 +122,36 @@ public class PanelLoginInsta extends JPanel {
         volver.addActionListener(e -> cartas.show(contenido, "IN"));
 
         JPanel col = columna();
-        col.add(logo());
+        col.add(EstiloInsta.wordmark(38f));
         col.add(Box.createVerticalStrut(6));
-        JLabel sub = new JLabel("Registrate para ver fotos y videos de tus amigos.");
+        JLabel sub = new JLabel("Regístrate para ver fotos y vídeos de tus amigos.");
         sub.setFont(EstiloInsta.CHICA);
         sub.setForeground(EstiloInsta.TEXTO_GRIS);
         sub.setAlignmentX(CENTER_ALIGNMENT);
         col.add(sub);
         col.add(Box.createVerticalStrut(16));
-        col.add(campo(nombre, "Nombre completo"));
+        col.add(anchoCompleto(nombre));
         col.add(Box.createVerticalStrut(6));
-        col.add(fila("Genero:", genero));
+        col.add(fila("Género:", genero));
         col.add(Box.createVerticalStrut(6));
-        col.add(campo(usuario, "Nombre de usuario"));
+        col.add(anchoCompleto(usuario));
         col.add(Box.createVerticalStrut(6));
-        col.add(campo(clave, "Contrasena"));
+        col.add(anchoCompleto(clave));
         col.add(Box.createVerticalStrut(6));
         col.add(fila("Edad:", edad));
         col.add(Box.createVerticalStrut(6));
         JPanel filaFoto = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 0));
         filaFoto.setOpaque(false);
+        filaFoto.setMaximumSize(new Dimension(260, 34));
         filaFoto.add(foto);
         filaFoto.add(fotoNom);
         col.add(filaFoto);
         col.add(Box.createVerticalStrut(12));
         col.add(anchoCompleto(crear));
-        col.add(Box.createVerticalStrut(6));
-        col.add(volver);
+        col.add(Box.createVerticalStrut(8));
+        col.add(separador());
+        col.add(Box.createVerticalStrut(10));
+        col.add(centrado(volver));
         return col;
     }
 
@@ -150,7 +161,7 @@ public class PanelLoginInsta extends JPanel {
         try {
             Usuario u = usuarios.login(usuario, clave);
             if (u == null) {
-                JOptionPane.showMessageDialog(this, "Usuario o contrasena incorrectos.");
+                JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos.");
                 return;
             }
             alEntrar.accept(u);
@@ -169,7 +180,7 @@ public class PanelLoginInsta extends JPanel {
         try {
             edad = Integer.parseInt(edadTxt);
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "La edad debe ser un numero.");
+            JOptionPane.showMessageDialog(this, "La edad debe ser un número.");
             return;
         }
         try {
@@ -195,17 +206,23 @@ public class PanelLoginInsta extends JPanel {
         return col;
     }
 
-    private JComponent logo() {
-        JLabel l = new JLabel("Instagram", SwingConstants.CENTER);
-        l.setFont(EstiloInsta.LOGO.deriveFont(36f));
-        l.setForeground(EstiloInsta.TEXTO);
-        l.setAlignmentX(CENTER_ALIGNMENT);
-        return l;
+    private JComponent anchoCompleto(JComponent comp) {
+        comp.setAlignmentX(CENTER_ALIGNMENT);
+        JPanel p = new JPanel(new BorderLayout());
+        p.setOpaque(false);
+        p.setAlignmentX(CENTER_ALIGNMENT);
+        p.setMaximumSize(new Dimension(260, 40));
+        p.add(comp, BorderLayout.CENTER);
+        return p;
     }
 
-    private JComponent campo(JTextField campo, String ayuda) {
-        campo.setToolTipText(ayuda);
-        JPanel p = anchoCompleto(campo);
+    private JComponent centrado(JComponent comp) {
+        comp.setAlignmentX(CENTER_ALIGNMENT);
+        JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        p.setOpaque(false);
+        p.setAlignmentX(CENTER_ALIGNMENT);
+        p.setMaximumSize(new Dimension(260, 30));
+        p.add(comp);
         return p;
     }
 
@@ -213,7 +230,7 @@ public class PanelLoginInsta extends JPanel {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         p.setOpaque(false);
         p.setAlignmentX(CENTER_ALIGNMENT);
-        p.setMaximumSize(new Dimension(240, 34));
+        p.setMaximumSize(new Dimension(260, 34));
         JLabel l = new JLabel(etiqueta);
         l.setFont(EstiloInsta.NORMAL);
         p.add(l);
@@ -221,20 +238,11 @@ public class PanelLoginInsta extends JPanel {
         return p;
     }
 
-    private JPanel anchoCompleto(JComponent comp) {
-        JPanel p = new JPanel(new BorderLayout());
-        p.setOpaque(false);
-        p.setAlignmentX(CENTER_ALIGNMENT);
-        p.setMaximumSize(new Dimension(240, 40));
-        p.add(comp, BorderLayout.CENTER);
-        return p;
-    }
-
     private JComponent separador() {
         JPanel p = new JPanel(new GridBagLayout());
         p.setOpaque(false);
         p.setAlignmentX(CENTER_ALIGNMENT);
-        p.setMaximumSize(new Dimension(240, 20));
+        p.setMaximumSize(new Dimension(260, 20));
         GridBagConstraints g = new GridBagConstraints();
         g.fill = GridBagConstraints.HORIZONTAL;
         g.weightx = 1;
