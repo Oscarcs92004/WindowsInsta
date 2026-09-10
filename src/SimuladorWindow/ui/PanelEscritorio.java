@@ -98,16 +98,18 @@ public class PanelEscritorio extends JPanel {
             case "Visor de imagenes": return "camera.png";
             case "Consola":           return "console.png";
             case "Reproductor":       return "musica.png";
+            case "INSTA+":            return "instagram.png";
             default:                  return null;
         }
     }
 
-    /** El icono de una app: dibujado para INSTA+, de archivo para el resto. */
+    /** El icono de una app: el de Instagram para INSTA+, el de archivo para el resto. */
     private static ImageIcon iconoApp(String app, int tam) {
-        if ("INSTA+".equals(app)) {
-            return EstiloInsta.iconoApp(tam);
+        ImageIcon img = Iconos.cargar(archivoIcono(app), tam);
+        if (img == null && "INSTA+".equals(app)) {
+            return EstiloInsta.iconoApp(tam);   // por si falta instagram.png
         }
-        return Iconos.cargar(archivoIcono(app), tam);
+        return img;
     }
 
     // ------------------------------------------------------------------
