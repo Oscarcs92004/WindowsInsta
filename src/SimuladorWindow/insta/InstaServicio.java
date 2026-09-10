@@ -8,6 +8,7 @@ import SimuladorWindow.servicios.UsuarioServicio;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -318,14 +319,21 @@ public class InstaServicio {
 
     public void asegurarCuentasEjemplo() {
         sembrar("noticias", "Canal Noticias", 'F',
-                "Hoy: resumen del dia #actualidad");
+                new Color(0x2B, 0x57, 0xC5), new Color(0x4A, 0x9A, 0xD6),
+                "Hoy: resumen del día. Lo más importante en cinco titulares #actualidad",
+                "Rueda de prensa de esta mañana #actualidad #politica");
         sembrar("moda", "Estilo y Deporte", 'F',
-                "Nueva coleccion de tenis #moda #deporte");
+                new Color(0xE0, 0x4A, 0x8A), new Color(0xF8, 0x9A, 0x4A),
+                "Nueva colección de tenis para esta temporada #moda #deporte",
+                "Tres ideas de look para el finde #moda @cine");
         sembrar("cine", "Sala de Cine", 'M',
-                "Estrenos del fin de semana #entretenimiento");
+                new Color(0x30, 0x2A, 0x6C), new Color(0x8A, 0x3A, 0xB9),
+                "Estrenos del fin de semana ya disponibles #entretenimiento #cine",
+                "Crítica de la película más taquillera del mes #cine");
     }
 
-    private void sembrar(String username, String nombre, char genero, String primerInsta) {
+    private void sembrar(String username, String nombre, char genero,
+                         Color a, Color b, String insta1, String insta2) {
         if (usuarioServicio.buscar(username) != null) {
             return;                          // ya existe
         }
@@ -335,7 +343,47 @@ public class InstaServicio {
             return;
         }
         asegurarCarpetaUsuario(username);
-        publicar(username, new Publicacion(username, primerInsta, null));
+
+        // Foto de perfil y una foto para la primera publicación (generadas).
+        File avatar = new File(carpetaDe(username), "perfil.png");
+        File foto = new File(carpetaImagenesDe(username), "portada.png");
+        pintarDegradado(avatar, 200, 200, a, b, nombre.substring(0, 1));
+        pintarDegradado(foto, 800, 800, b, a, "");
+        Usuario u = usuarioServicio.buscar(username);
+        if (u != null) {
+            u.setFotoPerfil(avatar.getPath());
+            usuarioServicio.actualizar(u);
+        }
+
+        publicar(username, new Publicacion(username, insta1, foto.getPath()));
+        publicar(username, new Publicacion(username, insta2, null));
+    }
+
+    /** Dibuja un PNG con un degradado en diagonal y, si se pasa, una inicial. */
+    private void pintarDegradado(File destino, int ancho, int alto,
+                                 Color a, Color b, String inicial) {
+        if (destino.exists()) {
+            return;
+        }
+        BufferedImage img = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = img.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setPaint(new java.awt.GradientPaint(0, 0, a, ancho, alto, b));
+        g.fillRect(0, 0, ancho, alto);
+        if (inicial != null && !inicial.isEmpty()) {
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("SansSerif", Font.BOLD, ancho / 2));
+            FontMetrics fm = g.getFontMetrics();
+            g.drawString(inicial.toUpperCase(),
+                    (ancho - fm.stringWidth(inicial)) / 2,
+                    (alto - fm.getHeight()) / 2 + fm.getAscent());
+        }
+        g.dispose();
+        try {
+            ImageIO.write(img, "png", destino);
+        } catch (IOException e) {
+            System.err.println("No se pudo crear la imagen de ejemplo " + destino);
+        }
     }
 
     // -----------------------------------------------------------------
