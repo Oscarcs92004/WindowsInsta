@@ -95,11 +95,17 @@ public class PanelTimeline extends JPanel {
     }
 
     // -----------------------------------------------------------------
-    //  Fila de historias: una tira horizontal de fotos de perfil arriba
+    //  Fila de historias: una tira horizontal de fotos de perfil arriba.
+    //  Todas las celdas miden lo mismo, para que los círculos queden
+    //  perfectamente alineados y a la misma distancia.
     // -----------------------------------------------------------------
 
+    private static final int CIRCULO = 56;
+    private static final int CELDA_ANCHO = 68;
+    private static final int CELDA_ALTO = 82;
+
     private JComponent filaHistorias() {
-        JPanel fila = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
+        JPanel fila = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 6));
         fila.setBackground(EstiloInsta.BLANCO);
 
         fila.add(historia(usuarioActual.getUsername(),
@@ -114,48 +120,56 @@ public class PanelTimeline extends JPanel {
             fila.add(historia(username, foto, username, false));
         }
 
+        int alto = CELDA_ALTO + 14;
         JScrollPane scroll = new JScrollPane(fila,
                 JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scroll.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, EstiloInsta.BORDE));
         scroll.setAlignmentX(LEFT_ALIGNMENT);
-        scroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 84));
-        scroll.setPreferredSize(new Dimension(ANCHO_FEED, 84));
+        scroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, alto));
+        scroll.setPreferredSize(new Dimension(ANCHO_FEED, alto));
         EstiloInsta.scrollFino(scroll);
         return scroll;
     }
 
-    /** Un círculo de historia: la foto de perfil y el nombre debajo. */
+    /** Una celda de historia de tamaño fijo: círculo arriba, nombre debajo. */
     private JComponent historia(String username, String foto, String etiqueta, boolean propia) {
-        JButton circulo = new JButton(propia
-                ? EstiloInsta.avatarMasBadge(foto, username, 56)
-                : EstiloInsta.avatar(foto, username, 54));
+        ImageIcon icono = propia
+                ? EstiloInsta.avatarMasBadge(foto, username, CIRCULO)
+                : EstiloInsta.avatar(foto, username, CIRCULO);
+        JButton circulo = new JButton(icono);
         circulo.setContentAreaFilled(false);
         circulo.setBorderPainted(false);
         circulo.setFocusPainted(false);
         circulo.setMargin(new Insets(0, 0, 0, 0));
         circulo.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         circulo.setAlignmentX(CENTER_ALIGNMENT);
+        circulo.setMaximumSize(new Dimension(CIRCULO, CIRCULO));
         circulo.addActionListener(e -> panelInsta.verPerfilDe(username));
 
         JLabel nombre = new JLabel(recortar(etiqueta), SwingConstants.CENTER);
         nombre.setFont(EstiloInsta.CHICA);
         nombre.setForeground(propia ? EstiloInsta.TEXTO_GRIS : EstiloInsta.TEXTO);
         nombre.setAlignmentX(CENTER_ALIGNMENT);
+        nombre.setMaximumSize(new Dimension(CELDA_ANCHO, 16));
 
         JPanel celda = new JPanel();
         celda.setOpaque(false);
         celda.setLayout(new BoxLayout(celda, BoxLayout.Y_AXIS));
+        celda.setPreferredSize(new Dimension(CELDA_ANCHO, CELDA_ALTO));
+        celda.setMinimumSize(new Dimension(CELDA_ANCHO, CELDA_ALTO));
+        celda.setMaximumSize(new Dimension(CELDA_ANCHO, CELDA_ALTO));
         celda.add(circulo);
+        celda.add(Box.createVerticalStrut(4));
         celda.add(nombre);
         return celda;
     }
 
     /** Nombres muy largos se acortan con "…" para que no descuadren la fila. */
     private static String recortar(String s) {
-        if ("Tu historia".equals(s)) {
+        if ("Tu historia".equals(s) || s.length() <= 10) {
             return s;
         }
-        return s.length() <= 10 ? s : s.substring(0, 9) + "…";
+        return s.substring(0, 9) + "…";
     }
 }
