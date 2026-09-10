@@ -68,6 +68,40 @@ public final class EstiloInsta {
     }
 
     // ------------------------------------------------------------------
+    //  Barra de pestañas (subrayado negro bajo la elegida, como Instagram)
+    // ------------------------------------------------------------------
+
+    /**
+     * Una barra con varios títulos; al pulsar uno se llama a {@code alElegir}
+     * con su índice. Quien la usa cambia una carta de un CardLayout.
+     */
+    public static JComponent barraSegmentos(String[] titulos, java.util.function.IntConsumer alElegir) {
+        JPanel barra = new JPanel(new GridLayout(1, titulos.length));
+        barra.setBackground(BLANCO);
+        barra.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, BORDE));
+        ButtonGroup grupo = new ButtonGroup();
+        for (int i = 0; i < titulos.length; i++) {
+            final int indice = i;
+            JToggleButton b = new JToggleButton(titulos[i], i == 0);
+            b.setFont(FUERTE);
+            b.setForeground(TEXTO);
+            b.setBackground(BLANCO);
+            b.setFocusPainted(false);
+            b.setContentAreaFilled(false);
+            b.setOpaque(true);
+            b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            b.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0,
+                    i == 0 ? TEXTO : BLANCO));
+            b.addItemListener(e -> b.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0,
+                    b.isSelected() ? TEXTO : BLANCO)));
+            b.addActionListener(e -> alElegir.accept(indice));
+            grupo.add(b);
+            barra.add(b);
+        }
+        return barra;
+    }
+
+    // ------------------------------------------------------------------
     //  Botones
     // ------------------------------------------------------------------
 

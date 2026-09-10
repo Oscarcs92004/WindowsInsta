@@ -147,8 +147,8 @@ public class PanelInsta extends JPanel {
     // -----------------------------------------------------------------
 
     /**
-     * La pantalla de Buscar: arriba un control de dos opciones (Personas /
-     * Hashtags) y debajo el panel que toque, cambiando con un CardLayout.
+     * La pantalla de Buscar: arriba las pestañas (Personas / Hashtags) y debajo
+     * el panel que toque, cambiando con un CardLayout.
      */
     private JComponent panelBuscar() {
         CardLayout cl = new CardLayout();
@@ -156,41 +156,14 @@ public class PanelInsta extends JPanel {
         cuerpo.add(panelBuscarPerfil, "PERSONAS");   // cada uno trae su propio scroll
         cuerpo.add(panelBuscarHashtag, "HASHTAGS");
 
-        JToggleButton personas = segmento("Personas", true);
-        JToggleButton hashtags = segmento("Hashtags", false);
-        ButtonGroup grupo = new ButtonGroup();
-        grupo.add(personas);
-        grupo.add(hashtags);
-        personas.addActionListener(e -> cl.show(cuerpo, "PERSONAS"));
-        hashtags.addActionListener(e -> cl.show(cuerpo, "HASHTAGS"));
-
-        JPanel barra = new JPanel(new GridLayout(1, 2));
-        barra.setBackground(EstiloInsta.BLANCO);
-        barra.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, EstiloInsta.BORDE));
-        barra.add(personas);
-        barra.add(hashtags);
+        JComponent barra = EstiloInsta.barraSegmentos(new String[] {"Personas", "Hashtags"},
+                i -> cl.show(cuerpo, i == 0 ? "PERSONAS" : "HASHTAGS"));
 
         JPanel todo = new JPanel(new BorderLayout());
         todo.setBackground(EstiloInsta.FONDO);
         todo.add(barra, BorderLayout.NORTH);
         todo.add(cuerpo, BorderLayout.CENTER);
         return todo;
-    }
-
-    private JToggleButton segmento(String texto, boolean elegido) {
-        JToggleButton b = new JToggleButton(texto, elegido);
-        b.setFont(EstiloInsta.FUERTE);
-        b.setForeground(EstiloInsta.TEXTO);
-        b.setBackground(EstiloInsta.BLANCO);
-        b.setFocusPainted(false);
-        b.setContentAreaFilled(false);
-        b.setOpaque(true);
-        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        // Subrayado negro cuando está seleccionado (como las pestañas de Instagram).
-        b.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, EstiloInsta.BLANCO));
-        b.addChangeListener(e -> b.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0,
-                b.isSelected() ? EstiloInsta.TEXTO : EstiloInsta.BLANCO)));
-        return b;
     }
 
     private JScrollPane envolver(JComponent panel) {
