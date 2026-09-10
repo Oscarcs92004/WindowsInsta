@@ -210,6 +210,27 @@ public final class EstiloInsta {
     }
 
     /**
+     * Un panel con las esquinas redondeadas y un color de fondo, para las
+     * burbujas del chat del Inbox.
+     */
+    public static JPanel burbuja(Color fondo) {
+        JPanel p = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(fondo);
+                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 20, 20));
+                g2.dispose();
+            }
+        };
+        p.setOpaque(false);
+        p.setBorder(margen(7, 12, 7, 12));
+        return p;
+    }
+
+    /**
      * Una etiqueta de texto que corta de línea a lo ancho indicado. Swing
      * ignora el {@code width} de CSS en un JLabel, pero sí respeta el ancho de
      * una celda de tabla, así que el texto se mete dentro de una.
