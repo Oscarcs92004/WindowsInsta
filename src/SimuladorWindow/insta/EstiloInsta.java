@@ -2,9 +2,11 @@ package SimuladorWindow.insta;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
@@ -32,8 +34,21 @@ public final class EstiloInsta {
     public static final Color AZUL_OSCURO = new Color(0, 55, 107);
     public static final Color ROJO        = new Color(237, 73, 86);
 
-    public static final Font LOGO    = elegirFuente(30, Font.BOLD | Font.ITALIC,
-            "Segoe Script", "Brush Script MT", "Lucida Handwriting", "Serif");
+    /**
+     * El degradado del anillo de las historias de Instagram (amarillo ->
+     * naranja -> rosa -> morado -> azul), en diagonal.
+     */
+    private static final float[] PARADAS_ANILLO = {0f, 0.25f, 0.5f, 0.75f, 1f};
+    private static final Color[] COLORES_ANILLO = {
+            new Color(0xFE, 0xDA, 0x75), new Color(0xFA, 0x7E, 0x1E),
+            new Color(0xD6, 0x29, 0x76), new Color(0x96, 0x2F, 0xBF),
+            new Color(0x4F, 0x5B, 0xD5),
+    };
+
+    // La fuente del logo: "Brush Script MT" (sin negrita ni cursiva forzada)
+    // es la mas parecida a la letra manuscrita del logo real de Instagram.
+    public static final Font LOGO    = elegirFuente(30, Font.PLAIN,
+            "Brush Script MT", "Segoe Script", "Lucida Handwriting", "Serif");
     public static final Font TITULO  = elegirFuente(22, Font.BOLD, "Segoe UI", "SansSerif");
     public static final Font FUERTE  = elegirFuente(13, Font.BOLD, "Segoe UI", "SansSerif");
     public static final Font NORMAL  = elegirFuente(13, Font.PLAIN, "Segoe UI", "SansSerif");
@@ -194,6 +209,40 @@ public final class EstiloInsta {
         return BorderFactory.createEmptyBorder(arriba, izq, abajo, der);
     }
 
+    /**
+     * Una etiqueta de texto que corta de línea a lo ancho indicado. Swing
+     * ignora el {@code width} de CSS en un JLabel, pero sí respeta el ancho de
+     * una celda de tabla, así que el texto se mete dentro de una.
+     *
+     * {@code contenidoHtml} puede llevar {@code <b>}, {@code <font color>}, etc.
+     */
+    public static JLabel textoHtml(String contenidoHtml, int ancho) {
+        JLabel l = new JLabel("<html><table cellpadding='0' cellspacing='0'><tr><td width='"
+                + ancho + "'>" + contenidoHtml + "</td></tr></table></html>");
+        l.setFont(NORMAL);
+        l.setForeground(TEXTO);
+        return l;
+    }
+
+    /** Escapa los caracteres que romperían el HTML de una etiqueta. */
+    public static String escaparHtml(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    /** Pinta de azul los #hashtags y las @menciones, como Instagram. */
+    public static String resaltarTags(String textoYaEscapado) {
+        StringBuilder sb = new StringBuilder();
+        for (String palabra : textoYaEscapado.split(" ")) {
+            if (palabra.startsWith("#") || palabra.startsWith("@")) {
+                sb.append("<font color='#0095F6'>").append(palabra).append("</font>");
+            } else {
+                sb.append(palabra);
+            }
+            sb.append(' ');
+        }
+        return sb.toString().trim();
+    }
+
     // ------------------------------------------------------------------
     //  Icono de la app para el escritorio de Windows 98
     // ------------------------------------------------------------------
@@ -238,28 +287,160 @@ public final class EstiloInsta {
         BufferedImage salida = new BufferedImage(tam, tam, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = salida.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setClip(new Ellipse2D.Float(0, 0, tam, tam));
+        dibujarCirculoAvatar(g, rutaFoto, username, 0, 0, tam);
+        g.setColor(BORDE);
+        g.drawOval(0, 0, tam - 1, tam - 1);
+        g.dispose();
+        return new ImageIcon(salida);
+    }
+
+    /**
+     * El mismo avatar pero rodeado del anillo con el degradado de las historias
+     * de Instagram (amarillo -> rosa -> morado). Se usa en la fila de historias
+     * y en la cabecera del feed.
+     */
+    public static ImageIcon avatarAnillo(String rutaFoto, String username, int tam) {
+        BufferedImage salida = new BufferedImage(tam, tam, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = salida.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        int grosorAnillo = Math.max(2, tam / 16);
+        int hueco = Math.max(1, tam / 22);           // el aro blanco entre anillo y foto
+
+        // Anillo: circulo relleno con el degradado en diagonal.
+        g.setPaint(new LinearGradientPaint(0, tam, tam, 0, PARADAS_ANILLO, COLORES_ANILLO));
+        g.fillOval(0, 0, tam, tam);
+
+        // Hueco blanco.
+        int d2 = tam - 2 * grosorAnillo;
+        g.setColor(BLANCO);
+        g.fillOval(grosorAnillo, grosorAnillo, d2, d2);
+
+        // La foto, mas adentro.
+        int off = grosorAnillo + hueco;
+        int dFoto = tam - 2 * off;
+        dibujarCirculoAvatar(g, rutaFoto, username, off, off, dFoto);
+
+        g.dispose();
+        return new ImageIcon(salida);
+    }
+
+    /**
+     * El avatar con un círculo azul con un "+" abajo a la derecha, como el
+     * "Tu historia" de Instagram.
+     */
+    public static ImageIcon avatarMasBadge(String rutaFoto, String username, int tam) {
+        BufferedImage salida = new BufferedImage(tam, tam, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = salida.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        int d = (int) (tam * 0.82);
+        dibujarCirculoAvatar(g, rutaFoto, username, (tam - d) / 2, 0, d);
+        g.setColor(BORDE);
+        g.drawOval((tam - d) / 2, 0, d - 1, d - 1);
+
+        int badge = tam / 3;
+        int bx = tam - badge;
+        int by = tam - badge;
+        g.setColor(BLANCO);
+        g.fillOval(bx - 2, by - 2, badge + 4, badge + 4);
+        g.setColor(AZUL);
+        g.fillOval(bx, by, badge, badge);
+        g.setColor(BLANCO);
+        g.setStroke(new BasicStroke(Math.max(1.4f, tam / 22f)));
+        g.drawLine(bx + badge / 2, by + badge / 4, bx + badge / 2, by + badge * 3 / 4);
+        g.drawLine(bx + badge / 4, by + badge / 2, bx + badge * 3 / 4, by + badge / 2);
+
+        g.dispose();
+        return new ImageIcon(salida);
+    }
+
+    /** Dibuja la foto (o el circulo gris con la inicial) recortada en circulo. */
+    private static void dibujarCirculoAvatar(Graphics2D g, String rutaFoto,
+                                             String username, int x, int y, int tam) {
+        Shape antes = g.getClip();
+        g.setClip(new Ellipse2D.Float(x, y, tam, tam));
 
         File foto = (rutaFoto == null) ? null : new File(rutaFoto);
         if (foto != null && foto.exists()) {
-            Image img = new ImageIcon(rutaFoto).getImage();
-            g.drawImage(img, 0, 0, tam, tam, null);
+            g.drawImage(new ImageIcon(rutaFoto).getImage(), x, y, tam, tam, null);
         } else {
             g.setColor(new Color(224, 224, 224));
-            g.fillOval(0, 0, tam, tam);
+            g.fillOval(x, y, tam, tam);
             g.setColor(TEXTO_GRIS);
             g.setFont(new Font("SansSerif", Font.BOLD, tam / 2));
             String inicial = (username == null || username.isEmpty())
                     ? "?" : username.substring(0, 1).toUpperCase();
             FontMetrics fm = g.getFontMetrics();
-            int x = (tam - fm.stringWidth(inicial)) / 2;
-            int y = (tam - fm.getHeight()) / 2 + fm.getAscent();
-            g.drawString(inicial, x, y);
+            g.drawString(inicial, x + (tam - fm.stringWidth(inicial)) / 2,
+                    y + (tam - fm.getHeight()) / 2 + fm.getAscent());
         }
-        g.setClip(null);
-        g.setColor(BORDE);
-        g.drawOval(0, 0, tam - 1, tam - 1);
-        g.dispose();
-        return new ImageIcon(salida);
+        g.setClip(antes);
+    }
+
+    // ------------------------------------------------------------------
+    //  El logotipo "Instagram" como etiqueta
+    // ------------------------------------------------------------------
+
+    public static JLabel wordmark(float tam) {
+        JLabel l = new JLabel("Instagram");
+        l.setFont(LOGO.deriveFont(tam));
+        l.setForeground(TEXTO);
+        return l;
+    }
+
+    // ------------------------------------------------------------------
+    //  Barra de desplazamiento fina (para que no se vea la gruesa de
+    //  Windows 98 dentro de INSTA+)
+    // ------------------------------------------------------------------
+
+    public static void scrollFino(JScrollPane scroll) {
+        scroll.getVerticalScrollBar().setUI(new BarraFina());
+        scroll.getHorizontalScrollBar().setUI(new BarraFina());
+        scroll.getVerticalScrollBar().setPreferredSize(new Dimension(8, 0));
+        scroll.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 8));
+        scroll.getVerticalScrollBar().setUnitIncrement(18);
+    }
+
+    /** Un pulgar gris redondeado, sin flechas ni fondo, como en las apps de movil. */
+    private static final class BarraFina extends BasicScrollBarUI {
+        @Override
+        protected void configureScrollBarColors() {
+            thumbColor = new Color(193, 193, 193);
+        }
+
+        @Override
+        protected JButton createDecreaseButton(int o) { return botonCero(); }
+
+        @Override
+        protected JButton createIncreaseButton(int o) { return botonCero(); }
+
+        private JButton botonCero() {
+            JButton b = new JButton();
+            b.setPreferredSize(new Dimension(0, 0));
+            b.setMinimumSize(new Dimension(0, 0));
+            b.setMaximumSize(new Dimension(0, 0));
+            return b;
+        }
+
+        @Override
+        protected void paintTrack(Graphics g, JComponent c, Rectangle r) {
+            // sin pista: transparente
+        }
+
+        @Override
+        protected void paintThumb(Graphics g, JComponent c, Rectangle r) {
+            if (r.isEmpty() || !scrollbar.isEnabled()) {
+                return;
+            }
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(thumbColor);
+            int m = 2;
+            g2.fill(new RoundRectangle2D.Float(r.x + m, r.y + m,
+                    r.width - 2 * m, r.height - 2 * m, 8, 8));
+            g2.dispose();
+        }
     }
 }

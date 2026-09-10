@@ -32,8 +32,9 @@ public final class ConfigInsta {
     /** Ancho al que se dibuja una imagen en una lista pequeña. */
     private static final int ANCHO_EN_PANTALLA = 260;
 
-    /** Ancho de la imagen dentro de una publicacion del feed (como Instagram). */
-    private static final int ANCHO_EN_FEED = 380;
+    /** Ancho de la imagen dentro de una publicacion del feed (como Instagram:
+     *  la foto ocupa todo el ancho de la tarjeta). */
+    private static final int ANCHO_EN_FEED = 392;
 
     /** Imagen escalada al tamaño que corresponde a su orientacion (lista chica). */
     public static ImageIcon escalarParaVista(File imagen) {

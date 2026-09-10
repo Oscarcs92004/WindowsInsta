@@ -2,74 +2,95 @@ package SimuladorWindow.insta;
 
 import SimuladorWindow.estructuras.ListaEnlazada;
 import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.servicios.UsuarioServicio;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Interacciones (enunciado 4.8).
  *
  * Muestra las publicaciones de OTROS usuarios donde me mencionan con
- * @mi_username, sin repetir ninguna. El resultado se arma en una
+ * &#64;mi_username, sin repetir ninguna. Se ven con el mismo aspecto que el
+ * feed (una TarjetaPublicacion por publicación). El resultado se arma en una
  * ListaEnlazada propia.
  */
 public class PanelInteracciones extends JPanel {
 
-    private final InstaServicio insta;
-    private final Usuario usuarioActual;
-    private final JTextArea area = new JTextArea();
+    private static final int ANCHO_FEED = 380;
 
-    public PanelInteracciones(InstaServicio insta, Usuario usuarioActual) {
+    private final InstaServicio insta;
+    private final UsuarioServicio usuarios;
+    private final Usuario usuarioActual;
+    private final PanelInsta panelInsta;
+
+    private final PanelFeed lista = new PanelFeed();
+
+    public PanelInteracciones(InstaServicio insta, UsuarioServicio usuarios,
+                              Usuario usuarioActual, PanelInsta panelInsta) {
         this.insta = insta;
+        this.usuarios = usuarios;
         this.usuarioActual = usuarioActual;
+        this.panelInsta = panelInsta;
 
         setBackground(EstiloInsta.FONDO);
         setLayout(new BorderLayout());
-        setBorder(EstiloInsta.margen(12, 12, 12, 12));
 
         JLabel titulo = new JLabel("Publicaciones que te mencionan");
         titulo.setFont(EstiloInsta.FUERTE);
-        titulo.setBorder(EstiloInsta.margen(0, 0, 8, 0));
+        titulo.setOpaque(true);
+        titulo.setBackground(EstiloInsta.BLANCO);
+        titulo.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, EstiloInsta.BORDE),
+                EstiloInsta.margen(10, 12, 10, 12)));
         add(titulo, BorderLayout.NORTH);
 
-        area.setEditable(false);
-        area.setFont(EstiloInsta.NORMAL);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        JScrollPane scroll = new JScrollPane(area);
-        scroll.setBorder(BorderFactory.createLineBorder(EstiloInsta.BORDE));
+        JScrollPane scroll = new JScrollPane(lista,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setBorder(null);
+        scroll.getViewport().setBackground(EstiloInsta.FONDO);
+        EstiloInsta.scrollFino(scroll);
         add(scroll, BorderLayout.CENTER);
+
         recargar();
     }
 
     public void recargar() {
+        lista.removeAll();
         String yo = usuarioActual.getUsername();
 
-        ListaEnlazada<String> yaPuestas = new ListaEnlazada<>();
-        StringBuilder sb = new StringBuilder();
-
+        ListaEnlazada<Publicacion> encontradas = new ListaEnlazada<>();
         for (String autor : insta.todosLosUsuarios()) {
-            if (autor.equalsIgnoreCase(yo)) {
+            if (autor.equalsIgnoreCase(yo) || !insta.estaVisible(autor)) {
                 continue;                       // no cuentan mis propias menciones
             }
-            if (!insta.estaVisible(autor)) {
-                continue;
-            }
             for (Publicacion p : insta.publicacionesDe(autor)) {
-                if (!TextoInsta.menciona(p.getTexto(), yo)) {
-                    continue;
-                }
-                String texto = TextoInsta.formato(p);
-                if (!yaPuestas.contiene(texto)) {   // sin duplicados
-                    yaPuestas.agregarFinal(texto);
-                    sb.append(texto).append("\n\n");
+                if (TextoInsta.menciona(p.getTexto(), yo) && !encontradas.contiene(p)) {
+                    encontradas.agregarFinal(p);
                 }
             }
         }
 
-        area.setText(sb.length() == 0
-                ? "Nadie te ha mencionado todavia."
-                : sb.toString());
-        area.setCaretPosition(0);
+        List<Publicacion> ordenadas = new ArrayList<>(encontradas.comoLista());
+        ordenadas.sort(Comparator.comparing(Publicacion::getFecha).reversed());
+
+        if (ordenadas.isEmpty()) {
+            JLabel vacio = new JLabel("Nadie te ha mencionado todavía.");
+            vacio.setForeground(EstiloInsta.TEXTO_GRIS);
+            vacio.setBorder(EstiloInsta.margen(24, 12, 24, 12));
+            lista.add(vacio);
+        } else {
+            for (Publicacion p : ordenadas) {
+                lista.add(new TarjetaPublicacion(p, usuarios, ANCHO_FEED,
+                        panelInsta::verPerfilDe));
+            }
+        }
+        lista.add(Box.createVerticalGlue());
+        lista.revalidate();
+        lista.repaint();
     }
 }
