@@ -136,6 +136,15 @@ public final class IconosInsta {
                 }
                 break;
             }
+            case "play": {
+                Path2D tri = new Path2D.Double();
+                tri.moveTo(p + s * 0.25, p);
+                tri.lineTo(p + s * 0.25, p + s);
+                tri.lineTo(p + s, p + s / 2);
+                tri.closePath();
+                g.fill(tri);
+                break;
+            }
             default:
                 break;
         }
