@@ -11,8 +11,9 @@ import java.awt.*;
  * Buscar Profile (enunciado 4.9).
  *
  * Se escribe un texto y se listan los usuarios cuyo username lo contenga
- * (coincidencia parcial), con el formato: USERNAME - Lo sigo / No lo sigues.
- * Al elegir uno se abre su perfil. El resultado se arma en una ListaEnlazada.
+ * (coincidencia parcial). Cada resultado se ve con su avatar, el username y si
+ * lo sigues o no, como en el buscador de Instagram. Al pulsar uno se abre su
+ * perfil. El resultado se arma en una ListaEnlazada.
  */
 public class PanelBuscarPerfil extends JPanel {
 
@@ -34,28 +35,43 @@ public class PanelBuscarPerfil extends JPanel {
 
         setBackground(EstiloInsta.FONDO);
         setLayout(new BorderLayout());
-        setBorder(EstiloInsta.margen(12, 12, 12, 12));
 
         EstiloInsta.estiloCampo(txtBuscar);
         JButton btnBuscar = EstiloInsta.botonPrimario("Buscar");
         btnBuscar.addActionListener(e -> buscar());
         txtBuscar.addActionListener(e -> buscar());
         JPanel arriba = new JPanel(new BorderLayout(6, 0));
-        arriba.setOpaque(false);
-        arriba.setBorder(EstiloInsta.margen(0, 0, 8, 0));
+        arriba.setOpaque(true);
+        arriba.setBackground(EstiloInsta.BLANCO);
+        arriba.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, EstiloInsta.BORDE),
+                EstiloInsta.margen(10, 12, 10, 12)));
         arriba.add(txtBuscar, BorderLayout.CENTER);
         arriba.add(btnBuscar, BorderLayout.EAST);
         add(arriba, BorderLayout.NORTH);
 
-        resultados.setFont(EstiloInsta.NORMAL);
+        resultados.setFixedCellHeight(56);
+        resultados.setBackground(EstiloInsta.BLANCO);
+        resultados.setCellRenderer(new CeldaResultado());
+        resultados.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    entrarAlPerfil();
+                }
+            }
+        });
         JScrollPane scroll = new JScrollPane(resultados);
-        scroll.setBorder(BorderFactory.createLineBorder(EstiloInsta.BORDE));
+        scroll.setBorder(null);
+        EstiloInsta.scrollFino(scroll);
         add(scroll, BorderLayout.CENTER);
 
         JButton btnVer = EstiloInsta.botonSecundario("Entrar al perfil");
         btnVer.addActionListener(e -> entrarAlPerfil());
-        JPanel abajo = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 6));
-        abajo.setOpaque(false);
+        JPanel abajo = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 8));
+        abajo.setOpaque(true);
+        abajo.setBackground(EstiloInsta.BLANCO);
+        abajo.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, EstiloInsta.BORDE));
         abajo.add(btnVer);
         add(abajo, BorderLayout.SOUTH);
     }
@@ -75,29 +91,70 @@ public class PanelBuscarPerfil extends JPanel {
             if (!insta.estaVisible(u.getUsername())) {
                 continue;                       // desactivada: como si no existiera
             }
-            String sigo = insta.sigo(usuarioActual.getUsername(), u.getUsername())
-                    ? "Lo sigo" : "No lo sigues";
-            String linea = u.getUsername() + " - " + sigo;
-            if (!encontrados.contiene(linea)) {
-                encontrados.agregarFinal(linea);
+            if (!encontrados.contiene(u.getUsername())) {
+                encontrados.agregarFinal(u.getUsername());
             }
         }
 
-        for (String linea : encontrados.comoLista()) {
-            modelo.addElement(linea);
+        for (String username : encontrados.comoLista()) {
+            modelo.addElement(username);
         }
         if (modelo.isEmpty()) {
-            modelo.addElement("(sin resultados)");
+            modelo.addElement("");   // fila especial: "sin resultados"
         }
     }
 
     private void entrarAlPerfil() {
-        String elegido = resultados.getSelectedValue();
-        if (elegido == null || elegido.startsWith("(")) {
-            JOptionPane.showMessageDialog(this, "Elige un usuario de la lista.");
+        String username = resultados.getSelectedValue();
+        if (username == null || username.isEmpty()) {
             return;
         }
-        String username = elegido.split(" - ")[0];
         panelInsta.verPerfilDe(username);
+    }
+
+    // -----------------------------------------------------------------
+
+    /** Dibuja cada resultado: avatar + username + "Lo sigues / No lo sigues". */
+    private class CeldaResultado extends JPanel implements ListCellRenderer<String> {
+
+        private final JLabel avatar = new JLabel();
+        private final JLabel username = new JLabel();
+        private final JLabel sigo = new JLabel();
+
+        CeldaResultado() {
+            setLayout(new BorderLayout(10, 0));
+            setBorder(EstiloInsta.margen(6, 12, 6, 12));
+            username.setFont(EstiloInsta.FUERTE);
+            username.setForeground(EstiloInsta.TEXTO);
+            sigo.setFont(EstiloInsta.CHICA);
+            sigo.setForeground(EstiloInsta.TEXTO_GRIS);
+
+            JPanel textos = new JPanel(new GridLayout(2, 1));
+            textos.setOpaque(false);
+            textos.add(username);
+            textos.add(sigo);
+
+            add(avatar, BorderLayout.WEST);
+            add(textos, BorderLayout.CENTER);
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList<? extends String> lista,
+                String valor, int indice, boolean seleccionado, boolean foco) {
+            if (valor == null || valor.isEmpty()) {
+                avatar.setIcon(null);
+                username.setText("(sin resultados)");
+                sigo.setText("");
+                setBackground(EstiloInsta.BLANCO);
+                return this;
+            }
+            Usuario u = usuarios.buscar(valor);
+            avatar.setIcon(EstiloInsta.avatar(u == null ? null : u.getFotoPerfil(), valor, 40));
+            username.setText(valor);
+            sigo.setText(insta.sigo(usuarioActual.getUsername(), valor)
+                    ? "Lo sigues" : "No lo sigues");
+            setBackground(seleccionado ? new Color(245, 245, 245) : EstiloInsta.BLANCO);
+            return this;
+        }
     }
 }
