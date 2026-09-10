@@ -33,7 +33,7 @@ public class PanelRegistro extends JPanel {
         JTextField txtNombre = new JTextField(16);
         JComboBox<String> cmbGenero = new JComboBox<>(new String[] {"M", "F"});
         JComboBox<String> cmbTipo = new JComboBox<>(
-                new String[] {"Estandar", "Administrador"});
+                new String[] {"Estándar", "Administrador"});
         JTextField txtUsuario = new JTextField(16);
         JPasswordField txtClave = new JPasswordField(16);
         JTextField txtEdad = new JTextField(4);
@@ -41,16 +41,20 @@ public class PanelRegistro extends JPanel {
         Estilo.aplicarCampo(txtUsuario);
         Estilo.aplicarCampo(txtClave);
         Estilo.aplicarCampo(txtEdad);
-        cmbGenero.setFont(Estilo.NORMAL);
-        cmbGenero.setBackground(Color.WHITE);
-        cmbTipo.setFont(Estilo.NORMAL);
-        cmbTipo.setBackground(Color.WHITE);
+        Estilo.aplicarCombo(cmbGenero);
+        Estilo.aplicarCombo(cmbTipo);
 
         JButton btnFoto = Estilo.boton("Elegir foto...");
         JLabel lblFoto = new JLabel("(sin foto)");
         lblFoto.setFont(Estilo.NORMAL);
+        lblFoto.setForeground(Estilo.SOMBRA_OSCURA);
+        JPanel filaFoto = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        filaFoto.setOpaque(false);
+        filaFoto.add(btnFoto);
+        filaFoto.add(lblFoto);
+
         JButton btnCrear = Estilo.boton("Crear");
-        JButton btnVolver = Estilo.boton("Volver al escritorio");
+        JButton btnVolver = Estilo.boton("Cancelar");
         igualarAncho(btnCrear, btnVolver);
 
         // --- Formulario ------------------------------------------------
@@ -59,17 +63,13 @@ public class PanelRegistro extends JPanel {
         GridBagConstraints c = new GridBagConstraints();
 
         int fila = 0;
-        agregar(form, c, fila++, "Nombre completo:", txtNombre);
-        agregar(form, c, fila++, "Genero:", cmbGenero);
-        agregar(form, c, fila++, "Tipo de cuenta:", cmbTipo);
-        agregar(form, c, fila++, "Nombre de usuario:", txtUsuario);
-        agregar(form, c, fila++, "Contrasena:", Estilo.campoClaveConToggle(txtClave));
-        agregar(form, c, fila++, "Edad:", txtEdad);
-        agregar(form, c, fila++, "Foto de perfil:", btnFoto);
-        c.gridx = 1; c.gridy = fila++; c.fill = GridBagConstraints.NONE; c.weightx = 0;
-        c.insets = new Insets(0, 6, 3, 0);
-        c.anchor = GridBagConstraints.WEST;
-        form.add(lblFoto, c);
+        agregar(form, c, fila++, "Nombre completo:", txtNombre, true);
+        agregar(form, c, fila++, "Género:", cmbGenero, false);
+        agregar(form, c, fila++, "Tipo de cuenta:", cmbTipo, false);
+        agregar(form, c, fila++, "Nombre de usuario:", txtUsuario, true);
+        agregar(form, c, fila++, "Contraseña:", Estilo.campoClaveConToggle(txtClave), true);
+        agregar(form, c, fila++, "Edad:", txtEdad, false);
+        agregar(form, c, fila++, "Foto de perfil:", filaFoto, false);
 
         // --- El "dialogo" que flota sobre el escritorio ----------------
         JPanel dialogo = new JPanel(new BorderLayout());
@@ -85,7 +85,12 @@ public class PanelRegistro extends JPanel {
 
         JPanel oeste = new JPanel(new BorderLayout());
         oeste.setOpaque(false);
-        oeste.add(new PanelFicha(), BorderLayout.NORTH);
+        JPanel fichaArriba = new JPanel(new BorderLayout());
+        fichaArriba.setOpaque(false);
+        fichaArriba.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 14));
+        fichaArriba.add(new PanelFicha(), BorderLayout.NORTH);
+        oeste.add(fichaArriba, BorderLayout.CENTER);
+        oeste.add(Estilo.separadorVertical(), BorderLayout.EAST);
         cuerpo.add(oeste, BorderLayout.WEST);
 
         JPanel centro = new JPanel();
@@ -159,7 +164,7 @@ public class PanelRegistro extends JPanel {
                 ventana.mostrarEscritorio(administrador);
 
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "La edad debe ser un numero.");
+                JOptionPane.showMessageDialog(this, "La edad debe ser un número.");
             } catch (UsernameDuplicadoException ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage());
             }
@@ -168,21 +173,29 @@ public class PanelRegistro extends JPanel {
         btnVolver.addActionListener(e -> ventana.mostrarEscritorio(administrador));
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Estilo.pintarFondoEscritorio(g, this);
+    }
+
     // -----------------------------------------------------------------
 
     private void agregar(JPanel form, GridBagConstraints c, int fila,
-                         String etiqueta, JComponent campo) {
+                         String etiqueta, JComponent campo, boolean estira) {
         JLabel l = new JLabel(etiqueta);
         l.setFont(Estilo.NORMAL);
         c.gridx = 0; c.gridy = fila;
         c.fill = GridBagConstraints.NONE; c.weightx = 0;
-        c.insets = new Insets(3, 0, 3, 0);
-        c.anchor = GridBagConstraints.EAST;
+        c.insets = new Insets(6, 0, 3, 0);
+        c.anchor = GridBagConstraints.NORTHEAST;
         form.add(l, c);
 
-        c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1;
-        c.insets = new Insets(3, 6, 3, 0);
-        c.anchor = GridBagConstraints.WEST;
+        c.gridx = 1;
+        c.fill = estira ? GridBagConstraints.HORIZONTAL : GridBagConstraints.NONE;
+        c.weightx = 1;
+        c.insets = new Insets(4, 8, 3, 0);
+        c.anchor = GridBagConstraints.NORTHWEST;
         form.add(campo, c);
     }
 

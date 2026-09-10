@@ -25,15 +25,15 @@ public class PanelLogin extends JPanel {
         setBackground(Estilo.FONDO_ESCRITORIO);
         setLayout(new GridBagLayout());
 
-        JTextField txtUsuario = new JTextField(16);
-        JPasswordField txtClave = new JPasswordField(16);
+        JTextField txtUsuario = new JTextField(14);
+        JPasswordField txtClave = new JPasswordField(14);
         Estilo.aplicarCampo(txtUsuario);
         Estilo.aplicarCampo(txtClave);
 
         JButton btnAceptar = Estilo.boton("Aceptar");
         btnAceptar.setPreferredSize(new Dimension(
-                Math.max(90, btnAceptar.getPreferredSize().width),
-                btnAceptar.getPreferredSize().height));
+                Math.max(92, btnAceptar.getPreferredSize().width),
+                btnAceptar.getPreferredSize().height + 2));
 
         // --- El "dialogo" que flota sobre el escritorio --------------------
         JPanel dialogo = new JPanel(new BorderLayout());
@@ -41,7 +41,7 @@ public class PanelLogin extends JPanel {
         dialogo.setBorder(BorderFactory.createCompoundBorder(
                 Estilo.bordeSombra(6), Estilo.ventana()));
 
-        dialogo.add(Estilo.barraTitulo("Iniciar la sesion en Windows 98",
+        dialogo.add(Estilo.barraTitulo("Iniciar la sesión en Windows 98",
                 Estilo.iconoWindows(16)), BorderLayout.NORTH);
         dialogo.add(cuerpo(txtUsuario, txtClave, btnAceptar), BorderLayout.CENTER);
 
@@ -60,6 +60,12 @@ public class PanelLogin extends JPanel {
         SwingUtilities.invokeLater(txtUsuario::requestFocusInWindow);
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Estilo.pintarFondoEscritorio(g, this);
+    }
+
     // -----------------------------------------------------------------
     //  Piezas visuales estilo Windows 98
     // -----------------------------------------------------------------
@@ -70,43 +76,54 @@ public class PanelLogin extends JPanel {
         cuerpo.setOpaque(false);
         cuerpo.setBorder(BorderFactory.createEmptyBorder(18, 18, 14, 18));
 
-        // La llave dorada, alineada arriba.
+        // La llave dorada, alineada arriba, y una linea vertical que la separa
+        // del formulario (detalle de los cuadros de dialogo de Windows 98).
         JPanel oeste = new JPanel(new BorderLayout());
         oeste.setOpaque(false);
-        oeste.add(new PanelLlave(), BorderLayout.NORTH);
+        JPanel llaveArriba = new JPanel(new BorderLayout());
+        llaveArriba.setOpaque(false);
+        llaveArriba.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 14));
+        llaveArriba.add(new PanelLlave(), BorderLayout.NORTH);
+        oeste.add(llaveArriba, BorderLayout.CENTER);
+        oeste.add(Estilo.separadorVertical(), BorderLayout.EAST);
         cuerpo.add(oeste, BorderLayout.WEST);
 
         JPanel centro = new JPanel();
         centro.setOpaque(false);
         centro.setLayout(new BoxLayout(centro, BoxLayout.Y_AXIS));
 
-        JLabel ayuda = new JLabel("<html>Escriba su nombre de usuario y su contrasena<br>"
-                + "para iniciar la sesion en el sistema.</html>");
+        JLabel ayuda = new JLabel("<html>Escriba su nombre de usuario y su contrase&ntilde;a<br>"
+                + "para iniciar la sesi&oacute;n en el sistema.</html>");
         ayuda.setFont(Estilo.NORMAL);
-        ayuda.setAlignmentX(LEFT_ALIGNMENT);
-        centro.add(ayuda);
-        centro.add(Box.createVerticalStrut(12));
+        centro.add(anclarIzquierda(ayuda));
+        centro.add(Box.createVerticalStrut(14));
 
         JComponent form = formulario(usuario, clave);
-        form.setAlignmentX(LEFT_ALIGNMENT);
-        centro.add(form);
-        centro.add(Box.createVerticalStrut(12));
+        centro.add(anclarIzquierda(form));
+        centro.add(Box.createVerticalStrut(14));
 
         JComponent sep = Estilo.separador();
-        sep.setAlignmentX(LEFT_ALIGNMENT);
         sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2));
-        centro.add(sep);
-        centro.add(Box.createVerticalStrut(8));
+        centro.add(anclarIzquierda(sep));
+        centro.add(Box.createVerticalStrut(10));
 
         JPanel botones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         botones.setOpaque(false);
-        botones.setAlignmentX(LEFT_ALIGNMENT);
-        botones.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
+        botones.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
         botones.add(aceptar);
-        centro.add(botones);
+        centro.add(anclarIzquierda(botones));
 
         cuerpo.add(centro, BorderLayout.CENTER);
         return cuerpo;
+    }
+
+    /** Fija el ancho de la columna del formulario para que el cuadro no quede ancho y vacio. */
+    private static final int ANCHO_COLUMNA = 250;
+
+    private JComponent anclarIzquierda(JComponent comp) {
+        comp.setAlignmentX(LEFT_ALIGNMENT);
+        comp.setMaximumSize(new Dimension(ANCHO_COLUMNA, comp.getPreferredSize().height));
+        return comp;
     }
 
     private JComponent formulario(JTextField usuario, JPasswordField clave) {
@@ -114,20 +131,21 @@ public class PanelLogin extends JPanel {
         form.setOpaque(false);
 
         GridBagConstraints c = new GridBagConstraints();
-        c.anchor = GridBagConstraints.EAST;
-        c.insets = new Insets(3, 0, 3, 0);
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(4, 0, 4, 0);
 
         c.gridx = 0; c.gridy = 0;
         form.add(etiqueta("Nombre de usuario:"), c);
         c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1;
-        c.insets = new Insets(3, 6, 3, 0);
+        c.insets = new Insets(4, 8, 4, 0);
         form.add(usuario, c);
 
         c.gridx = 0; c.gridy = 1; c.fill = GridBagConstraints.NONE; c.weightx = 0;
-        c.insets = new Insets(3, 0, 3, 0);
-        form.add(etiqueta("Contrasena:"), c);
+        c.insets = new Insets(6, 0, 4, 0);
+        c.anchor = GridBagConstraints.NORTHWEST;
+        form.add(etiqueta("Contraseña:"), c);
         c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1;
-        c.insets = new Insets(3, 6, 3, 0);
+        c.insets = new Insets(4, 8, 4, 0);
         form.add(Estilo.campoClaveConToggle(clave), c);
 
         return form;
@@ -241,7 +259,7 @@ public class PanelLogin extends JPanel {
 
     private void error() {
         JOptionPane.showMessageDialog(this,
-                "Usuario o contrasena incorrectos.",
+                "Usuario o contraseña incorrectos.",
                 "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
