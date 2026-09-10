@@ -288,10 +288,10 @@ public class TarjetaPublicacion extends JPanel {
             verPerfil.addActionListener(e -> alVerPerfil.accept(publicacion.getAutor()));
             menu.add(verPerfil);
         }
-        JMenuItem copiar = new JMenuItem("Copiar texto");
+        JMenuItem copiar = new JMenuItem("Copiar publicación");
         copiar.addActionListener(e -> Toolkit.getDefaultToolkit().getSystemClipboard()
                 .setContents(new java.awt.datatransfer.StringSelection(
-                        publicacion.getTexto()), null));
+                        TextoInsta.formato(publicacion)), null));
         menu.add(copiar);
         menu.show(ancla, 0, ancla.getHeight());
     }
