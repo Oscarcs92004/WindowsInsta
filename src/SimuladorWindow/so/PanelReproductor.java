@@ -12,11 +12,12 @@ import java.util.List;
 /**
  * Reproductor de musica (enunciado 3.7).
  *
- * YA FUNCIONA: agregar canciones a la lista desde el navegador de archivos y
- * ver la lista, el hueco de la caratula y el de la descripcion.
- *
- * FALTA (Oscar, Iteracion 3.7): conectar Play / Pause / Stop con un
- * HiloReproductor real y mostrar la caratula y la descripcion de la cancion.
+ * Deja agregar canciones (.mp3 / .wav) desde el navegador de archivos y las
+ * reproduce con los botones Play / Pause / Stop. La reproduccion corre en un
+ * HiloReproductor aparte (Pilar 3 - hilos), para que el resto de Mini-Windows
+ * siga respondiendo mientras suena la musica. Al reproducir se muestran la
+ * caratula (si hay un cover.jpg / folder.jpg en la carpeta) y la descripcion
+ * de la cancion.
  */
 public class PanelReproductor extends JPanel {
 
@@ -84,14 +85,7 @@ public class PanelReproductor extends JPanel {
             }
         });
 
-        // TODO (Oscar) - Iteracion 3.7: usar HiloReproductor.
-        //   Play:  int i = lista.getSelectedIndex();  (si i < 0, avisar)
-        //          si no hay hilo -> crear HiloReproductor con canciones.get(i)
-        //          y start();  si estaba pausado -> hilo.reanudar();
-        //   Pause: hilo.pausar();
-        //   Stop:  hilo.detener();  hilo = null;
-        //   Ademas: mostrar aqui la caratula (caratula.setIcon(...)) y la
-        //           descripcion (descripcion.setText(...)) de la cancion.
+        // Play / Pause / Stop se apoyan en el HiloReproductor (ver mas abajo).
         btnPlay.addActionListener(e -> reproducir());
         btnPause.addActionListener(e -> pausar());
         btnStop.addActionListener(e -> detener());
@@ -163,11 +157,5 @@ public class PanelReproductor extends JPanel {
             }
         }
         return null;
-    }
-
-    // ya no se necesita en esta clase
-    private void pendiente() {
-        JOptionPane.showMessageDialog(this,
-                "Reproduccion: falta implementarla (ver el comentario TODO en PanelReproductor).");
     }
 }

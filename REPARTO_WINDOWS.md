@@ -1,18 +1,18 @@
 # Reparto de trabajo — Módulo Mini-Windows
 
-Este documento reparte lo que **falta** del módulo Mini-Windows entre las dos
-personas del equipo: **Oscar** y **Alex**. Solo cubre Mini-Windows; INSTA+ (la
-Fase 4 del `PLAN_DESARROLLO.md`) se hace después y no entra aquí.
+Este documento repartió el módulo Mini-Windows entre las dos personas del
+equipo: **Oscar** y **Alex**. Ya está **todo hecho** (ver la checklist del
+final); se deja como registro de cómo se dividió el trabajo. Solo cubre
+Mini-Windows; INSTA+ es la Fase 4 del `PLAN_DESARROLLO.md`.
 
 El **qué** y el **por qué** de cada patrón está en `IMPLEMENTACION.md`. El
-**orden** general está en `PLAN_DESARROLLO.md`. Este archivo dice **quién hace
-qué** y **por dónde seguir en el código**.
+**orden** general está en `PLAN_DESARROLLO.md`.
 
 ---
 
-## 1. Qué ya está hecho
+## 1. Estado del código
 
-### Núcleo (Fase 0 y 1) — no se toca
+### Núcleo (Fase 0 y 1)
 
 - `modelo/` — `Usuario`, `Rol`
 - `estructuras/` — `Nodo`, `ListaEnlazada`
@@ -21,31 +21,28 @@ qué** y **por dónde seguir en el código**.
 - `servicios/` — `UsuarioServicio` (con `asegurarAdmin()`)
 - `pruebas/` — `PruebaNucleo`
 
-### Capa base de la interfaz (ya en `src/`, compila y arranca)
+### Interfaz de Mini-Windows
 
-Ya está el **esqueleto de todo Mini-Windows**, con el escritorio funcionando
-como un sistema operativo: fondo de pantalla, iconos, y cada herramienta se
-abre en su propia ventana interna (se puede mover, cambiar de tamaño,
-minimizar y cerrar) con una barra de tareas abajo. Lo que funciona de verdad y
-lo que queda como `// TODO` está marcado en cada archivo.
+Todo Mini-Windows funciona como un sistema operativo: fondo de pantalla, iconos,
+y cada herramienta se abre en su propia ventana interna (se puede mover, cambiar
+de tamaño, minimizar y cerrar) con una barra de tareas abajo.
 
 | Archivo | Estado |
 |---|---|
 | `Main.java` | Listo: crea el admin y abre la ventana en el EDT |
 | `ui/VentanaPrincipal.java` | Listo: cambia entre login, registro y escritorio |
 | `ui/PanelLogin.java` | Listo: login contra `UsuarioServicio`, con reintento / crear cuenta |
-| `ui/PanelRegistro.java` | Casi listo: **falta el campo Foto de perfil** (TODO Alex) |
+| `ui/PanelRegistro.java` | Listo: formulario con todos los campos, incluida la foto de perfil |
 | `ui/PanelEscritorio.java` | Listo: escritorio tipo sistema operativo — fondo, iconos, ventanas internas (`JInternalFrame`) que se mueven/minimizan/cierran, y barra de tareas abajo con "Inicio", las ventanas abiertas y el reloj |
 | `so/Rutas.java` | Listo: carpeta raíz según el rol y creación de las 3 carpetas |
 | `so/SistemaArchivos.java` | Listo: `mkdir`, `rm`, `cd`, `cd..`, `dir` |
 | `so/PanelConsola.java` | Listo: los 7 comandos del enunciado |
-| `so/PanelExplorador.java` | Base: árbol + refrescar + nueva carpeta. **Falta renombrar / copiar / pegar / ordenar / organizar** |
-| `so/PanelEditor.java` | Base: abrir y guardar `.txt` (UTF-8). **Falta el formato + `.fmt`** |
-| `so/PanelVisor.java` | Base: elegir carpeta + Anterior / Siguiente. **Falta el `SwingWorker`** |
-| `so/PanelReproductor.java` | Base: lista de canciones + botones. **Falta el audio con hilo** |
-| `so/Reproductor.java`, `so/HiloReproductor.java` | Esqueleto de la interfaz y el hilo (TODO Oscar) |
-| `so/TramoFormato.java` | Clase lista para que Oscar guarde el formato del editor |
-| `red/Servidor.java`, `red/AtenderCliente.java`, `red/Cliente.java` | Esqueleto de sockets (TODO en la Fase 5) |
+| `so/PanelExplorador.java` | Listo: árbol, refrescar, nueva carpeta / archivo, renombrar, copiar, pegar, ordenar y organizar (con `SwingWorker` + `ListaEnlazada`) |
+| `so/PanelEditor.java` | Listo: abrir y guardar `.txt` (UTF-8) y documento con formato `.edt` (color, fuente, tamaño, negrita/cursiva/subrayado, alineación, tablas) |
+| `so/PanelVisor.java` | Listo: elegir carpeta, Anterior / Siguiente y carga en `SwingWorker` |
+| `so/PanelReproductor.java` | Listo: lista de canciones, Play / Pause / Stop con `HiloReproductor`, carátula y descripción |
+| `so/Reproductor.java`, `so/HiloReproductor.java` | Listo: reproducción de `.mp3` (JLayer) y `.wav` en su propio hilo |
+| `red/Servidor.java`, `red/AtenderCliente.java`, `red/Cliente.java` | Listo: sockets con los comandos `LOGIN`, `POST` y `FOLLOW` |
 
 Para compilar y arrancar (PowerShell):
 
