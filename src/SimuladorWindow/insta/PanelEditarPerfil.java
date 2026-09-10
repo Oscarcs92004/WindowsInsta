@@ -6,12 +6,11 @@ import SimuladorWindow.servicios.UsuarioServicio;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.io.File;
 
 /**
  * Editar perfil (enunciado 4.4, 4.10 y 4.13).
  *
- * Deja cambiar nombre, edad, contrasena y foto de perfil, y activar o
+ * Deja cambiar nombre, edad, contraseña y foto de perfil, y activar o
  * desactivar la cuenta. Al guardar, UsuarioServicio actualiza usuarios.sop.
  */
 public class PanelEditarPerfil extends JPanel {
@@ -19,76 +18,103 @@ public class PanelEditarPerfil extends JPanel {
     private final UsuarioServicio usuarios;
     private final Usuario usuarioActual;
 
+    private final JLabel avatar = new JLabel("", SwingConstants.CENTER);
     private final JTextField txtNombre = new JTextField(20);
     private final JTextField txtEdad = new JTextField(4);
     private final JPasswordField txtClave = new JPasswordField(20);
     private final JTextField txtFoto = new JTextField(20);
     private final JLabel lblEstado = new JLabel();
 
+    private final PanelFeed form = new PanelFeed();
+
     public PanelEditarPerfil(InstaServicio insta, UsuarioServicio usuarios,
                              Usuario usuarioActual, PanelInsta panelInsta) {
         this.usuarios = usuarios;
         this.usuarioActual = usuarioActual;
 
-        setBackground(EstiloInsta.FONDO);
-        setLayout(new GridBagLayout());
-        setBorder(EstiloInsta.margen(12, 14, 12, 14));
-        GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(3, 0, 3, 0);
-        c.anchor = GridBagConstraints.WEST;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.weightx = 1;
-        c.gridx = 0;
+        setBackground(EstiloInsta.BLANCO);
+        setLayout(new BorderLayout());
+
+        // Cabecera con la flecha de volver.
+        JButton volver = new JButton("‹");
+        volver.setFont(EstiloInsta.TITULO);
+        volver.setContentAreaFilled(false);
+        volver.setBorderPainted(false);
+        volver.setFocusPainted(false);
+        volver.setForeground(EstiloInsta.TEXTO);
+        volver.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        volver.addActionListener(e -> panelInsta.volverAlPerfil());
+        JLabel titulo = new JLabel("Editar perfil");
+        titulo.setFont(EstiloInsta.FUERTE.deriveFont(15f));
+        JPanel cab = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 4));
+        cab.setBackground(EstiloInsta.BLANCO);
+        cab.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, EstiloInsta.BORDE));
+        cab.add(volver);
+        cab.add(titulo);
+        add(cab, BorderLayout.NORTH);
+
+        // Formulario.
+        form.setBackground(EstiloInsta.BLANCO);
+        form.setBorder(EstiloInsta.margen(14, 16, 14, 16));
 
         txtFoto.setEditable(false);
         EstiloInsta.estiloCampo(txtNombre);
         EstiloInsta.estiloCampo(txtEdad);
         EstiloInsta.estiloCampo(txtClave);
         EstiloInsta.estiloCampo(txtFoto);
-        JButton btnFoto = EstiloInsta.botonSecundario("Elegir foto");
+
+        avatar.setAlignmentX(CENTER_ALIGNMENT);
+        JButton btnFoto = EstiloInsta.enlace("Cambiar foto de perfil");
+        btnFoto.setAlignmentX(CENTER_ALIGNMENT);
         btnFoto.addActionListener(e -> elegirFoto());
 
-        int fila = 0;
-        JButton btnVolver = EstiloInsta.enlace("< Volver al perfil");
-        btnVolver.addActionListener(e -> panelInsta.volverAlPerfil());
-        c.gridy = fila++; add(btnVolver, c);
+        form.add(centrado(avatar));
+        form.add(Box.createVerticalStrut(4));
+        form.add(centrado(btnFoto));
+        form.add(Box.createVerticalStrut(14));
 
-        JLabel titulo = new JLabel("Editar perfil");
-        titulo.setFont(EstiloInsta.TITULO);
-        c.gridy = fila++; add(titulo, c);
-
-        fila = etiquetaCampo(c, fila, "Nombre completo:", txtNombre);
-        fila = etiquetaCampo(c, fila, "Edad:", txtEdad);
-        fila = etiquetaCampo(c, fila, "Contrasena:", txtClave);
-        fila = etiquetaCampo(c, fila, "Foto de perfil:", txtFoto);
-        c.gridy = fila++; add(btnFoto, c);
+        form.add(etiqueta("Nombre completo"));
+        form.add(campo(txtNombre));
+        form.add(etiqueta("Edad"));
+        form.add(campo(txtEdad));
+        form.add(etiqueta("Contraseña"));
+        form.add(campo(txtClave));
+        form.add(etiqueta("Foto de perfil"));
+        form.add(campo(txtFoto));
+        form.add(Box.createVerticalStrut(14));
 
         JButton btnGuardar = EstiloInsta.botonPrimario("Guardar cambios");
         btnGuardar.addActionListener(e -> guardar());
-        c.gridy = fila++; c.insets = new Insets(12, 0, 6, 0); add(btnGuardar, c);
-        c.insets = new Insets(3, 0, 3, 0);
+        form.add(anchoCompleto(btnGuardar));
+        form.add(Box.createVerticalStrut(18));
 
-        c.gridy = fila++; add(new JLabel("Estado de la cuenta:"), c);
-        c.gridy = fila++; add(lblEstado, c);
+        form.add(sep());
+        form.add(Box.createVerticalStrut(10));
+        form.add(etiqueta("Estado de la cuenta"));
+        lblEstado.setAlignmentX(LEFT_ALIGNMENT);
+        form.add(lblEstado);
+        form.add(Box.createVerticalStrut(6));
         JButton btnEstado = EstiloInsta.botonSecundario("Activar / Desactivar cuenta");
         btnEstado.addActionListener(e -> cambiarEstado());
-        c.gridy = fila++; add(btnEstado, c);
+        form.add(anchoCompleto(btnEstado));
+        form.add(Box.createVerticalStrut(14));
 
-        JButton btnSalir = EstiloInsta.enlace("Cerrar sesion");
+        JButton btnSalir = EstiloInsta.enlace("Cerrar sesión");
         btnSalir.setForeground(EstiloInsta.ROJO);
+        btnSalir.setAlignmentX(LEFT_ALIGNMENT);
         btnSalir.addActionListener(e -> panelInsta.cerrarSesion());
-        c.gridy = fila++; add(btnSalir, c);
+        form.add(btnSalir);
+        form.add(Box.createVerticalGlue());
+
+        JScrollPane scroll = new JScrollPane(form,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setBorder(null);
+        scroll.getViewport().setBackground(EstiloInsta.BLANCO);
+        EstiloInsta.scrollFino(scroll);
+        add(scroll, BorderLayout.CENTER);
 
         recargar();
-    }
-
-    /** Etiqueta en una linea y el campo a lo ancho debajo. */
-    private int etiquetaCampo(GridBagConstraints c, int fila, String etiqueta, JComponent campo) {
-        JLabel l = new JLabel(etiqueta);
-        l.setFont(EstiloInsta.NORMAL);
-        c.gridy = fila; add(l, c);
-        c.gridy = fila + 1; add(campo, c);
-        return fila + 2;
     }
 
     public void recargar() {
@@ -96,34 +122,40 @@ public class PanelEditarPerfil extends JPanel {
         txtEdad.setText(String.valueOf(usuarioActual.getEdad()));
         txtClave.setText(usuarioActual.getPassword());
         txtFoto.setText(usuarioActual.getFotoPerfil() == null ? "" : usuarioActual.getFotoPerfil());
-        lblEstado.setText(usuarioActual.isActiva() ? "activa" : "inactiva");
+        avatar.setIcon(EstiloInsta.avatar(usuarioActual.getFotoPerfil(),
+                usuarioActual.getUsername(), 88));
+        lblEstado.setText(usuarioActual.isActiva() ? "Activa" : "Desactivada");
+        lblEstado.setForeground(usuarioActual.isActiva()
+                ? EstiloInsta.TEXTO : EstiloInsta.ROJO);
     }
 
     private void elegirFoto() {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileFilter(new FileNameExtensionFilter(
-                "Imagenes (png, jpg)", "png", "jpg", "jpeg"));
+                "Imágenes (png, jpg)", "png", "jpg", "jpeg"));
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             txtFoto.setText(chooser.getSelectedFile().getPath());
+            avatar.setIcon(EstiloInsta.avatar(chooser.getSelectedFile().getPath(),
+                    usuarioActual.getUsername(), 88));
         }
     }
 
     private void guardar() {
         String nombre = txtNombre.getText().trim();
         if (nombre.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "El nombre no puede quedar vacio.");
+            JOptionPane.showMessageDialog(this, "El nombre no puede quedar vacío.");
             return;
         }
         int edad;
         try {
             edad = Integer.parseInt(txtEdad.getText().trim());
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "La edad debe ser un numero.");
+            JOptionPane.showMessageDialog(this, "La edad debe ser un número.");
             return;
         }
         String clave = new String(txtClave.getPassword());
         if (clave.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "La contrasena no puede quedar vacia.");
+            JOptionPane.showMessageDialog(this, "La contraseña no puede quedar vacía.");
             return;
         }
 
@@ -140,7 +172,7 @@ public class PanelEditarPerfil extends JPanel {
     private void cambiarEstado() {
         if (usuarioActual.isActiva()) {
             int op = JOptionPane.showConfirmDialog(this,
-                    "Desactivar tu cuenta? No apareceras en busquedas ni en el timeline.",
+                    "¿Desactivar tu cuenta? No aparecerás en búsquedas ni en el timeline.",
                     "Confirmar", JOptionPane.YES_NO_OPTION);
             if (op != JOptionPane.YES_OPTION) {
                 return;
@@ -154,5 +186,47 @@ public class PanelEditarPerfil extends JPanel {
             JOptionPane.showMessageDialog(this, "Cuenta reactivada.");
         }
         recargar();
+    }
+
+    // -----------------------------------------------------------------
+
+    private JLabel etiqueta(String texto) {
+        JLabel l = new JLabel(texto);
+        l.setFont(EstiloInsta.CHICA);
+        l.setForeground(EstiloInsta.TEXTO_GRIS);
+        l.setAlignmentX(LEFT_ALIGNMENT);
+        l.setBorder(EstiloInsta.margen(6, 0, 3, 0));
+        return l;
+    }
+
+    private JComponent campo(JComponent c) {
+        c.setAlignmentX(LEFT_ALIGNMENT);
+        c.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        return c;
+    }
+
+    private JComponent anchoCompleto(JComponent comp) {
+        JPanel p = new JPanel(new BorderLayout());
+        p.setOpaque(false);
+        p.setAlignmentX(LEFT_ALIGNMENT);
+        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        p.add(comp, BorderLayout.CENTER);
+        return p;
+    }
+
+    private JComponent centrado(JComponent comp) {
+        JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        p.setOpaque(false);
+        p.setAlignmentX(LEFT_ALIGNMENT);
+        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, comp.getPreferredSize().height + 4));
+        p.add(comp);
+        return p;
+    }
+
+    private JComponent sep() {
+        JSeparator s = new JSeparator();
+        s.setAlignmentX(LEFT_ALIGNMENT);
+        s.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2));
+        return s;
     }
 }

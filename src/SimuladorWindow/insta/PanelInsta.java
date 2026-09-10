@@ -233,10 +233,10 @@ public class PanelInsta extends JPanel {
         irA("PERFIL", 4);
     }
 
-    /** La usa el boton "Cerrar sesion" del propio perfil: vuelve al login de
-     *  INSTA+ (no cierra la sesion de Windows). */
+    /** La usa el boton "Cerrar sesión" del propio perfil: vuelve al login de
+     *  INSTA+ (no cierra la sesión de Windows). */
     public void cerrarSesion() {
-        int op = JOptionPane.showConfirmDialog(this, "Cerrar sesion de INSTA+?",
+        int op = JOptionPane.showConfirmDialog(this, "¿Cerrar sesión de INSTA+?",
                 "Confirmar", JOptionPane.YES_NO_OPTION);
         if (op == JOptionPane.YES_OPTION) {
             sesionActiva = false;         // corta el hilo de avisos
