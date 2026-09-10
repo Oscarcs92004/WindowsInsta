@@ -78,7 +78,7 @@ public class TarjetaPublicacion extends JPanel {
 
         JPanel izq = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         izq.setOpaque(false);
-        izq.add(new JLabel(EstiloInsta.avatarAnillo(foto, publicacion.getAutor(), 34)));
+        izq.add(new JLabel(EstiloInsta.avatar(foto, publicacion.getAutor(), 32)));
 
         JLabel usuario = new JLabel(publicacion.getAutor());
         usuario.setFont(EstiloInsta.FUERTE);

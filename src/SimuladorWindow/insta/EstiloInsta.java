@@ -34,17 +34,6 @@ public final class EstiloInsta {
     public static final Color AZUL_OSCURO = new Color(0, 55, 107);
     public static final Color ROJO        = new Color(237, 73, 86);
 
-    /**
-     * El degradado del anillo de las historias de Instagram (amarillo ->
-     * naranja -> rosa -> morado -> azul), en diagonal.
-     */
-    private static final float[] PARADAS_ANILLO = {0f, 0.25f, 0.5f, 0.75f, 1f};
-    private static final Color[] COLORES_ANILLO = {
-            new Color(0xFE, 0xDA, 0x75), new Color(0xFA, 0x7E, 0x1E),
-            new Color(0xD6, 0x29, 0x76), new Color(0x96, 0x2F, 0xBF),
-            new Color(0x4F, 0x5B, 0xD5),
-    };
-
     // La fuente del logo: "Brush Script MT" (sin negrita ni cursiva forzada)
     // es la mas parecida a la letra manuscrita del logo real de Instagram.
     public static final Font LOGO    = elegirFuente(30, Font.PLAIN,
@@ -350,37 +339,6 @@ public final class EstiloInsta {
     }
 
     /**
-     * El mismo avatar pero rodeado del anillo con el degradado de las historias
-     * de Instagram (amarillo -> rosa -> morado). Se usa en la fila de historias
-     * y en la cabecera del feed.
-     */
-    public static ImageIcon avatarAnillo(String rutaFoto, String username, int tam) {
-        BufferedImage salida = new BufferedImage(tam, tam, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = salida.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        int grosorAnillo = Math.max(2, tam / 16);
-        int hueco = Math.max(1, tam / 22);           // el aro blanco entre anillo y foto
-
-        // Anillo: circulo relleno con el degradado en diagonal.
-        g.setPaint(new LinearGradientPaint(0, tam, tam, 0, PARADAS_ANILLO, COLORES_ANILLO));
-        g.fillOval(0, 0, tam, tam);
-
-        // Hueco blanco.
-        int d2 = tam - 2 * grosorAnillo;
-        g.setColor(BLANCO);
-        g.fillOval(grosorAnillo, grosorAnillo, d2, d2);
-
-        // La foto, mas adentro.
-        int off = grosorAnillo + hueco;
-        int dFoto = tam - 2 * off;
-        dibujarCirculoAvatar(g, rutaFoto, username, off, off, dFoto);
-
-        g.dispose();
-        return new ImageIcon(salida);
-    }
-
-    /**
      * El avatar con un círculo azul con un "+" abajo a la derecha, como el
      * "Tu historia" de Instagram.
      */
@@ -441,6 +399,7 @@ public final class EstiloInsta {
         JLabel l = new JLabel("Instagram");
         l.setFont(LOGO.deriveFont(tam));
         l.setForeground(TEXTO);
+        l.setAlignmentX(Component.CENTER_ALIGNMENT);
         return l;
     }
 
