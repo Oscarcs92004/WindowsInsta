@@ -339,24 +339,24 @@ public final class EstiloInsta {
     }
 
     /**
-     * El avatar con un círculo azul con un "+" abajo a la derecha, como el
-     * "Tu historia" de Instagram.
+     * El mismo avatar (del mismo tamaño que {@link #avatar}) con un círculo azul
+     * con un "+" pegado al borde de abajo a la derecha, como el "Tu historia"
+     * de Instagram.
      */
     public static ImageIcon avatarMasBadge(String rutaFoto, String username, int tam) {
         BufferedImage salida = new BufferedImage(tam, tam, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = salida.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        int d = (int) (tam * 0.82);
-        dibujarCirculoAvatar(g, rutaFoto, username, (tam - d) / 2, 0, d);
+        dibujarCirculoAvatar(g, rutaFoto, username, 0, 0, tam);
         g.setColor(BORDE);
-        g.drawOval((tam - d) / 2, 0, d - 1, d - 1);
+        g.drawOval(0, 0, tam - 1, tam - 1);
 
-        int badge = tam / 3;
+        int badge = Math.round(tam * 0.34f);
         int bx = tam - badge;
         int by = tam - badge;
-        g.setColor(BLANCO);
-        g.fillOval(bx - 2, by - 2, badge + 4, badge + 4);
+        g.setColor(BLANCO);                       // aro blanco que separa el "+" de la foto
+        g.fillOval(bx - 3, by - 3, badge + 6, badge + 6);
         g.setColor(AZUL);
         g.fillOval(bx, by, badge, badge);
         g.setColor(BLANCO);
