@@ -23,6 +23,9 @@ public final class IconosInsta {
     public static final String CORAZON = "corazon";
     public static final String PERSONA = "persona";
     public static final String MENSAJE = "mensaje";
+    public static final String AVION   = "avion";     // compartir (enviar)
+    public static final String GUARDAR = "guardar";   // marcador
+    public static final String OPCIONES = "opciones"; // los tres puntos "..."
 
     /** Icono de {@code tam} px. {@code activo} lo dibuja relleno / mas grueso. */
     public static ImageIcon icono(String nombre, int tam, boolean activo) {
@@ -82,6 +85,44 @@ public final class IconosInsta {
                 tail.lineTo(p + s * 0.25, p + s);
                 tail.lineTo(p + s * 0.5, p + s * 0.8);
                 g.draw(tail);
+                break;
+            }
+            case AVION: {
+                // Avion de papel (el boton "compartir" de Instagram).
+                Path2D av = new Path2D.Double();
+                av.moveTo(p + s, p);
+                av.lineTo(p, p + s * 0.45);
+                av.lineTo(p + s * 0.45, p + s * 0.58);
+                av.lineTo(p + s * 0.62, p + s);
+                av.closePath();
+                g.draw(av);
+                g.draw(new java.awt.geom.Line2D.Double(
+                        p + s, p, p + s * 0.45, p + s * 0.58));
+                break;
+            }
+            case GUARDAR: {
+                // Marcador (bookmark).
+                Path2D bm = new Path2D.Double();
+                bm.moveTo(p + s * 0.2, p);
+                bm.lineTo(p + s * 0.8, p);
+                bm.lineTo(p + s * 0.8, p + s);
+                bm.lineTo(p + s * 0.5, p + s * 0.72);
+                bm.lineTo(p + s * 0.2, p + s);
+                bm.closePath();
+                if (activo) {
+                    g.fill(bm);
+                } else {
+                    g.draw(bm);
+                }
+                break;
+            }
+            case OPCIONES: {
+                double d = Math.max(1.6, tam * 0.09);
+                for (int i = 0; i < 3; i++) {
+                    double cx = p + s * (0.5) + (i - 1) * s * 0.32;
+                    g.fill(new java.awt.geom.Ellipse2D.Double(
+                            cx - d / 2, p + s / 2 - d / 2, d, d));
+                }
                 break;
             }
             default:

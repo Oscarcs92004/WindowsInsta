@@ -220,10 +220,9 @@ public class PanelInbox extends JPanel {
             }
             burbuja.add(img);
         } else {
-            JLabel texto = new JLabel("<html><body style='width:200px'>"
-                    + m.getTexto().replace("<", "&lt;") + "</body></html>");
+            JLabel texto = EstiloInsta.textoHtml(
+                    EstiloInsta.escaparHtml(m.getTexto()), 210);
             texto.setForeground(mio ? Color.WHITE : EstiloInsta.TEXTO);
-            texto.setFont(EstiloInsta.NORMAL);
             burbuja.add(texto);
         }
 

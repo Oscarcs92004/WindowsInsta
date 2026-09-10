@@ -18,6 +18,9 @@ public class PanelInsta extends JPanel {
     private final JPanel contenedor = new JPanel(cartas);
     private final Runnable alCerrarSesion;
 
+    /** La cuenta de INSTA+ con la que se entró (para la foto de la barra). */
+    private final Usuario usuarioSesion;
+
     /** Mientras esta sesion de INSTA+ este activa, el hilo de avisos corre. */
     private volatile boolean sesionActiva = true;
 
@@ -39,25 +42,26 @@ public class PanelInsta extends JPanel {
     public PanelInsta(InstaServicio insta, UsuarioServicio usuarios,
                       Usuario usuarioActual, Runnable alCerrarSesion) {
         this.alCerrarSesion = alCerrarSesion;
+        this.usuarioSesion = usuarioActual;
         insta.asegurarCarpetaUsuario(usuarioActual.getUsername());
 
         panelPerfil        = new PanelPerfil(insta, usuarios, usuarioActual, this);
         panelCrear         = new PanelCrear(insta, usuarioActual);
-        panelTimeline      = new PanelTimeline(insta, usuarios, usuarioActual);
-        panelInteracciones = new PanelInteracciones(insta, usuarioActual);
+        panelTimeline      = new PanelTimeline(insta, usuarios, usuarioActual, this);
+        panelInteracciones = new PanelInteracciones(insta, usuarios, usuarioActual, this);
         panelBuscarPerfil  = new PanelBuscarPerfil(insta, usuarios, usuarioActual, this);
-        panelBuscarHashtag = new PanelBuscarHashtag(insta, usuarios);
+        panelBuscarHashtag = new PanelBuscarHashtag(insta, usuarios, this);
         panelInbox         = new PanelInbox(insta, usuarios, usuarioActual);
         panelEditar        = new PanelEditarPerfil(insta, usuarios, usuarioActual, this);
 
         contenedor.setBackground(EstiloInsta.FONDO);
-        contenedor.add(envolver(panelPerfil),        "PERFIL");
-        contenedor.add(envolver(panelCrear),        "CARGAR");
-        contenedor.add(envolver(panelTimeline),      "TIMELINE");
-        contenedor.add(envolver(panelInteracciones), "INTERACCIONES");
-        contenedor.add(envolver(buscarConPestanas()), "BUSCAR");
-        contenedor.add(envolver(panelInbox),         "INBOX");
-        contenedor.add(envolver(panelEditar),        "EDITAR");
+        contenedor.add(envolver(panelPerfil),   "PERFIL");
+        contenedor.add(envolver(panelCrear),    "CARGAR");
+        contenedor.add(panelTimeline,           "TIMELINE");      // trae su propio scroll
+        contenedor.add(panelInteracciones,      "INTERACCIONES"); // trae su propio scroll
+        contenedor.add(panelBuscar(),           "BUSCAR");
+        contenedor.add(envolver(panelInbox),    "INBOX");
+        contenedor.add(envolver(panelEditar),   "EDITAR");
 
         setLayout(new BorderLayout());
         setBackground(EstiloInsta.BLANCO);
@@ -80,13 +84,11 @@ public class PanelInsta extends JPanel {
                 BorderFactory.createMatteBorder(0, 0, 1, 0, EstiloInsta.BORDE),
                 EstiloInsta.margen(8, 14, 8, 14)));
 
-        JLabel logo = new JLabel("Instagram");
-        logo.setFont(EstiloInsta.LOGO.deriveFont(22f));
-        logo.setForeground(EstiloInsta.TEXTO);
-        barra.add(logo, BorderLayout.WEST);
+        barra.add(EstiloInsta.wordmark(24f), BorderLayout.WEST);
 
         botonMensajes = new JButton(IconosInsta.icono(IconosInsta.MENSAJE, 24, false));
         planoIcono(botonMensajes);
+        botonMensajes.setToolTipText("Mensajes");
         botonMensajes.addActionListener(e -> { panelInbox.recargar(); irA("INBOX", -1); });
         barra.add(botonMensajes, BorderLayout.EAST);
         return barra;
@@ -105,6 +107,7 @@ public class PanelInsta extends JPanel {
         navBotones[1] = navBoton(IconosInsta.LUPA,    () -> irA("BUSCAR", 1));
         navBotones[2] = navBoton(IconosInsta.MAS,     () -> { panelCrear.recargar();        irA("CARGAR", 2); });
         navBotones[3] = navBoton(IconosInsta.CORAZON, () -> { panelInteracciones.recargar(); irA("INTERACCIONES", 3); });
+        // El 5º botón muestra tu foto de perfil (como la app real).
         navBotones[4] = navBoton(IconosInsta.PERSONA, () -> { panelPerfil.mostrarMio();      irA("PERFIL", 4); });
 
         for (JButton b : navBotones) {
@@ -114,12 +117,23 @@ public class PanelInsta extends JPanel {
     }
 
     private JButton navBoton(String icono, Runnable accion) {
-        JButton b = new JButton(IconosInsta.icono(icono, 26, false));
+        JButton b = new JButton(iconoNav(icono, false));
         b.putClientProperty("icono", icono);
         planoIcono(b);
         b.setBorder(EstiloInsta.margen(10, 0, 10, 0));
         b.addActionListener(e -> accion.run());
         return b;
+    }
+
+    /** El icono de un botón de la barra inferior según si está activo o no. */
+    private Icon iconoNav(String nombre, boolean activo) {
+        if (IconosInsta.PERSONA.equals(nombre)) {
+            String foto = usuarioSesion.getFotoPerfil();
+            return activo
+                    ? EstiloInsta.avatarAnillo(foto, usuarioSesion.getUsername(), 28)
+                    : EstiloInsta.avatar(foto, usuarioSesion.getUsername(), 26);
+        }
+        return IconosInsta.icono(nombre, 26, activo);
     }
 
     private void planoIcono(JButton b) {
@@ -132,12 +146,51 @@ public class PanelInsta extends JPanel {
 
     // -----------------------------------------------------------------
 
-    private JComponent buscarConPestanas() {
-        JTabbedPane tabs = new JTabbedPane();
-        tabs.setFont(EstiloInsta.NORMAL);
-        tabs.addTab("Personas", panelBuscarPerfil);
-        tabs.addTab("Hashtags", panelBuscarHashtag);
-        return tabs;
+    /**
+     * La pantalla de Buscar: arriba un control de dos opciones (Personas /
+     * Hashtags) y debajo el panel que toque, cambiando con un CardLayout.
+     */
+    private JComponent panelBuscar() {
+        CardLayout cl = new CardLayout();
+        JPanel cuerpo = new JPanel(cl);
+        cuerpo.add(panelBuscarPerfil, "PERSONAS");   // cada uno trae su propio scroll
+        cuerpo.add(panelBuscarHashtag, "HASHTAGS");
+
+        JToggleButton personas = segmento("Personas", true);
+        JToggleButton hashtags = segmento("Hashtags", false);
+        ButtonGroup grupo = new ButtonGroup();
+        grupo.add(personas);
+        grupo.add(hashtags);
+        personas.addActionListener(e -> cl.show(cuerpo, "PERSONAS"));
+        hashtags.addActionListener(e -> cl.show(cuerpo, "HASHTAGS"));
+
+        JPanel barra = new JPanel(new GridLayout(1, 2));
+        barra.setBackground(EstiloInsta.BLANCO);
+        barra.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, EstiloInsta.BORDE));
+        barra.add(personas);
+        barra.add(hashtags);
+
+        JPanel todo = new JPanel(new BorderLayout());
+        todo.setBackground(EstiloInsta.FONDO);
+        todo.add(barra, BorderLayout.NORTH);
+        todo.add(cuerpo, BorderLayout.CENTER);
+        return todo;
+    }
+
+    private JToggleButton segmento(String texto, boolean elegido) {
+        JToggleButton b = new JToggleButton(texto, elegido);
+        b.setFont(EstiloInsta.FUERTE);
+        b.setForeground(EstiloInsta.TEXTO);
+        b.setBackground(EstiloInsta.BLANCO);
+        b.setFocusPainted(false);
+        b.setContentAreaFilled(false);
+        b.setOpaque(true);
+        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        // Subrayado negro cuando está seleccionado (como las pestañas de Instagram).
+        b.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, EstiloInsta.BLANCO));
+        b.addChangeListener(e -> b.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0,
+                b.isSelected() ? EstiloInsta.TEXTO : EstiloInsta.BLANCO)));
+        return b;
     }
 
     private JScrollPane envolver(JComponent panel) {
@@ -146,7 +199,7 @@ public class PanelInsta extends JPanel {
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.setBorder(null);
         scroll.getViewport().setBackground(EstiloInsta.FONDO);
-        scroll.getVerticalScrollBar().setUnitIncrement(18);
+        EstiloInsta.scrollFino(scroll);
         return scroll;
     }
 
@@ -185,7 +238,7 @@ public class PanelInsta extends JPanel {
         }
         for (int i = 0; i < navBotones.length; i++) {
             String ic = (String) navBotones[i].getClientProperty("icono");
-            navBotones[i].setIcon(IconosInsta.icono(ic, 26, i == navActivo));
+            navBotones[i].setIcon(iconoNav(ic, i == navActivo));
         }
     }
 
