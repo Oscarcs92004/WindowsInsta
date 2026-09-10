@@ -126,14 +126,12 @@ public class PanelPerfil extends JPanel {
         bio.setAlignmentX(LEFT_ALIGNMENT);
         datos.add(bio);
 
-        if (!u.isActiva()) {
-            JLabel inactiva = new JLabel("CUENTA DESACTIVADA");
-            inactiva.setFont(EstiloInsta.CHICA);
-            inactiva.setForeground(EstiloInsta.ROJO);
-            inactiva.setAlignmentX(LEFT_ALIGNMENT);
-            datos.add(Box.createVerticalStrut(2));
-            datos.add(inactiva);
-        }
+        // Estado de la cuenta (enunciado 4.5): siempre visible.
+        JLabel estado = new JLabel(u.isActiva() ? "Cuenta activa" : "Cuenta desactivada");
+        estado.setFont(EstiloInsta.CHICA);
+        estado.setForeground(u.isActiva() ? EstiloInsta.TEXTO_GRIS : EstiloInsta.ROJO);
+        estado.setAlignmentX(LEFT_ALIGNMENT);
+        datos.add(estado);
 
         JPanel bloque = new JPanel();
         bloque.setOpaque(false);
