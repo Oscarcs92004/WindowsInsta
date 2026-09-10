@@ -95,14 +95,12 @@ public class PanelTimeline extends JPanel {
     }
 
     // -----------------------------------------------------------------
-    //  Fila de historias (los círculos con el anillo de colores de arriba)
+    //  Fila de historias: una tira horizontal de fotos de perfil arriba
     // -----------------------------------------------------------------
 
     private JComponent filaHistorias() {
-        JPanel fila = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        JPanel fila = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
         fila.setBackground(EstiloInsta.BLANCO);
-        fila.setAlignmentX(LEFT_ALIGNMENT);
-        fila.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, EstiloInsta.BORDE));
 
         fila.add(historia(usuarioActual.getUsername(),
                 usuarioActual.getFotoPerfil(), "Tu historia", true));
@@ -119,19 +117,19 @@ public class PanelTimeline extends JPanel {
         JScrollPane scroll = new JScrollPane(fila,
                 JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scroll.setBorder(null);
+        scroll.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, EstiloInsta.BORDE));
         scroll.setAlignmentX(LEFT_ALIGNMENT);
-        scroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 96));
-        scroll.setPreferredSize(new Dimension(ANCHO_FEED, 96));
+        scroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 84));
+        scroll.setPreferredSize(new Dimension(ANCHO_FEED, 84));
         EstiloInsta.scrollFino(scroll);
         return scroll;
     }
 
-    /** Un círculo de historia: avatar con anillo y el nombre debajo. */
+    /** Un círculo de historia: la foto de perfil y el nombre debajo. */
     private JComponent historia(String username, String foto, String etiqueta, boolean propia) {
         JButton circulo = new JButton(propia
-                ? EstiloInsta.avatarMasBadge(foto, username, 62)
-                : EstiloInsta.avatarAnillo(foto, username, 62));
+                ? EstiloInsta.avatarMasBadge(foto, username, 56)
+                : EstiloInsta.avatar(foto, username, 54));
         circulo.setContentAreaFilled(false);
         circulo.setBorderPainted(false);
         circulo.setFocusPainted(false);
@@ -142,19 +140,22 @@ public class PanelTimeline extends JPanel {
 
         JLabel nombre = new JLabel(recortar(etiqueta), SwingConstants.CENTER);
         nombre.setFont(EstiloInsta.CHICA);
-        nombre.setForeground(EstiloInsta.TEXTO);
+        nombre.setForeground(propia ? EstiloInsta.TEXTO_GRIS : EstiloInsta.TEXTO);
         nombre.setAlignmentX(CENTER_ALIGNMENT);
 
         JPanel celda = new JPanel();
         celda.setOpaque(false);
         celda.setLayout(new BoxLayout(celda, BoxLayout.Y_AXIS));
         celda.add(circulo);
-        celda.add(Box.createVerticalStrut(2));
         celda.add(nombre);
         return celda;
     }
 
+    /** Nombres muy largos se acortan con "…" para que no descuadren la fila. */
     private static String recortar(String s) {
-        return s.length() <= 11 ? s : s.substring(0, 10) + "…";
+        if ("Tu historia".equals(s)) {
+            return s;
+        }
+        return s.length() <= 10 ? s : s.substring(0, 9) + "…";
     }
 }

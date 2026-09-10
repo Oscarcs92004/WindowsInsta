@@ -89,7 +89,7 @@ public class PanelPerfil extends JPanel {
 
         JPanel fila1 = new JPanel(new BorderLayout(14, 0));
         fila1.setOpaque(false);
-        fila1.add(new JLabel(EstiloInsta.avatarAnillo(u.getFotoPerfil(), u.getUsername(), 82)),
+        fila1.add(new JLabel(EstiloInsta.avatar(u.getFotoPerfil(), u.getUsername(), 82)),
                 BorderLayout.WEST);
 
         JPanel stats = new JPanel(new GridLayout(1, 3));

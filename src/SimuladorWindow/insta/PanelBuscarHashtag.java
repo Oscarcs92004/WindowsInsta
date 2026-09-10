@@ -38,18 +38,19 @@ public class PanelBuscarHashtag extends JPanel {
         setLayout(new BorderLayout());
 
         EstiloInsta.estiloCampo(txtHashtag);
-        txtHashtag.setToolTipText("Escribe el hashtag sin el #");
-        JButton btnBuscar = EstiloInsta.botonPrimario("Buscar");
-        btnBuscar.addActionListener(e -> buscar());
-        txtHashtag.addActionListener(e -> buscar());
-        JPanel arriba = new JPanel(new BorderLayout(6, 0));
+        EstiloInsta.placeholder(txtHashtag, "Buscar un hashtag");
+        txtHashtag.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { buscar(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { buscar(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { buscar(); }
+        });
+        JPanel arriba = new JPanel(new BorderLayout());
         arriba.setOpaque(true);
         arriba.setBackground(EstiloInsta.BLANCO);
         arriba.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0, EstiloInsta.BORDE),
                 EstiloInsta.margen(10, 12, 10, 12)));
         arriba.add(txtHashtag, BorderLayout.CENTER);
-        arriba.add(btnBuscar, BorderLayout.EAST);
         add(arriba, BorderLayout.NORTH);
 
         JScrollPane scroll = new JScrollPane(resultados,
@@ -64,12 +65,12 @@ public class PanelBuscarHashtag extends JPanel {
     }
 
     private void buscar() {
-        String palabra = txtHashtag.getText().trim();
+        String palabra = EstiloInsta.valorReal(txtHashtag).trim();
         if (palabra.startsWith("#")) {
             palabra = palabra.substring(1);
         }
         if (palabra.isEmpty()) {
-            mensaje("Escribe una palabra.");
+            mensaje("Escribe un hashtag para ver las publicaciones que lo usan.");
             return;
         }
 

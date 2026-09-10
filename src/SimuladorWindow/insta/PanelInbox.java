@@ -341,8 +341,9 @@ public class PanelInbox extends JPanel {
             contenido = img;                       // los stickers van sin burbuja
         } else {
             JPanel burbuja = EstiloInsta.burbuja(mio ? EstiloInsta.AZUL : new Color(239, 239, 239));
-            JLabel texto = EstiloInsta.textoHtml(EstiloInsta.escaparHtml(m.getTexto()), 210);
-            texto.setForeground(mio ? Color.WHITE : EstiloInsta.TEXTO);
+            String color = mio ? "#FFFFFF" : "#262626";
+            JLabel texto = EstiloInsta.textoHtml("<font color='" + color + "'>"
+                    + EstiloInsta.escaparHtml(m.getTexto()) + "</font>", 210);
             burbuja.add(texto);
             contenido = burbuja;
         }

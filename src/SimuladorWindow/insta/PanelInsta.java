@@ -54,14 +54,16 @@ public class PanelInsta extends JPanel {
         panelInbox         = new PanelInbox(insta, usuarios, usuarioActual);
         panelEditar        = new PanelEditarPerfil(insta, usuarios, usuarioActual, this);
 
+        // Cada panel trae su propio scroll interno; no se envuelven otra vez
+        // para que su ancho sea siempre el del área visible (nada se sale).
         contenedor.setBackground(EstiloInsta.FONDO);
-        contenedor.add(panelPerfil,             "PERFIL");        // trae su propio scroll
-        contenedor.add(envolver(panelCrear),    "CARGAR");
-        contenedor.add(panelTimeline,           "TIMELINE");      // trae su propio scroll
-        contenedor.add(panelInteracciones,      "INTERACCIONES"); // trae su propio scroll
-        contenedor.add(panelBuscar(),           "BUSCAR");
-        contenedor.add(envolver(panelInbox),    "INBOX");
-        contenedor.add(envolver(panelEditar),   "EDITAR");
+        contenedor.add(panelPerfil,        "PERFIL");
+        contenedor.add(panelCrear,         "CARGAR");
+        contenedor.add(panelTimeline,      "TIMELINE");
+        contenedor.add(panelInteracciones, "INTERACCIONES");
+        contenedor.add(panelBuscar(),      "BUSCAR");
+        contenedor.add(panelInbox,         "INBOX");
+        contenedor.add(panelEditar,        "EDITAR");
 
         setLayout(new BorderLayout());
         setBackground(EstiloInsta.BLANCO);
@@ -86,11 +88,21 @@ public class PanelInsta extends JPanel {
 
         barra.add(EstiloInsta.wordmark(24f), BorderLayout.WEST);
 
+        JButton avisos = new JButton(IconosInsta.icono(IconosInsta.CORAZON, 24, false));
+        planoIcono(avisos);
+        avisos.setToolTipText("Interacciones");
+        avisos.addActionListener(e -> { panelInteracciones.recargar(); irA("INTERACCIONES", 3); });
+
         botonMensajes = new JButton(IconosInsta.icono(IconosInsta.MENSAJE, 24, false));
         planoIcono(botonMensajes);
         botonMensajes.setToolTipText("Mensajes");
         botonMensajes.addActionListener(e -> { panelInbox.recargar(); irA("INBOX", -1); });
-        barra.add(botonMensajes, BorderLayout.EAST);
+
+        JPanel derecha = new JPanel(new FlowLayout(FlowLayout.RIGHT, 14, 0));
+        derecha.setOpaque(false);
+        derecha.add(avisos);
+        derecha.add(botonMensajes);
+        barra.add(derecha, BorderLayout.EAST);
         return barra;
     }
 
@@ -129,9 +141,8 @@ public class PanelInsta extends JPanel {
     private Icon iconoNav(String nombre, boolean activo) {
         if (IconosInsta.PERSONA.equals(nombre)) {
             String foto = usuarioSesion.getFotoPerfil();
-            return activo
-                    ? EstiloInsta.avatarAnillo(foto, usuarioSesion.getUsername(), 28)
-                    : EstiloInsta.avatar(foto, usuarioSesion.getUsername(), 26);
+            // Tu foto de perfil; cuando está activa, un poco más grande.
+            return EstiloInsta.avatar(foto, usuarioSesion.getUsername(), activo ? 28 : 24);
         }
         return IconosInsta.icono(nombre, 26, activo);
     }
@@ -164,16 +175,6 @@ public class PanelInsta extends JPanel {
         todo.add(barra, BorderLayout.NORTH);
         todo.add(cuerpo, BorderLayout.CENTER);
         return todo;
-    }
-
-    private JScrollPane envolver(JComponent panel) {
-        JScrollPane scroll = new JScrollPane(panel,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scroll.setBorder(null);
-        scroll.getViewport().setBackground(EstiloInsta.FONDO);
-        EstiloInsta.scrollFino(scroll);
-        return scroll;
     }
 
     /**

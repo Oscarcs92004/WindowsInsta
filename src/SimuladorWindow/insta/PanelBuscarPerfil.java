@@ -37,17 +37,19 @@ public class PanelBuscarPerfil extends JPanel {
         setLayout(new BorderLayout());
 
         EstiloInsta.estiloCampo(txtBuscar);
-        JButton btnBuscar = EstiloInsta.botonPrimario("Buscar");
-        btnBuscar.addActionListener(e -> buscar());
-        txtBuscar.addActionListener(e -> buscar());
-        JPanel arriba = new JPanel(new BorderLayout(6, 0));
+        EstiloInsta.placeholder(txtBuscar, "Buscar");
+        txtBuscar.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { buscar(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { buscar(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { buscar(); }
+        });
+        JPanel arriba = new JPanel(new BorderLayout());
         arriba.setOpaque(true);
         arriba.setBackground(EstiloInsta.BLANCO);
         arriba.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0, EstiloInsta.BORDE),
                 EstiloInsta.margen(10, 12, 10, 12)));
         arriba.add(txtBuscar, BorderLayout.CENTER);
-        arriba.add(btnBuscar, BorderLayout.EAST);
         add(arriba, BorderLayout.NORTH);
 
         resultados.setFixedCellHeight(56);
@@ -77,7 +79,7 @@ public class PanelBuscarPerfil extends JPanel {
     }
 
     private void buscar() {
-        String texto = txtBuscar.getText().trim().toLowerCase();
+        String texto = EstiloInsta.valorReal(txtBuscar).trim().toLowerCase();
         modelo.clear();
         if (texto.isEmpty()) {
             return;
