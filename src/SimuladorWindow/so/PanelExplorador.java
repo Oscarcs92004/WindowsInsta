@@ -137,10 +137,7 @@ public class PanelExplorador extends JPanel {
             refrescar();
         });
 
-        // TODO (Alex) - Iteracion 3.2b: RENOMBRAR
-        //   File sel = archivoSeleccionado();
-        //   String nuevo = JOptionPane.showInputDialog(...);
-        //   sel.renameTo(new File(sel.getParentFile(), nuevo));  luego refrescar();
+        // Renombrar: pide un nombre nuevo y usa File.renameTo (enunciado 3.3).
         btnRenombrar.addActionListener(e -> {
             File sel = archivoSeleccionado();
             if (sel == null) {
@@ -167,8 +164,7 @@ public class PanelExplorador extends JPanel {
             refrescar();
         });
 
-        // TODO (Alex) - Iteracion 3.2b: COPIAR
-        //   portapapeles = archivoSeleccionado();   (guardar la ruta y ya)
+        // Copiar: solo guarda la ruta del seleccionado para el Pegar posterior.
         btnCopiar.addActionListener(e -> {
             File sel = archivoSeleccionado();
             if (sel == null) {
@@ -181,11 +177,8 @@ public class PanelExplorador extends JPanel {
                     "Copiado: " + sel.getName());
         });
 
-        // TODO (Alex) - Iteracion 3.2b: PEGAR
-        //   File destino = new File(carpetaDestino(), portapapeles.getName());
-        //   Files.copy(portapapeles.toPath(), destino.toPath(),
-        //              StandardCopyOption.REPLACE_EXISTING);
-        //   si portapapeles es carpeta, recorrer y copiar cada archivo. refrescar();
+        // Pegar: copia el archivo (o la carpeta entera, recursivo) a la carpeta
+        // destino, evitando pegar una carpeta dentro de si misma.
         btnPegar.addActionListener(e -> {
             if (portapapeles == null) {
                 JOptionPane.showMessageDialog(this,
@@ -226,19 +219,15 @@ public class PanelExplorador extends JPanel {
             refrescar();
         });
 
-        // TODO (Alex) - Iteracion 3.2c: ORDENAR
-        //   pedir el criterio (nombre / fecha / tipo / tamano) con un JComboBox
-        //   y ordenar los hijos con un Comparator<File> antes de pintar el arbol.
+        // Ordenar: guarda el criterio elegido; agregarHijos() ordena con él.
         btnOrdenar.addActionListener(e -> {
             criterioOrden = (String) cmbOrden.getSelectedItem();
             refrescar();
         });
 
-        // TODO (Oscar) - Iteracion 3.8: ORGANIZAR
-        //   recorrer la carpeta seleccionada y mover cada archivo a las
-        //   subcarpetas imagenes/ documentos/ musica/ segun su extension.
-        //   Hacerlo con un SwingWorker (no congelar la ventana) y guardar las
-        //   rutas de cada tipo en una ListaEnlazada por categoria.
+        // Organizar: mueve cada archivo de la carpeta a una subcarpeta segun su
+        // tipo. Corre en un SwingWorker (no congela la ventana) y clasifica en
+        // una ListaEnlazada por categoria (enunciado 2.4 y 3.3).
         btnOrganizar.addActionListener(e -> {
             File carpetaOrganizar = carpetaDestino();
             int resp = JOptionPane.showConfirmDialog(this,
@@ -488,12 +477,6 @@ public class PanelExplorador extends JPanel {
                 agregarHijos(nodoHijo, hijo);
             }
         }
-    }
-
-    //ya no se ocupa en esta clase
-    private void pendiente(String accion) {
-        JOptionPane.showMessageDialog(this,
-                accion + ": falta implementarlo (ver el comentario TODO en PanelExplorador).");
     }
 
     /** Hace que el arbol muestre solo el nombre del archivo, no la ruta entera. */

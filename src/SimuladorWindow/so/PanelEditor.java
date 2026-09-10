@@ -24,13 +24,13 @@ import java.util.ArrayList;
 
 
 /**
- * Editor de texto (enunciado 3.4).
+ * Editor de texto con formato (enunciado 3.4).
  *
- * YA FUNCIONA: crear, abrir y guardar archivos .txt (texto plano, UTF-8).
- *
- * FALTA (Oscar, Iteracion 3.5): la barra de formato (color, tipo y tamano de
- * fuente) y guardar ese formato en un archivo paralelo <nombre>.txt.fmt para
- * que se conserve al reabrir. Ver la clase TramoFormato.
+ * Crea, abre y guarda archivos de texto plano .txt (UTF-8) y, ademas, tiene una
+ * barra para dar formato al texto: color, tipo y tamano de fuente, negrita /
+ * cursiva / subrayado, alineacion y tablas. Ese formato se guarda en un
+ * documento propio .edt (ver el paquete {@code so.editor} y
+ * {@code persistencia.PersistenciaEDT}) para que se conserve al reabrir.
  */
 public class PanelEditor extends JPanel {
 
