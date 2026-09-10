@@ -142,7 +142,46 @@ public final class Estilo {
         campo.setBackground(Color.WHITE);
         campo.setBorder(BorderFactory.createCompoundBorder(
                 hundido(),
-                BorderFactory.createEmptyBorder(2, 4, 2, 4)));
+                BorderFactory.createEmptyBorder(3, 5, 3, 5)));
+    }
+
+    /** El mismo aspecto hundido para un desplegable (JComboBox). */
+    public static void aplicarCombo(JComboBox<?> combo) {
+        combo.setFont(NORMAL);
+        combo.setBackground(Color.WHITE);
+        combo.setForeground(TEXTO_OSCURO);
+    }
+
+    // ------------------------------------------------------------------
+    //  Fondo de las pantallas que flotan sobre el escritorio
+    // ------------------------------------------------------------------
+
+    /**
+     * Pinta el fondo del login y del registro: el teal clasico de Windows 98
+     * con un degradado vertical suave y un halo de luz en el centro, para que
+     * el cuadro de dialogo no flote sobre un color totalmente plano.
+     *
+     * Se llama desde {@code paintComponent} del panel.
+     */
+    public static void pintarFondoEscritorio(Graphics g, JComponent c) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        int w = c.getWidth();
+        int h = c.getHeight();
+
+        g2.setPaint(new GradientPaint(0, 0, new Color(0, 150, 148),
+                0, h, new Color(0, 94, 100)));
+        g2.fillRect(0, 0, w, h);
+
+        int radio = Math.max(1, Math.max(w, h) * 3 / 5);
+        g2.setPaint(new RadialGradientPaint(
+                new Point(w / 2, h / 2), radio,
+                new float[] {0f, 1f},
+                new Color[] {new Color(255, 255, 255, 42),
+                             new Color(255, 255, 255, 0)}));
+        g2.fillRect(0, 0, w, h);
+        g2.dispose();
     }
 
     // ------------------------------------------------------------------
@@ -164,34 +203,56 @@ public final class Estilo {
 
     /**
      * Envuelve un campo de contrasena (ya con estilo de {@link #aplicarCampo})
-     * junto a un boton "Mostrar / Ocultar" que deja ver o esconde lo que se
-     * escribe.
+     * con una casilla "Mostrar contrasena" debajo, que deja ver o esconde lo
+     * que se escribe. La casilla debajo (y no un boton al lado) mantiene el
+     * cuadro de dialogo estrecho.
      */
     public static JComponent campoClaveConToggle(JPasswordField clave) {
         final char eco = clave.getEchoChar();
 
-        JToggleButton ver = new JToggleButton("Mostrar");
-        ver.setFont(NORMAL);
-        ver.setFocusable(false);
-        ver.setBackground(PANEL);
-        ver.setBorder(BorderFactory.createCompoundBorder(
-                relieve(), BorderFactory.createEmptyBorder(2, 8, 2, 8)));
-        ver.addActionListener(e -> {
-            boolean visible = ver.isSelected();
-            clave.setEchoChar(visible ? (char) 0 : eco);
-            ver.setText(visible ? "Ocultar" : "Mostrar");
-        });
+        clave.setMaximumSize(new Dimension(Integer.MAX_VALUE,
+                clave.getPreferredSize().height));
 
-        JPanel fila = new JPanel(new BorderLayout(4, 0));
-        fila.setOpaque(false);
-        fila.add(clave, BorderLayout.CENTER);
-        fila.add(ver, BorderLayout.EAST);
-        return fila;
+        JCheckBox ver = new JCheckBox("Mostrar contraseña");
+        ver.setFont(NORMAL);
+        ver.setOpaque(false);
+        ver.setFocusable(false);
+        ver.setMargin(new Insets(0, 0, 0, 0));
+        ver.addActionListener(e ->
+                clave.setEchoChar(ver.isSelected() ? (char) 0 : eco));
+
+        JPanel col = new JPanel();
+        col.setOpaque(false);
+        col.setLayout(new BoxLayout(col, BoxLayout.Y_AXIS));
+        clave.setAlignmentX(Component.LEFT_ALIGNMENT);
+        ver.setAlignmentX(Component.LEFT_ALIGNMENT);
+        col.add(clave);
+        col.add(Box.createVerticalStrut(4));
+        col.add(ver);
+        return col;
     }
 
     // ------------------------------------------------------------------
     //  Linea separadora con relieve
     // ------------------------------------------------------------------
+
+    /** Una linea vertical hundida (gris + blanco), para separar el icono del formulario. */
+    public static JComponent separadorVertical() {
+        return new JComponent() {
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension(2, 1);
+            }
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                g.setColor(SOMBRA);
+                g.drawLine(0, 0, 0, getHeight());
+                g.setColor(LUZ);
+                g.drawLine(1, 0, 1, getHeight());
+            }
+        };
+    }
 
     /** Una linea horizontal hundida (gris + blanco) para separar zonas. */
     public static JComponent separador() {
