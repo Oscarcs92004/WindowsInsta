@@ -31,13 +31,87 @@ public class PanelReproductor extends JPanel {
     private HiloReproductor hilo;
     private int indiceActual = -1;
 
+    private boolean esAudioPermitido(File archivo) {
+        String nombre = archivo.getName().toLowerCase();
+        return nombre.endsWith(".mp3") || nombre.endsWith(".wav");
+    }
+
+    private File obtenerCarpetaMusica() {
+        if (usuarioActual.getRol() == Rol.ADMINISTRADOR) {
+            return new File(Rutas.DISCO_Z, usuarioActual.getUsername() + File.separator + "Música");
+        }
+        return new File(carpetaRaiz, "Música");
+    }
+
+    private void asegurarCarpetaMusica() {
+        if (!carpetaMusica.exists()) {
+            carpetaMusica.mkdirs();
+        }
+    }
+
+    private void cargarCancionesGuardadas() {
+        File[] archivos = carpetaMusica.listFiles();
+        if (archivos == null) {
+            return;
+        }
+
+        Arrays.sort(archivos, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
+        for (File archivo : archivos) {
+            if (archivo.isFile() && esAudioPermitido(archivo)) {
+                canciones.add(archivo);
+                modeloLista.addElement(archivo.getName());
+            }
+        }
+    }
+
+    private void agregarCancion() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setCurrentDirectory(carpetaMusica);
+        chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                "Musica (mp3, wav)", "mp3", "wav"));
+
+        if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File origen = chooser.getSelectedFile();
+        File destino = new File(carpetaMusica, origen.getName());
+
+        try {
+            if (!origen.getCanonicalFile().equals(destino.getCanonicalFile())) {
+                Files.copy(origen.toPath(), destino.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            int indiceExistente = buscarCancion(destino);
+            if (indiceExistente >= 0) {
+                canciones.set(indiceExistente, destino);
+                modeloLista.set(indiceExistente, destino.getName());
+            } else {
+                canciones.add(destino);
+                modeloLista.addElement(destino.getName());
+            }
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "No se pudo guardar la canción: " + ex.getMessage());
+        }
+    }
+
+    private int buscarCancion(File archivo) {
+        for (int i = 0; i < canciones.size(); i++) {
+            if (canciones.get(i).getName().equalsIgnoreCase(archivo.getName())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public PanelReproductor(Usuario usuarioActual, File carpetaRaiz) {
         this.usuarioActual = usuarioActual;
         this.carpetaRaiz = carpetaRaiz;
         this.carpetaMusica = obtenerCarpetaMusica();
         asegurarCarpetaMusica();
         cargarCancionesGuardadas();
-        
+
         setLayout(new BorderLayout());
         setBackground(Estilo.PANEL);
 
@@ -80,17 +154,7 @@ public class PanelReproductor extends JPanel {
         barra.add(btnStop);
         add(barra, BorderLayout.NORTH);
 
-        btnAgregar.addActionListener(e -> {
-            JFileChooser chooser = new JFileChooser(carpetaRaiz);
-            chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                    "Musica (mp3, wav)", "mp3", "wav"));
-            if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                File cancion = chooser.getSelectedFile();
-                canciones.add(cancion);
-                modeloLista.addElement(cancion.getName());
-            }
-        });
-
+        btnAgregar.addActionListener(e -> agregarCancion());
         btnPlay.addActionListener(e -> reproducir());
         btnPause.addActionListener(e -> pausar());
         btnStop.addActionListener(e -> detener());
