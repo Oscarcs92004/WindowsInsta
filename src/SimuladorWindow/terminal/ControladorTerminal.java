@@ -5,7 +5,6 @@
  */
 package SimuladorWindow.terminal;
 import SimuladorWindow.modelo.Usuario;
-import SimuladorWindow.so.Rutas;
 import SimuladorWindow.so.SistemaArchivos;
 /**
  *
@@ -14,11 +13,11 @@ import SimuladorWindow.so.SistemaArchivos;
 public class ControladorTerminal {private final SistemaArchivos sistemaArchivos;
     private final InterpreteComandos interprete;
     private final Usuario usuario;
-    public ControladorTerminal(Usuario usuario){
+    public ControladorTerminal(Usuario usuario, SistemaArchivos sistemaArchivos){
         if(usuario==null) throw new IllegalArgumentException("El usuario no puede ser null.");
+        if(sistemaArchivos==null) throw new IllegalArgumentException("El sistema de archivos no puede ser null.");
         this.usuario=usuario;
-        Rutas.asegurarCarpetasUsuario(usuario);
-        sistemaArchivos=new SistemaArchivos(Rutas.carpetaRaizDe(usuario));
+        this.sistemaArchivos=sistemaArchivos;
         interprete=new InterpreteComandos(sistemaArchivos);
     }
     public String ejecutar(String comando){return interprete.ejecutar(comando);}

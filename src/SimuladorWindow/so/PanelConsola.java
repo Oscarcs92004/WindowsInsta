@@ -110,8 +110,9 @@ public class PanelConsola extends JPanel {
     }
 
     public PanelConsola(Usuario usuarioActual, File carpetaRaiz) {
-        controlador = new ControladorTerminal(usuarioActual);
         this.fs = new SistemaArchivos(carpetaRaiz);
+        controlador = new ControladorTerminal(usuarioActual,fs);
+
 
         setLayout(new BorderLayout());
         setBackground(Estilo.PANEL);
