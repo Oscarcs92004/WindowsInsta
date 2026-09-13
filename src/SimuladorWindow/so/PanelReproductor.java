@@ -1,12 +1,18 @@
 package SimuladorWindow.so;
 
+import SimuladorWindow.modelo.Rol;
 import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.ui.Estilo;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -14,6 +20,9 @@ public class PanelReproductor extends JPanel {
 
     private final DefaultListModel<String> modeloLista = new DefaultListModel<>();
     private final List<File> canciones = new ArrayList<>();
+    private final Usuario usuarioActual;
+    private final File carpetaRaiz;
+    private final File carpetaMusica;
 
     private final JList<String> lista = new JList<>(modeloLista);
     private final JLabel caratula = new JLabel("Sin caratula", SwingConstants.CENTER);
@@ -23,6 +32,12 @@ public class PanelReproductor extends JPanel {
     private int indiceActual = -1;
 
     public PanelReproductor(Usuario usuarioActual, File carpetaRaiz) {
+        this.usuarioActual = usuarioActual;
+        this.carpetaRaiz = carpetaRaiz;
+        this.carpetaMusica = obtenerCarpetaMusica();
+        asegurarCarpetaMusica();
+        cargarCancionesGuardadas();
+        
         setLayout(new BorderLayout());
         setBackground(Estilo.PANEL);
 

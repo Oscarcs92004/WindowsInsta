@@ -4,6 +4,7 @@ import SimuladorWindow.excepciones.UsernameDuplicadoException;
 import SimuladorWindow.modelo.Rol;
 import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.servicios.UsuarioServicio;
+import SimuladorWindow.servicios.ValidadorPassword;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -136,6 +137,12 @@ public class PanelRegistro extends JPanel {
 
                 if (nombre.isEmpty() || usuario.isEmpty() || clave.isEmpty()) {
                     JOptionPane.showMessageDialog(this, "Completa todos los campos.");
+                    return;
+                }
+
+                if (!ValidadorPassword.esSegura(clave)) {
+                    JOptionPane.showMessageDialog(this,
+                            ValidadorPassword.mensajeError(clave));
                     return;
                 }
 

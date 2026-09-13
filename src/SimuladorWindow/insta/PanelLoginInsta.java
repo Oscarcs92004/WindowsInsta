@@ -4,6 +4,7 @@ import SimuladorWindow.excepciones.CuentaDesactivadaException;
 import SimuladorWindow.excepciones.UsernameDuplicadoException;
 import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.servicios.UsuarioServicio;
+import SimuladorWindow.servicios.ValidadorPassword;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -164,6 +165,11 @@ public class PanelLoginInsta extends JPanel {
                                   String clave, String edadTxt) {
         if (nombre.isEmpty() || usuario.isEmpty() || clave.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Completa todos los campos.");
+            return;
+        }
+        if (!ValidadorPassword.esSegura(clave)) {
+            JOptionPane.showMessageDialog(this,
+                    ValidadorPassword.mensajeError(clave));
             return;
         }
         int edad;

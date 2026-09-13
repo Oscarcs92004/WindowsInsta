@@ -2,6 +2,7 @@ package SimuladorWindow.insta;
 
 import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.servicios.UsuarioServicio;
+import SimuladorWindow.servicios.ValidadorPassword;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -149,6 +150,11 @@ public class PanelEditarPerfil extends JPanel {
         String clave = new String(txtClave.getPassword());
         if (clave.isEmpty()) {
             JOptionPane.showMessageDialog(this, "La contraseña no puede quedar vacía.");
+            return;
+        }
+        if (!ValidadorPassword.esSegura(clave)) {
+            JOptionPane.showMessageDialog(this,
+                    ValidadorPassword.mensajeError(clave));
             return;
         }
 
