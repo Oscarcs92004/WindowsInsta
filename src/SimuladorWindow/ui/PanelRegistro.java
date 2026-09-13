@@ -10,19 +10,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 
-/**
- * Formulario para crear una cuenta nueva (enunciado 4.2b). Solo lo abre el
- * administrador desde el menu Inicio: en la pantalla de login ya no hay boton
- * de "crear cuenta". Aqui se elige tambien el tipo de cuenta (estandar o
- * administrador).
- *
- * Mismo aspecto de Windows 98 que el login: un cuadro gris con sombra que flota
- * sobre el escritorio, barra de titulo con degradado azul, el dibujo de una
- * ficha de usuario a la izquierda, campos hundidos y botones con relieve.
- */
+
 public class PanelRegistro extends JPanel {
 
-    /** Ruta de la foto de perfil elegida, o null si no eligio ninguna. */
+
     private String rutaFoto = null;
 
     public PanelRegistro(VentanaPrincipal ventana, UsuarioServicio servicio,
@@ -57,7 +48,6 @@ public class PanelRegistro extends JPanel {
         JButton btnVolver = Estilo.boton("Cancelar");
         igualarAncho(btnCrear, btnVolver);
 
-        // --- Formulario ------------------------------------------------
         JPanel form = new JPanel(new GridBagLayout());
         form.setOpaque(false);
         GridBagConstraints c = new GridBagConstraints();
@@ -71,7 +61,6 @@ public class PanelRegistro extends JPanel {
         agregar(form, c, fila++, "Edad:", txtEdad, false);
         agregar(form, c, fila++, "Foto de perfil:", filaFoto, false);
 
-        // --- El "dialogo" que flota sobre el escritorio ----------------
         JPanel dialogo = new JPanel(new BorderLayout());
         dialogo.setBackground(Estilo.PANEL);
         dialogo.setBorder(BorderFactory.createCompoundBorder(
@@ -127,7 +116,6 @@ public class PanelRegistro extends JPanel {
 
         add(dialogo, new GridBagConstraints());
 
-        // --- Acciones --------------------------------------------------
         btnFoto.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();
             chooser.setDialogTitle("Elegir foto de perfil");
@@ -179,8 +167,6 @@ public class PanelRegistro extends JPanel {
         Estilo.pintarFondoEscritorio(g, this);
     }
 
-    // -----------------------------------------------------------------
-
     private void agregar(JPanel form, GridBagConstraints c, int fila,
                          String etiqueta, JComponent campo, boolean estira) {
         JLabel l = new JLabel(etiqueta);
@@ -199,7 +185,6 @@ public class PanelRegistro extends JPanel {
         form.add(campo, c);
     }
 
-    /** Deja los botones del mismo ancho (el del texto mas largo, minimo 90 px). */
     private void igualarAncho(JButton... botones) {
         int ancho = 90;
         int alto = 0;
@@ -213,7 +198,6 @@ public class PanelRegistro extends JPanel {
         }
     }
 
-    /** El dibujo de una ficha de usuario sobre una placa verde. */
     private static class PanelFicha extends JPanel {
 
         PanelFicha() {
@@ -230,19 +214,18 @@ public class PanelRegistro extends JPanel {
 
             int s = 72;
 
-            // Placa verde con relieve.
+
             g2.setPaint(new GradientPaint(2, 2, new Color(0, 130, 90),
                     s, s, new Color(0, 78, 54)));
             g2.fillRoundRect(2, 2, s, s, 14, 14);
             g2.setColor(new Color(140, 230, 190));
             g2.drawRoundRect(2, 2, s - 1, s - 1, 14, 14);
 
-            // Silueta de una persona, en blanco.
             g2.setColor(Color.WHITE);
-            g2.fillOval(27, 16, 20, 20);                 // cabeza
-            g2.fillRoundRect(16, 40, 42, 26, 20, 20);    // hombros
+            g2.fillOval(27, 16, 20, 20);
+            g2.fillRoundRect(16, 40, 42, 26, 20, 20);
             g2.setColor(new Color(0, 78, 54));
-            g2.fillRect(16, 60, 42, 10);                 // recorta la base
+            g2.fillRect(16, 60, 42, 10);
 
             g2.dispose();
         }

@@ -5,13 +5,7 @@ import java.awt.*;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 
-/**
- * Los iconos de la barra inferior de INSTA+, dibujados a mano (linea simple)
- * para que se parezcan a los de la app de Instagram en el telefono:
- * casa, lupa, "+", corazon y persona.
- *
- * Es una clase de solo metodos estaticos.
- */
+
 public final class IconosInsta {
 
     private IconosInsta() {
@@ -23,11 +17,10 @@ public final class IconosInsta {
     public static final String CORAZON = "corazon";
     public static final String PERSONA = "persona";
     public static final String MENSAJE = "mensaje";
-    public static final String AVION   = "avion";     // compartir (enviar)
-    public static final String GUARDAR = "guardar";   // marcador
-    public static final String OPCIONES = "opciones"; // los tres puntos "..."
+    public static final String AVION   = "avion";
+    public static final String GUARDAR = "guardar";
+    public static final String OPCIONES = "opciones";
 
-    /** Icono de {@code tam} px. {@code activo} lo dibuja relleno / mas grueso. */
     public static ImageIcon icono(String nombre, int tam, boolean activo) {
         BufferedImage img = new BufferedImage(tam, tam, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = img.createGraphics();
@@ -36,8 +29,8 @@ public final class IconosInsta {
         g.setStroke(new BasicStroke(activo ? 2.4f : 1.8f,
                 BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
-        double p = tam * 0.18;                 // margen
-        double s = tam - 2 * p;                // lado util
+        double p = tam * 0.18;
+        double s = tam - 2 * p;
 
         switch (nombre) {
             case CASA: {
@@ -88,7 +81,6 @@ public final class IconosInsta {
                 break;
             }
             case AVION: {
-                // Avion de papel (el boton "compartir" de Instagram).
                 Path2D av = new Path2D.Double();
                 av.moveTo(p + s, p);
                 av.lineTo(p, p + s * 0.45);
@@ -101,7 +93,6 @@ public final class IconosInsta {
                 break;
             }
             case GUARDAR: {
-                // Marcador (bookmark).
                 Path2D bm = new Path2D.Double();
                 bm.moveTo(p + s * 0.2, p);
                 bm.lineTo(p + s * 0.8, p);
@@ -126,7 +117,6 @@ public final class IconosInsta {
                 break;
             }
             case "grid": {
-                // Cuadrícula de 3x3, como la pestaña de publicaciones del perfil.
                 double celda = s / 3;
                 for (int fx = 0; fx < 3; fx++) {
                     for (int fy = 0; fy < 3; fy++) {

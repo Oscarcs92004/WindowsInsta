@@ -8,12 +8,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 
-/**
- * Consola tipo CMD de Windows (enunciado 3.6).
- *
- * Ya funcionan los 7 comandos: mkdir, rm, cd, cd.., dir, date, time.
- * Se apoya en SistemaArchivos para tocar las carpetas.
- */
 public class PanelConsola extends JPanel {
 
     private final ControladorTerminal controlador;
@@ -122,7 +116,6 @@ public class PanelConsola extends JPanel {
         setLayout(new BorderLayout());
         setBackground(Estilo.PANEL);
 
-        // Gris claro sobre negro, como la consola (CMD) de Windows.
         Color letra = new Color(200, 200, 200);
 
         salida.setEditable(false);
@@ -153,7 +146,6 @@ public class PanelConsola extends JPanel {
         salida.append("Escriba Help para ver los comandos.\n\n");
         mostrarPrompt();
 
-        // Cuando el usuario pulsa Enter en la caja de entrada.
         entrada.addActionListener(e -> {
             procesarEntrada();
         });

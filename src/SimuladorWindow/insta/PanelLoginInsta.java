@@ -11,12 +11,6 @@ import java.awt.*;
 import java.io.File;
 import java.util.function.Consumer;
 
-/**
- * Login y registro de INSTA+ (enunciado 4.2), con el aspecto del login de
- * Instagram real. Las cuentas viven en users.ins, aparte de las de Windows 98,
- * así que en una misma sesión de Windows se pueden usar dos cuentas de
- * INSTA+ distintas: solo hay que cerrar sesión y entrar con la otra.
- */
 public class PanelLoginInsta extends JPanel {
 
     private final UsuarioServicio usuarios;
@@ -39,8 +33,6 @@ public class PanelLoginInsta extends JPanel {
         contenido.add(formularioRegistro(), "UP");
         add(contenido, new GridBagConstraints());
     }
-
-    // -----------------------------------------------------------------
 
     private JComponent formularioLogin() {
         JTextField usuario = new JTextField(16);
@@ -155,8 +147,6 @@ public class PanelLoginInsta extends JPanel {
         return col;
     }
 
-    // -----------------------------------------------------------------
-
     private void intentarLogin(String usuario, String clave) {
         try {
             Usuario u = usuarios.login(usuario, clave);
@@ -193,10 +183,6 @@ public class PanelLoginInsta extends JPanel {
             JOptionPane.showMessageDialog(this, ex.getMessage());
         }
     }
-
-    // -----------------------------------------------------------------
-    //  Piezas visuales
-    // -----------------------------------------------------------------
 
     private JPanel columna() {
         JPanel col = new JPanel();

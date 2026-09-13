@@ -13,16 +13,11 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-/**
- * Persistencia del editor.
- */
 public class PersistenciaEDT {
 
     private static final String MAGIC = "EDT1";
     private static final int VERSION = 1;
     private static final int MINIMO = 16 + 4;
-
-    // Formato del archivo: cabecera, runs, tablas y CRC.
 
     public static void guardar(Documento documento, File archivo) throws EdtException, IOException {
         if (!archivo.getName().toLowerCase().endsWith(".edt")) {
@@ -170,7 +165,6 @@ public class PersistenciaEDT {
         return (int) crc.getValue();
     }
 
-    // Convierte el documento visual en runs.
     public static Documento desdeStyledDocument(StyledDocument doc) throws BadLocationException {
         Documento documento = new Documento();
         StringBuilder buffer = new StringBuilder();
@@ -187,7 +181,6 @@ public class PersistenciaEDT {
             boolean tachado = StyleConstants.isStrikeThrough(at);
             int colorRGB = StyleConstants.getForeground(at).getRGB() & 0xFFFFFF;
 
-            // Deja un espacio cuando hay una tabla insertada.
             Component componente = StyleConstants.getComponent(at);
             char letra = (componente != null) ? ' ' : doc.getText(i, 1).charAt(0);
 
@@ -210,7 +203,6 @@ public class PersistenciaEDT {
         return documento;
     }
 
-    // Vuelve a aplicar el formato guardado.
     public static void aplicarA(Documento documento, StyledDocument doc) throws BadLocationException {
         doc.remove(0, doc.getLength());
         for (Run r : documento.getRuns()) {

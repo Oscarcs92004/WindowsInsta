@@ -22,15 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-/**
- * El escritorio de Windows 98: imita un sistema operativo real.
- *
- *  - Al centro un JDesktopPane (el "fondo de pantalla") con iconos.
- *  - Cada herramienta se abre como una ventana interna (JInternalFrame) que
- *    se puede mover, redimensionar, minimizar y cerrar.
- *  - Abajo una barra de tareas con el boton "Inicio", las ventanas abiertas
- *    y el reloj.
- */
 public class PanelEscritorio extends JPanel {
 
     private final VentanaPrincipal ventana;
@@ -39,7 +30,6 @@ public class PanelEscritorio extends JPanel {
     private final Usuario usuarioActual;
     private final File carpetaRaiz;
 
-    /** El escritorio pinta el wallpaper del usuario estirado a toda el area. */
     private final JDesktopPane escritorio = new JDesktopPane() {
         private final Image wallpaper = cargarWallpaper();
 
@@ -53,7 +43,6 @@ public class PanelEscritorio extends JPanel {
     };
     private final JPanel areaVentanas = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 1));
 
-    /** Desplazamiento para que las ventanas nuevas no salgan una encima de otra. */
     private int cascada = 0;
 
     public PanelEscritorio(VentanaPrincipal ventana, UsuarioServicio servicio,
@@ -75,10 +64,6 @@ public class PanelEscritorio extends JPanel {
         add(crearBarraTareas(), BorderLayout.SOUTH);
     }
 
-    // ------------------------------------------------------------------
-    //  Lista de aplicaciones (se usa para los iconos y para el menu Inicio)
-    // ------------------------------------------------------------------
-
     private Map<String, Supplier<JComponent>> aplicaciones() {
         Map<String, Supplier<JComponent>> apps = new LinkedHashMap<>();
         apps.put("Explorador",       () -> new PanelExplorador(usuarioActual, carpetaRaiz));
@@ -90,7 +75,6 @@ public class PanelEscritorio extends JPanel {
         return apps;
     }
 
-    /** Nombre del archivo de icono de cada herramienta (null = sin icono todavia). */
     private static String archivoIcono(String app) {
         switch (app) {
             case "Explorador":        return "file.png";
@@ -103,7 +87,6 @@ public class PanelEscritorio extends JPanel {
         }
     }
 
-    /** El icono de una app: el de Instagram para INSTA+, el de archivo para el resto. */
     private static ImageIcon iconoApp(String app, int tam) {
         ImageIcon img = Iconos.cargar(archivoIcono(app), tam);
         if (img == null && "INSTA+".equals(app)) {
@@ -111,10 +94,6 @@ public class PanelEscritorio extends JPanel {
         }
         return img;
     }
-
-    // ------------------------------------------------------------------
-    //  Iconos del escritorio
-    // ------------------------------------------------------------------
 
     private void crearIconosEscritorio() {
         JPanel iconos = new JPanel(new GridLayout(0, 1, 0, 6));
@@ -125,15 +104,9 @@ public class PanelEscritorio extends JPanel {
             iconos.add(iconoEscritorio(app.getKey(), app.getValue()));
         }
 
-        // FRAME_CONTENT_LAYER queda por detras de todas las ventanas internas.
         escritorio.add(iconos, JLayeredPane.FRAME_CONTENT_LAYER);
     }
 
-    /**
-     * Un icono del escritorio: la imagen arriba y el nombre debajo sobre una
-     * placa oscura semitransparente, para que el texto se lea sobre cualquier
-     * fondo de pantalla. Se abre con un clic.
-     */
     private JComponent iconoEscritorio(String nombre, Supplier<JComponent> fabrica) {
         JLabel imagen = new JLabel();
         imagen.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -173,10 +146,6 @@ public class PanelEscritorio extends JPanel {
         return celda;
     }
 
-    // ------------------------------------------------------------------
-    //  Barra de tareas
-    // ------------------------------------------------------------------
-
     private JComponent crearBarraTareas() {
         JPanel barra = new JPanel(new BorderLayout(4, 0));
         barra.setBackground(Estilo.BARRA_TAREAS);
@@ -185,7 +154,6 @@ public class PanelEscritorio extends JPanel {
                 BorderFactory.createEmptyBorder(3, 3, 3, 3)));
         barra.setPreferredSize(new Dimension(0, 32));
 
-        // Boton "Inicio" con la banderita de Windows.
         JButton inicio = new JButton("Inicio", Estilo.iconoWindows(16));
         inicio.setFont(Estilo.SUBTITULO);
         inicio.setIconTextGap(5);
@@ -195,7 +163,6 @@ public class PanelEscritorio extends JPanel {
                 Estilo.relieve(), BorderFactory.createEmptyBorder(2, 8, 2, 12)));
         inicio.addActionListener(e -> {
             JPopupMenu menu = menuInicio();
-            // Mostrar el menu justo encima del boton Inicio.
             menu.show(inicio, 0, -menu.getPreferredSize().height);
         });
 
@@ -232,7 +199,6 @@ public class PanelEscritorio extends JPanel {
         return barra;
     }
 
-    /** Una rayita vertical hundida, como las de la barra de tareas de Windows 98. */
     private JComponent separadorVertical() {
         return new JComponent() {
             @Override
@@ -283,17 +249,13 @@ public class PanelEscritorio extends JPanel {
         return menu;
     }
 
-    // ------------------------------------------------------------------
-    //  Abrir una aplicacion como ventana interna
-    // ------------------------------------------------------------------
-
     private void abrirApp(String titulo, JComponent contenido) {
         ImageIcon icono = iconoApp(titulo, Iconos.PEQUENO);
 
         JInternalFrame frame = new JInternalFrame(titulo, true, true, true, true);
         frame.setContentPane(contenido);
         if ("INSTA+".equals(titulo)) {
-            frame.setSize(404, 780);        // formato de telefono (vertical)
+            frame.setSize(404, 780);
         } else {
             frame.setSize(600, 430);
         }
@@ -306,7 +268,6 @@ public class PanelEscritorio extends JPanel {
 
         escritorio.add(frame);
 
-        // Boton de esta ventana en la barra de tareas.
         JButton botonTarea = new JButton(titulo);
         botonTarea.setFont(Estilo.NORMAL);
         botonTarea.setBackground(Estilo.BARRA_TAREAS);
@@ -323,7 +284,6 @@ public class PanelEscritorio extends JPanel {
         areaVentanas.revalidate();
         areaVentanas.repaint();
 
-        // Al cerrar la ventana, quitar su boton de la barra.
         frame.addInternalFrameListener(new InternalFrameAdapter() {
             @Override
             public void internalFrameClosed(InternalFrameEvent e) {
@@ -338,33 +298,21 @@ public class PanelEscritorio extends JPanel {
 
     private void traerAlFrente(JInternalFrame frame) {
         try {
-            frame.setIcon(false);      // por si estaba minimizada
+            frame.setIcon(false);
             frame.setSelected(true);
             frame.moveToFront();
         } catch (PropertyVetoException ignorado) {
-            // la ventana no dejo cambiar el estado; no pasa nada
         }
     }
 
-    // ------------------------------------------------------------------
-    //  Wallpaper del escritorio
-    // ------------------------------------------------------------------
-
-    /**
-     * Carga la imagen de fondo del escritorio. Si no la encuentra devuelve
-     * {@code null} y el escritorio se queda con su color teal.
-     */
     private static Image cargarWallpaper() {
         String recurso = "/SimuladorWindow/recursos/Wallpaper/windows.jpg";
 
-        // 1. Como recurso del classpath (al ejecutar desde el JAR o el IDE).
         URL url = PanelEscritorio.class.getResource(recurso);
         if (url != null) {
             return new ImageIcon(url).getImage();
         }
 
-        // 2. Desde la carpeta del proyecto (al compilar a mano con javac, que
-        //    no copia los recursos a out/).
         File archivo = new File("src" + recurso);
         if (archivo.exists()) {
             return new ImageIcon(archivo.getPath()).getImage();

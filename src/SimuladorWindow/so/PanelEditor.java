@@ -23,15 +23,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 
 
-/**
- * Editor de texto con formato (enunciado 3.4).
- *
- * Crea, abre y guarda archivos de texto plano .txt (UTF-8) y, ademas, tiene una
- * barra para dar formato al texto: color, tipo y tamano de fuente, negrita /
- * cursiva / subrayado, alineacion y tablas. Ese formato se guarda en un
- * documento propio .edt (ver el paquete {@code so.editor} y
- * {@code persistencia.PersistenciaEDT}) para que se conserve al reabrir.
- */
+
 public class PanelEditor extends JPanel {
 
 

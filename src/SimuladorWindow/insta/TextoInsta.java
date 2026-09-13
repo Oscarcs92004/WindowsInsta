@@ -5,12 +5,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
 
-/**
- * Ayudantes de texto para INSTA+: sacar los #hashtags y las @menciones de una
- * publicacion y darles el formato del enunciado (4.7).
- *
- * Es una clase de solo metodos estaticos.
- */
 public final class TextoInsta {
 
     private TextoInsta() {
@@ -19,11 +13,6 @@ public final class TextoInsta {
     private static final DateTimeFormatter FECHA =
             DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    /**
-     * Formato del timeline (enunciado 4.7):
-     *   USERNAME escribio:
-     *   "contenido" - fecha
-     */
     public static String formato(Publicacion p) {
         String texto = p.getAutor() + " escribio:\n\""
                 + p.getTexto() + "\" - " + FECHA.format(p.getFecha());
@@ -35,7 +24,6 @@ public final class TextoInsta {
         return texto;
     }
 
-    /** Tiempo transcurrido en corto, estilo Instagram: "hace 5 min", "hace 2 h". */
     public static String hace(LocalDateTime fecha) {
         LocalDateTime ahora = LocalDateTime.now();
         long minutos = ChronoUnit.MINUTES.between(fecha, ahora);
@@ -48,7 +36,6 @@ public final class TextoInsta {
         return FECHA.format(fecha);
     }
 
-    /** Devuelve true si el texto contiene el hashtag dado (sin el #). */
     public static boolean tieneHashtag(String texto, String palabra) {
         for (String h : hashtags(texto).comoLista()) {
             if (h.equalsIgnoreCase(palabra)) {
@@ -58,7 +45,6 @@ public final class TextoInsta {
         return false;
     }
 
-    /** Devuelve true si el texto menciona a @username. */
     public static boolean menciona(String texto, String username) {
         for (String m : menciones(texto).comoLista()) {
             if (m.equalsIgnoreCase(username)) {
@@ -68,12 +54,10 @@ public final class TextoInsta {
         return false;
     }
 
-    /** Todos los #hashtags del texto, sin el #, sin repetidos. */
     public static ListaEnlazada<String> hashtags(String texto) {
         return palabrasConMarca(texto, '#');
     }
 
-    /** Todas las @menciones del texto, sin la @, sin repetidos. */
     public static ListaEnlazada<String> menciones(String texto) {
         return palabrasConMarca(texto, '@');
     }
@@ -95,7 +79,6 @@ public final class TextoInsta {
         return resultado;
     }
 
-    /** Se queda solo con letras y numeros (quita comas, puntos, etc.). */
     private static String limpiar(String palabra) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < palabra.length(); i++) {

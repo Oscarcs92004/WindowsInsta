@@ -6,25 +6,16 @@ import SimuladorWindow.servicios.UsuarioServicio;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * INSTA+ como una app de telefono (enunciado 4.1 y 4.4, MODO_MOBILE):
- * una sola pantalla vertical con la cabecera "Instagram" arriba, el contenido
- * en el centro (CardLayout, una vista a la vez, sin ventanas nuevas) y la
- * barra de navegacion con iconos abajo, igual que la app real.
- */
 public class PanelInsta extends JPanel {
 
     private final CardLayout cartas = new CardLayout();
     private final JPanel contenedor = new JPanel(cartas);
     private final Runnable alCerrarSesion;
 
-    /** La cuenta de INSTA+ con la que se entró (para la foto de la barra). */
     private final Usuario usuarioSesion;
 
-    /** Mientras esta sesion de INSTA+ este activa, el hilo de avisos corre. */
     private volatile boolean sesionActiva = true;
 
-    /** Icono de mensajes de la cabecera; el hilo le pone el numero de no leidos. */
     private JButton botonMensajes;
 
     private final PanelPerfil panelPerfil;
@@ -54,8 +45,6 @@ public class PanelInsta extends JPanel {
         panelInbox         = new PanelInbox(insta, usuarios, usuarioActual);
         panelEditar        = new PanelEditarPerfil(insta, usuarios, usuarioActual, this);
 
-        // Cada panel trae su propio scroll interno; no se envuelven otra vez
-        // para que su ancho sea siempre el del área visible (nada se sale).
         contenedor.setBackground(EstiloInsta.FONDO);
         contenedor.add(panelPerfil,        "PERFIL");
         contenedor.add(panelCrear,         "CARGAR");
@@ -74,10 +63,6 @@ public class PanelInsta extends JPanel {
         irA("TIMELINE", 0);
         iniciarHiloNotificaciones(insta, usuarioActual.getUsername());
     }
-
-    // -----------------------------------------------------------------
-    //  Cabecera: "Instagram" a la izquierda, mensajes a la derecha
-    // -----------------------------------------------------------------
 
     private JComponent cabecera() {
         JPanel barra = new JPanel(new BorderLayout());
@@ -106,10 +91,6 @@ public class PanelInsta extends JPanel {
         return barra;
     }
 
-    // -----------------------------------------------------------------
-    //  Barra de navegacion inferior (5 iconos, como Instagram movil)
-    // -----------------------------------------------------------------
-
     private JComponent barraInferior() {
         JPanel barra = new JPanel(new GridLayout(1, 5));
         barra.setBackground(EstiloInsta.BLANCO);
@@ -119,7 +100,6 @@ public class PanelInsta extends JPanel {
         navBotones[1] = navBoton(IconosInsta.LUPA,    () -> irA("BUSCAR", 1));
         navBotones[2] = navBoton(IconosInsta.MAS,     () -> { panelCrear.recargar();        irA("CARGAR", 2); });
         navBotones[3] = navBoton(IconosInsta.CORAZON, () -> { panelInteracciones.recargar(); irA("INTERACCIONES", 3); });
-        // El 5º botón muestra tu foto de perfil (como la app real).
         navBotones[4] = navBoton(IconosInsta.PERSONA, () -> { panelPerfil.mostrarMio();      irA("PERFIL", 4); });
 
         for (JButton b : navBotones) {
@@ -137,11 +117,9 @@ public class PanelInsta extends JPanel {
         return b;
     }
 
-    /** El icono de un botón de la barra inferior según si está activo o no. */
     private Icon iconoNav(String nombre, boolean activo) {
         if (IconosInsta.PERSONA.equals(nombre)) {
             String foto = usuarioSesion.getFotoPerfil();
-            // Tu foto de perfil; cuando está activa, un poco más grande.
             return EstiloInsta.avatar(foto, usuarioSesion.getUsername(), activo ? 28 : 24);
         }
         return IconosInsta.icono(nombre, 26, activo);
@@ -155,16 +133,10 @@ public class PanelInsta extends JPanel {
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
-    // -----------------------------------------------------------------
-
-    /**
-     * La pantalla de Buscar: arriba las pestañas (Personas / Hashtags) y debajo
-     * el panel que toque, cambiando con un CardLayout.
-     */
     private JComponent panelBuscar() {
         CardLayout cl = new CardLayout();
         JPanel cuerpo = new JPanel(cl);
-        cuerpo.add(panelBuscarPerfil, "PERSONAS");   // cada uno trae su propio scroll
+        cuerpo.add(panelBuscarPerfil, "PERSONAS");
         cuerpo.add(panelBuscarHashtag, "HASHTAGS");
 
         JComponent barra = EstiloInsta.barraSegmentos(new String[] {"Personas", "Hashtags"},
@@ -177,11 +149,6 @@ public class PanelInsta extends JPanel {
         return todo;
     }
 
-    /**
-     * Hilo demonio que cada 5 segundos cuenta los mensajes no leidos y los
-     * muestra en el icono de mensajes de la cabecera (enunciado 4.11 -
-     * notificacion de mensajes nuevos; checklist - hilo de revision del Inbox).
-     */
     private void iniciarHiloNotificaciones(InstaServicio insta, String username) {
         Thread vigilante = new Thread(() -> {
             while (sesionActiva) {
@@ -202,9 +169,6 @@ public class PanelInsta extends JPanel {
         vigilante.start();
     }
 
-    // -----------------------------------------------------------------
-
-    /** Cambia de vista y marca el icono de la barra inferior (o -1 si ninguno). */
     private void irA(String carta, int indiceNav) {
         cartas.show(contenedor, carta);
         if (indiceNav >= 0 && indiceNav < navBotones.length) {
@@ -216,31 +180,26 @@ public class PanelInsta extends JPanel {
         }
     }
 
-    /** La usan Buscar e Interacciones para abrir el perfil de otro. */
     public void verPerfilDe(String username) {
         panelPerfil.mostrarPerfilDe(username);
         irA("PERFIL", 4);
     }
 
-    /** La usa el boton "Editar perfil" del propio perfil. */
     public void irAEditarPerfil() {
         panelEditar.recargar();
         irA("EDITAR", -1);
     }
 
-    /** La usa el boton "Volver" de Editar perfil. */
     public void volverAlPerfil() {
         panelPerfil.mostrarMio();
         irA("PERFIL", 4);
     }
 
-    /** La usa el boton "Cerrar sesión" del propio perfil: vuelve al login de
-     *  INSTA+ (no cierra la sesión de Windows). */
     public void cerrarSesion() {
         int op = JOptionPane.showConfirmDialog(this, "¿Cerrar sesión de INSTA+?",
                 "Confirmar", JOptionPane.YES_NO_OPTION);
         if (op == JOptionPane.YES_OPTION) {
-            sesionActiva = false;         // corta el hilo de avisos
+            sesionActiva = false;
             alCerrarSesion.run();
         }
     }

@@ -18,14 +18,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Explorador de archivos con JTree (enunciado 3.3).
- *
- * Funciones: mostrar el arbol de carpetas, refrescar, crear carpeta o archivo
- * nuevo dentro de la carpeta seleccionada, renombrar, copiar, pegar, ordenar
- * (por nombre / fecha / tipo / tamaño) y organizar la carpeta moviendo cada
- * archivo a una subcarpeta segun su tipo.
- */
 public class PanelExplorador extends JPanel {
 
     private static final String[] EXT_IMAGENES   = {"jpg","jpeg","png","gif","bmp","svg","webp","ico","tiff"};
@@ -35,7 +27,6 @@ public class PanelExplorador extends JPanel {
     private final File carpetaRaiz;
     private final JTree arbol;
 
-    /** Ruta guardada al pulsar "Copiar", para usarla luego en "Pegar". */
     private File portapapeles;
     private String criterioOrden = "nombre";
 
@@ -137,7 +128,6 @@ public class PanelExplorador extends JPanel {
             refrescar();
         });
 
-        // Renombrar: pide un nombre nuevo y usa File.renameTo (enunciado 3.3).
         btnRenombrar.addActionListener(e -> {
             File sel = archivoSeleccionado();
             if (sel == null) {
@@ -164,7 +154,6 @@ public class PanelExplorador extends JPanel {
             refrescar();
         });
 
-        // Copiar: solo guarda la ruta del seleccionado para el Pegar posterior.
         btnCopiar.addActionListener(e -> {
             File sel = archivoSeleccionado();
             if (sel == null) {
@@ -177,8 +166,6 @@ public class PanelExplorador extends JPanel {
                     "Copiado: " + sel.getName());
         });
 
-        // Pegar: copia el archivo (o la carpeta entera, recursivo) a la carpeta
-        // destino, evitando pegar una carpeta dentro de si misma.
         btnPegar.addActionListener(e -> {
             if (portapapeles == null) {
                 JOptionPane.showMessageDialog(this,
@@ -219,15 +206,11 @@ public class PanelExplorador extends JPanel {
             refrescar();
         });
 
-        // Ordenar: guarda el criterio elegido; agregarHijos() ordena con él.
         btnOrdenar.addActionListener(e -> {
             criterioOrden = (String) cmbOrden.getSelectedItem();
             refrescar();
         });
 
-        // Organizar: mueve cada archivo de la carpeta a una subcarpeta segun su
-        // tipo. Corre en un SwingWorker (no congela la ventana) y clasifica en
-        // una ListaEnlazada por categoria (enunciado 2.4 y 3.3).
         btnOrganizar.addActionListener(e -> {
             File carpetaOrganizar = carpetaDestino();
             int resp = JOptionPane.showConfirmDialog(this,
@@ -251,7 +234,6 @@ public class PanelExplorador extends JPanel {
 
         private final File carpeta;
 
-        // Listas enlazadas propias (una por categoría) — enunciado 2.4
         private final ListaEnlazada<File> listaImagenes   = new ListaEnlazada<>();
         private final ListaEnlazada<File> listaDocumentos = new ListaEnlazada<>();
         private final ListaEnlazada<File> listaMusica     = new ListaEnlazada<>();
@@ -270,7 +252,6 @@ public class PanelExplorador extends JPanel {
                 return null;
             }
 
-            // 1. Clasificar en listas enlazadas
             for (File f : archivos) {
                 String ext = extension(f).toLowerCase();
                 if (contiene(EXT_IMAGENES,        ext)) listaImagenes.agregarFinal(f);
@@ -282,7 +263,6 @@ public class PanelExplorador extends JPanel {
             int total = archivos.length;
             int movidos = 0;
 
-            // 2. Mover cada lista a su subcarpeta
             movidos = moverLista(listaImagenes,   "imagenes",   total, movidos);
             movidos = moverLista(listaDocumentos, "documentos", total, movidos);
             movidos = moverLista(listaMusica,     "musica",     total, movidos);
@@ -292,7 +272,6 @@ public class PanelExplorador extends JPanel {
             return null;
         }
 
-        /** Mueve todos los elementos de una ListaEnlazada a la subcarpeta dada. */
         private int moverLista(ListaEnlazada<File> lista,
                                String nombreSubcarpeta,
                                int total, int movidos) throws IOException {
@@ -314,7 +293,6 @@ public class PanelExplorador extends JPanel {
             return movidos;
         }
 
-        // Llamado en el EDT con los mensajes publicados
         @Override
         protected void process(List<String> mensajes) {
             String ultimo = mensajes.get(mensajes.size() - 1);
@@ -327,11 +305,9 @@ public class PanelExplorador extends JPanel {
             refrescar();
             barraProgreso.setVisible(false);
             etiquetaProgreso.setVisible(false);
-            // Re-habilitar botones
             ((JButton) getComponentFromBar("Organizar")).setEnabled(true);
             ((JButton) getComponentFromBar("Pegar")).setEnabled(true);
 
-            // Imprimir resumen en consola (útil para depuración)
             System.out.println("── Resumen Organizar ──────────────────");
             System.out.println("  Imágenes   : " + listaImagenes.tamano());
             System.out.println("  Documentos : " + listaDocumentos.tamano());
@@ -351,19 +327,17 @@ public class PanelExplorador extends JPanel {
                             listaOtros.tamano()));
         }
 
-        /** Busca un botón por texto dentro de la barra de herramientas. */
         private Component getComponentFromBar(String texto) {
-            JToolBar bar = (JToolBar) PanelExplorador.this.getComponent(2); // NORTH
+            JToolBar bar = (JToolBar) PanelExplorador.this.getComponent(2);
             for (Component c : bar.getComponents()) {
                 if (c instanceof JButton && texto.equals(((JButton) c).getText())) {
                     return c;
                 }
             }
-            return new JButton(); // fallback seguro
+            return new JButton();
         }
     }
 
-    // --------------------- ayudantes que YA sirven -------------------
 
     private void copiarCarpetaRecursivo(File origen, File destino) throws IOException {
         destino.mkdirs();
@@ -391,7 +365,6 @@ public class PanelExplorador extends JPanel {
         return false;
     }
 
-    /** Carpeta donde crear/pegar: la seleccionada si es carpeta, si no la raiz. */
     private File carpetaDestino() {
         File sel = archivoSeleccionado();
         if (sel != null && sel.isDirectory()) {
@@ -400,7 +373,6 @@ public class PanelExplorador extends JPanel {
         return carpetaRaiz;
     }
 
-    /** El File del nodo seleccionado en el arbol, o null si no hay seleccion. */
     private File archivoSeleccionado() {
         DefaultMutableTreeNode nodo =
                 (DefaultMutableTreeNode) arbol.getLastSelectedPathComponent();
@@ -419,9 +391,8 @@ public class PanelExplorador extends JPanel {
         actualizarConteo();
     }
 
-    /** Pone en la barra de estado cuantas carpetas y archivos hay en total. */
     private void actualizarConteo() {
-        int[] cuenta = {0, 0};   // [carpetas, archivos]
+        int[] cuenta = {0, 0};
         contar(carpetaRaiz, cuenta);
         lblConteo.setText(cuenta[0] + " carpetas, " + cuenta[1] + " archivos");
     }
@@ -479,7 +450,6 @@ public class PanelExplorador extends JPanel {
         }
     }
 
-    /** Hace que el arbol muestre solo el nombre del archivo, no la ruta entera. */
     private static class RendererSoloNombre extends DefaultTreeCellRenderer {
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value,

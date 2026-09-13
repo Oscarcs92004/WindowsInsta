@@ -10,32 +10,20 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-/**
- * Colores, fuentes y componentes con el aspecto de Instagram, en un solo
- * lugar, para que INSTA+ se vea parecido a la app real de Instagram.
- *
- * Es una clase de solo metodos estaticos.
- */
 public final class EstiloInsta {
 
     private EstiloInsta() {
     }
 
-    // ------------------------------------------------------------------
-    //  Paleta de Instagram
-    // ------------------------------------------------------------------
-
-    public static final Color FONDO       = new Color(250, 250, 250);  // #FAFAFA
+    public static final Color FONDO       = new Color(250, 250, 250);
     public static final Color BLANCO      = Color.WHITE;
-    public static final Color BORDE       = new Color(219, 219, 219);  // #DBDBDB
-    public static final Color TEXTO       = new Color(38, 38, 38);     // #262626
-    public static final Color TEXTO_GRIS  = new Color(142, 142, 142);  // #8E8E8E
-    public static final Color AZUL        = new Color(0, 149, 246);    // #0095F6
+    public static final Color BORDE       = new Color(219, 219, 219);
+    public static final Color TEXTO       = new Color(38, 38, 38);
+    public static final Color TEXTO_GRIS  = new Color(142, 142, 142);
+    public static final Color AZUL        = new Color(0, 149, 246);
     public static final Color AZUL_OSCURO = new Color(0, 55, 107);
     public static final Color ROJO        = new Color(237, 73, 86);
 
-    // La fuente del logo: "Brush Script MT" (sin negrita ni cursiva forzada)
-    // es la mas parecida a la letra manuscrita del logo real de Instagram.
     public static final Font LOGO    = elegirFuente(30, Font.PLAIN,
             "Brush Script MT", "Segoe Script", "Lucida Handwriting", "Serif");
     public static final Font TITULO  = elegirFuente(22, Font.BOLD, "Segoe UI", "SansSerif");
@@ -56,14 +44,6 @@ public final class EstiloInsta {
         return new Font("SansSerif", estilo, tam);
     }
 
-    // ------------------------------------------------------------------
-    //  Barra de pestañas (subrayado negro bajo la elegida, como Instagram)
-    // ------------------------------------------------------------------
-
-    /**
-     * Una barra con varios títulos; al pulsar uno se llama a {@code alElegir}
-     * con su índice. Quien la usa cambia una carta de un CardLayout.
-     */
     public static JComponent barraSegmentos(String[] titulos, java.util.function.IntConsumer alElegir) {
         JPanel barra = new JPanel(new GridLayout(1, titulos.length));
         barra.setBackground(BLANCO);
@@ -90,21 +70,14 @@ public final class EstiloInsta {
         return barra;
     }
 
-    // ------------------------------------------------------------------
-    //  Botones
-    // ------------------------------------------------------------------
-
-    /** Boton azul relleno, como el "Log in" o "Seguir" de Instagram. */
     public static JButton botonPrimario(String texto) {
         return botonRedondo(texto, AZUL, BLANCO, AZUL);
     }
 
-    /** Boton blanco con borde, como "Dejar de seguir" o "Editar perfil". */
     public static JButton botonSecundario(String texto) {
         return botonRedondo(texto, BLANCO, TEXTO, BORDE);
     }
 
-    /** Texto en azul sin recuadro, como un enlace. */
     public static JButton enlace(String texto) {
         JButton b = new JButton(texto);
         b.setBorderPainted(false);
@@ -150,10 +123,6 @@ public final class EstiloInsta {
                 (int) (a.getBlue()  * (1 - t) + b.getBlue()  * t));
     }
 
-    // ------------------------------------------------------------------
-    //  Campos de texto
-    // ------------------------------------------------------------------
-
     public static void estiloCampo(JTextComponent campo) {
         campo.setBackground(FONDO);
         campo.setForeground(TEXTO);
@@ -163,11 +132,6 @@ public final class EstiloInsta {
                 BorderFactory.createEmptyBorder(9, 10, 9, 10)));
     }
 
-    /**
-     * Texto gris de ayuda dentro del campo (como los "placeholder" de las
-     * webs) que se queda hasta que el usuario escribe algo.
-     * Solo para JTextField/JPasswordField.
-     */
     public static void placeholder(JTextField campo, String ayuda) {
         final char eco = (campo instanceof JPasswordField)
                 ? ((JPasswordField) campo).getEchoChar() : 0;
@@ -209,17 +173,12 @@ public final class EstiloInsta {
         });
     }
 
-    /** El texto real del campo, o "" si solo tiene el placeholder. */
     public static String valorReal(JTextField campo) {
         if (Boolean.TRUE.equals(campo.getClientProperty("placeholder"))) {
             return "";
         }
         return campo.getText();
     }
-
-    // ------------------------------------------------------------------
-    //  Tarjeta blanca con borde (una "publicacion", un recuadro de login)
-    // ------------------------------------------------------------------
 
     public static JPanel tarjeta() {
         JPanel p = new JPanel();
@@ -232,10 +191,6 @@ public final class EstiloInsta {
         return BorderFactory.createEmptyBorder(arriba, izq, abajo, der);
     }
 
-    /**
-     * Un panel con las esquinas redondeadas y un color de fondo, para las
-     * burbujas del chat del Inbox.
-     */
     public static JPanel burbuja(Color fondo) {
         JPanel p = new JPanel() {
             @Override
@@ -253,13 +208,6 @@ public final class EstiloInsta {
         return p;
     }
 
-    /**
-     * Una etiqueta de texto que corta de línea a lo ancho indicado. Swing
-     * ignora el {@code width} de CSS en un JLabel, pero sí respeta el ancho de
-     * una celda de tabla, así que el texto se mete dentro de una.
-     *
-     * {@code contenidoHtml} puede llevar {@code <b>}, {@code <font color>}, etc.
-     */
     public static JLabel textoHtml(String contenidoHtml, int ancho) {
         JLabel l = new JLabel("<html><table cellpadding='0' cellspacing='0'><tr><td width='"
                 + ancho + "'>" + contenidoHtml + "</td></tr></table></html>");
@@ -268,12 +216,10 @@ public final class EstiloInsta {
         return l;
     }
 
-    /** Escapa los caracteres que romperían el HTML de una etiqueta. */
     public static String escaparHtml(String s) {
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
-    /** Pinta de azul los #hashtags y las @menciones, como Instagram. */
     public static String resaltarTags(String textoYaEscapado) {
         StringBuilder sb = new StringBuilder();
         for (String palabra : textoYaEscapado.split(" ")) {
@@ -287,14 +233,6 @@ public final class EstiloInsta {
         return sb.toString().trim();
     }
 
-    // ------------------------------------------------------------------
-    //  Icono de la app para el escritorio de Windows 98
-    // ------------------------------------------------------------------
-
-    /**
-     * Un cuadrado redondeado con el degradado de Instagram (amarillo -> rosa ->
-     * morado) y el dibujo de una camara en blanco, como el icono real de la app.
-     */
     public static ImageIcon iconoApp(int tam) {
         BufferedImage img = new BufferedImage(tam, tam, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = img.createGraphics();
@@ -319,14 +257,6 @@ public final class EstiloInsta {
         return new ImageIcon(img);
     }
 
-    // ------------------------------------------------------------------
-    //  Avatar circular
-    // ------------------------------------------------------------------
-
-    /**
-     * Devuelve la foto de perfil recortada en circulo. Si no hay foto, dibuja
-     * un circulo gris con la inicial del username.
-     */
     public static ImageIcon avatar(String rutaFoto, String username, int tam) {
         BufferedImage salida = new BufferedImage(tam, tam, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = salida.createGraphics();
@@ -337,12 +267,6 @@ public final class EstiloInsta {
         g.dispose();
         return new ImageIcon(salida);
     }
-
-    /**
-     * El mismo avatar (del mismo tamaño que {@link #avatar}) con un círculo azul
-     * con un "+" pegado al borde de abajo a la derecha, como el "Tu historia"
-     * de Instagram.
-     */
     public static ImageIcon avatarMasBadge(String rutaFoto, String username, int tam) {
         BufferedImage salida = new BufferedImage(tam, tam, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = salida.createGraphics();
@@ -353,9 +277,9 @@ public final class EstiloInsta {
         g.drawOval(0, 0, tam - 1, tam - 1);
 
         int badge = Math.round(tam * 0.34f);
-        int bx = tam - badge - 3;                 // -3: que el aro blanco no se corte
+        int bx = tam - badge - 3;
         int by = tam - badge - 3;
-        g.setColor(BLANCO);                       // aro blanco que separa el "+" de la foto
+        g.setColor(BLANCO);
         g.fillOval(bx - 3, by - 3, badge + 6, badge + 6);
         g.setColor(AZUL);
         g.fillOval(bx, by, badge, badge);
@@ -368,7 +292,6 @@ public final class EstiloInsta {
         return new ImageIcon(salida);
     }
 
-    /** Dibuja la foto (o el circulo gris con la inicial) recortada en circulo. */
     private static void dibujarCirculoAvatar(Graphics2D g, String rutaFoto,
                                              String username, int x, int y, int tam) {
         Shape antes = g.getClip();
@@ -391,10 +314,6 @@ public final class EstiloInsta {
         g.setClip(antes);
     }
 
-    // ------------------------------------------------------------------
-    //  El logotipo "Instagram" como etiqueta
-    // ------------------------------------------------------------------
-
     public static JLabel wordmark(float tam) {
         JLabel l = new JLabel("Instagram");
         l.setFont(LOGO.deriveFont(tam));
@@ -403,10 +322,6 @@ public final class EstiloInsta {
         return l;
     }
 
-    // ------------------------------------------------------------------
-    //  Barra de desplazamiento fina (para que no se vea la gruesa de
-    //  Windows 98 dentro de INSTA+)
-    // ------------------------------------------------------------------
 
     public static void scrollFino(JScrollPane scroll) {
         scroll.getVerticalScrollBar().setUI(new BarraFina());
@@ -416,7 +331,6 @@ public final class EstiloInsta {
         scroll.getVerticalScrollBar().setUnitIncrement(18);
     }
 
-    /** Un pulgar gris redondeado, sin flechas ni fondo, como en las apps de movil. */
     private static final class BarraFina extends BasicScrollBarUI {
         @Override
         protected void configureScrollBarColors() {
@@ -439,7 +353,6 @@ public final class EstiloInsta {
 
         @Override
         protected void paintTrack(Graphics g, JComponent c, Rectangle r) {
-            // sin pista: transparente
         }
 
         @Override

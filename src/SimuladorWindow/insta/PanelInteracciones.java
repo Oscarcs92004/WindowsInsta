@@ -10,14 +10,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Interacciones (enunciado 4.8).
- *
- * Muestra las publicaciones de OTROS usuarios donde me mencionan con
- * &#64;mi_username, sin repetir ninguna. Se ven con el mismo aspecto que el
- * feed (una TarjetaPublicacion por publicación). El resultado se arma en una
- * ListaEnlazada propia.
- */
 public class PanelInteracciones extends JPanel {
 
     private static final int ANCHO_FEED = 380;
@@ -66,7 +58,7 @@ public class PanelInteracciones extends JPanel {
         ListaEnlazada<Publicacion> encontradas = new ListaEnlazada<>();
         for (String autor : insta.todosLosUsuarios()) {
             if (autor.equalsIgnoreCase(yo) || !insta.estaVisible(autor)) {
-                continue;                       // no cuentan mis propias menciones
+                continue;
             }
             for (Publicacion p : insta.publicacionesDe(autor)) {
                 if (TextoInsta.menciona(p.getTexto(), yo) && !encontradas.contiene(p)) {

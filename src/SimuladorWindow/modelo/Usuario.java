@@ -3,24 +3,19 @@ package SimuladorWindow.modelo;
 import java.io.Serializable;
 import java.time.LocalDate;
 
-/**
- * Un usuario del sistema. Es una clase de datos: solo guarda informacion,
- * no tiene logica. Implementa Serializable para poder guardarse en un
- * archivo binario de un solo golpe.
- */
 public class Usuario implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private String nombreCompleto;
-    private char genero;                 // 'M' o 'F'
-    private final String username;       // unico en todo el sistema, no cambia
+    private char genero;
+    private final String username;
     private String password;
     private final LocalDate fechaRegistro;
     private int edad;
     private boolean activa = true;
     private Rol rol = Rol.ESTANDAR;
-    private String fotoPerfil;           // ruta a la imagen, puede ser null
+    private String fotoPerfil;
 
     public Usuario(String nombreCompleto, char genero, String username,
                    String password, int edad) {

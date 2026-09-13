@@ -8,17 +8,7 @@ import SimuladorWindow.servicios.UsuarioServicio;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Pantalla de inicio de sesion (enunciado 4.2a), con el aspecto del cuadro de
- * "Iniciar la sesion" de Windows 98: un dialogo gris que flota sobre el
- * escritorio teal, con barra de titulo de degradado azul, el dibujo de una
- * llave dorada a la izquierda, los campos hundidos y los botones con relieve.
- *
- * Aqui solo se inicia sesion: las cuentas las crea el administrador desde el
- * menu Inicio, no hay boton de "crear cuenta". El login siempre intenta primero
- * por sockets contra el Servidor (Pilar 4); si el servidor no esta encendido,
- * se hace en local automaticamente.
- */
+
 public class PanelLogin extends JPanel {
 
     public PanelLogin(VentanaPrincipal ventana, UsuarioServicio servicio) {
@@ -35,7 +25,6 @@ public class PanelLogin extends JPanel {
                 Math.max(92, btnAceptar.getPreferredSize().width),
                 btnAceptar.getPreferredSize().height + 2));
 
-        // --- El "dialogo" que flota sobre el escritorio --------------------
         JPanel dialogo = new JPanel(new BorderLayout());
         dialogo.setBackground(Estilo.PANEL);
         dialogo.setBorder(BorderFactory.createCompoundBorder(
@@ -47,7 +36,6 @@ public class PanelLogin extends JPanel {
 
         add(dialogo, new GridBagConstraints());
 
-        // --- Acciones -----------------------------------------------------
         btnAceptar.addActionListener(e -> {
             String usuario = txtUsuario.getText().trim();
             String clave = new String(txtClave.getPassword());
@@ -56,7 +44,6 @@ public class PanelLogin extends JPanel {
         txtUsuario.addActionListener(e -> btnAceptar.doClick());
         txtClave.addActionListener(e -> btnAceptar.doClick());
 
-        // El cursor arranca en el campo de usuario.
         SwingUtilities.invokeLater(txtUsuario::requestFocusInWindow);
     }
 
@@ -66,18 +53,12 @@ public class PanelLogin extends JPanel {
         Estilo.pintarFondoEscritorio(g, this);
     }
 
-    // -----------------------------------------------------------------
-    //  Piezas visuales estilo Windows 98
-    // -----------------------------------------------------------------
-
     private JComponent cuerpo(JTextField usuario, JPasswordField clave,
                               JButton aceptar) {
         JPanel cuerpo = new JPanel(new BorderLayout(16, 0));
         cuerpo.setOpaque(false);
         cuerpo.setBorder(BorderFactory.createEmptyBorder(18, 18, 14, 18));
 
-        // La llave dorada, alineada arriba, y una linea vertical que la separa
-        // del formulario (detalle de los cuadros de dialogo de Windows 98).
         JPanel oeste = new JPanel(new BorderLayout());
         oeste.setOpaque(false);
         JPanel llaveArriba = new JPanel(new BorderLayout());
@@ -117,7 +98,6 @@ public class PanelLogin extends JPanel {
         return cuerpo;
     }
 
-    /** Fija el ancho de la columna del formulario para que el cuadro no quede ancho y vacio. */
     private static final int ANCHO_COLUMNA = 250;
 
     private JComponent anclarIzquierda(JComponent comp) {
@@ -157,7 +137,6 @@ public class PanelLogin extends JPanel {
         return l;
     }
 
-    /** El dibujo de la llave dorada sobre una placa azul, como el logon de Windows 98. */
     private static class PanelLlave extends JPanel {
 
         PanelLlave() {
@@ -176,25 +155,21 @@ public class PanelLogin extends JPanel {
 
             int s = 72;
 
-            // Placa azul con relieve, como el fondo del icono del logon.
             g2.setPaint(new GradientPaint(2, 2, new Color(0, 10, 170),
                     s, s, new Color(0, 0, 96)));
             g2.fillRoundRect(2, 2, s, s, 14, 14);
             g2.setColor(new Color(130, 150, 245));
             g2.drawRoundRect(2, 2, s - 1, s - 1, 14, 14);
 
-            // Sombra de la llave, un poco desplazada.
             g2.translate(3, 4);
             pintarLlave(g2, new Color(0, 0, 0, 85));
             g2.translate(-3, -4);
 
-            // La llave dorada.
             pintarLlave(g2, null);
 
             g2.dispose();
         }
 
-        /** Dibuja la llave. Si {@code plano} es null usa el degradado dorado. */
         private void pintarLlave(Graphics2D g2, Color plano) {
             if (plano != null) {
                 g2.setColor(plano);
@@ -203,35 +178,24 @@ public class PanelLogin extends JPanel {
                         60, 62, new Color(196, 134, 20)));
             }
 
-            // Anillo (la parte que se agarra).
             g2.setStroke(new BasicStroke(7f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g2.drawOval(13, 13, 24, 24);
 
-            // Cana.
             g2.setStroke(new BasicStroke(6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g2.drawLine(33, 33, 57, 57);
 
-            // Dientes.
             g2.setStroke(new BasicStroke(4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g2.drawLine(52, 52, 59, 45);
             g2.drawLine(46, 46, 52, 40);
         }
     }
 
-    // -----------------------------------------------------------------
-    //  Logica de login
-    // -----------------------------------------------------------------
-
-    /**
-     * Intenta entrar. Primero prueba por el servidor de sockets; si no
-     * responde (no esta encendido), cae en el login local.
-     */
     private void entrar(VentanaPrincipal ventana, UsuarioServicio servicio,
                         String usuario, String clave) {
         String respuesta = Cliente.intentar("LOGIN;" + usuario + ";" + clave);
 
         if (respuesta == null) {
-            entrarLocal(ventana, servicio, usuario, clave);   // servidor apagado
+            entrarLocal(ventana, servicio, usuario, clave);
             return;
         }
         if (respuesta.startsWith("OK")) {

@@ -9,16 +9,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Reproductor de musica (enunciado 3.7).
- *
- * Deja agregar canciones (.mp3 / .wav) desde el navegador de archivos y las
- * reproduce con los botones Play / Pause / Stop. La reproduccion corre en un
- * HiloReproductor aparte (Pilar 3 - hilos), para que el resto de Mini-Windows
- * siga respondiendo mientras suena la musica. Al reproducir se muestran la
- * caratula (si hay un cover.jpg / folder.jpg en la carpeta) y la descripcion
- * de la cancion.
- */
+
 public class PanelReproductor extends JPanel {
 
     private final DefaultListModel<String> modeloLista = new DefaultListModel<>();
@@ -85,7 +76,6 @@ public class PanelReproductor extends JPanel {
             }
         });
 
-        // Play / Pause / Stop se apoyan en el HiloReproductor (ver mas abajo).
         btnPlay.addActionListener(e -> reproducir());
         btnPause.addActionListener(e -> pausar());
         btnStop.addActionListener(e -> detener());

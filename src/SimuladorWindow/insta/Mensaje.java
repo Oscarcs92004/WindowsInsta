@@ -3,14 +3,6 @@ package SimuladorWindow.insta;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/**
- * Un mensaje privado del Inbox de INSTA+ (enunciado 4.11).
- *
- * El tipo es un texto: "TEXTO" o "STICKER". Cuando es un sticker, el campo
- * texto guarda la ruta de la imagen del sticker.
- *
- * Implementa Serializable para guardarse en inbox.ins.
- */
 public class Mensaje implements Serializable {
 
     private static final long serialVersionUID = 1L;

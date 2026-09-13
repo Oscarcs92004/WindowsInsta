@@ -7,14 +7,7 @@ import SimuladorWindow.servicios.UsuarioServicio;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Buscar Profile (enunciado 4.9).
- *
- * Se escribe un texto y se listan los usuarios cuyo username lo contenga
- * (coincidencia parcial). Cada resultado se ve con su avatar, el username y si
- * lo sigues o no, como en el buscador de Instagram. Al pulsar uno se abre su
- * perfil. El resultado se arma en una ListaEnlazada.
- */
+
 public class PanelBuscarPerfil extends JPanel {
 
     private final InstaServicio insta;
@@ -91,7 +84,7 @@ public class PanelBuscarPerfil extends JPanel {
                 continue;
             }
             if (!insta.estaVisible(u.getUsername())) {
-                continue;                       // desactivada: como si no existiera
+                continue;
             }
             if (!encontrados.contiene(u.getUsername())) {
                 encontrados.agregarFinal(u.getUsername());
@@ -102,7 +95,7 @@ public class PanelBuscarPerfil extends JPanel {
             modelo.addElement(username);
         }
         if (modelo.isEmpty()) {
-            modelo.addElement("");   // fila especial: "sin resultados"
+            modelo.addElement("");
         }
     }
 
@@ -114,9 +107,6 @@ public class PanelBuscarPerfil extends JPanel {
         panelInsta.verPerfilDe(username);
     }
 
-    // -----------------------------------------------------------------
-
-    /** Dibuja cada resultado: avatar + username + "Lo sigues / No lo sigues". */
     private class CeldaResultado extends JPanel implements ListCellRenderer<String> {
 
         private final JLabel avatar = new JLabel();

@@ -5,43 +5,27 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.io.File;
 
-/**
- * Diseño responsive de INSTA+ (enunciado 4.6).
- *
- * El enunciado da tamaños recomendados para la "vista móvil" y dice que el
- * grid de publicaciones tiene 3 columnas. Aquí están esas constantes y un
- * ayudante que escala una imagen según su orientación (cuadrada, vertical u
- * horizontal), manteniendo la proporción de la vista que le toca.
- */
 public final class ConfigInsta {
 
     private ConfigInsta() {
     }
 
-    /** true = se simula la vista de celular. */
     public static final boolean MODO_MOBILE = true;
 
-    /** Columnas del grid de publicaciones del perfil. */
     public static final int COLUMNAS_GRID = 3;
 
-    // Tamaños recomendados por el enunciado (4.6), en px.
     public static final Dimension CUADRADA   = new Dimension(1080, 1080);
     public static final Dimension VERTICAL   = new Dimension(1080, 1350);
     public static final Dimension HORIZONTAL = new Dimension(1080, 566);
 
-    /** Ancho al que se dibuja una imagen en una lista pequeña. */
     private static final int ANCHO_EN_PANTALLA = 260;
 
-    /** Ancho de la imagen dentro de una publicacion del feed (como Instagram:
-     *  la foto ocupa todo el ancho de la tarjeta). */
     private static final int ANCHO_EN_FEED = 392;
 
-    /** Imagen escalada al tamaño que corresponde a su orientacion (lista chica). */
     public static ImageIcon escalarParaVista(File imagen) {
         return escalar(imagen, ANCHO_EN_PANTALLA);
     }
 
-    /** Imagen escalada para verse dentro de una publicacion del feed. */
     public static ImageIcon escalarParaFeed(File imagen) {
         return escalar(imagen, ANCHO_EN_FEED);
     }
@@ -65,7 +49,6 @@ public final class ConfigInsta {
         return new ImageIcon(escalada);
     }
 
-    /** Miniatura cuadrada para el grid de 3 columnas del perfil. */
     public static ImageIcon miniatura(File imagen, int lado) {
         if (imagen == null || !imagen.exists()) {
             return null;

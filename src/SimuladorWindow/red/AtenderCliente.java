@@ -13,21 +13,11 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-/**
- * Atiende a UN cliente conectado. Corre en su propio hilo (lo lanza Servidor).
- *
- * Lee lineas de texto del cliente, las procesa y responde otra linea.
- * Protocolo: comandos separados por ";", por ejemplo  LOGIN;ana;1234
- *
- * El servidor es el unico que abre los archivos del sistema (usuarios.sop,
- * los .ins): los clientes le piden a el que haga las operaciones.
- */
+
 class AtenderCliente implements Runnable {
 
     private final Socket socket;
-    /** Cuentas de Mini-Windows (usuarios.sop): para el comando LOGIN. */
     private final UsuarioServicio usuarios;
-    /** Cuentas de INSTA+ (users.ins): para POST y FOLLOW. */
     private final UsuarioServicio usuariosInsta;
     private final InstaServicio insta;
 
@@ -50,7 +40,6 @@ class AtenderCliente implements Runnable {
                 out.println(procesar(linea));
             }
         } catch (IOException e) {
-            // el cliente se desconecto; no hay nada que hacer
         }
     }
 

@@ -14,12 +14,6 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Inbox: mensajeria privada (enunciado 4.11) y stickers (4.12), en formato de
- * telefono como el "Direct" de Instagram: primero la lista de conversaciones a
- * pantalla completa y, al tocar una, se abre el chat a pantalla completa con un
- * boton de "Volver".
- */
 public class PanelInbox extends JPanel {
 
     private static final int MAX_MENSAJE = 300;
@@ -38,7 +32,6 @@ public class PanelInbox extends JPanel {
     private final JLabel avatarChat = new JLabel();
     private final JTextField entrada = new JTextField();
 
-    /** Con quien esta abierto el chat ahora mismo (null = viendo la lista). */
     private String chatActual;
 
     public PanelInbox(InstaServicio insta, UsuarioServicio usuarios, Usuario usuarioActual) {
@@ -53,10 +46,6 @@ public class PanelInbox extends JPanel {
 
         recargar();
     }
-
-    // -----------------------------------------------------------------
-    //  Lista de conversaciones
-    // -----------------------------------------------------------------
 
     private JComponent tarjetaLista() {
         JPanel p = new JPanel(new BorderLayout());
@@ -108,7 +97,6 @@ public class PanelInbox extends JPanel {
         return p;
     }
 
-    /** Resumen de una conversación para la lista: con quién y el último mensaje. */
     private static class Conversacion {
         final String otro;
         final String ultimo;
@@ -123,7 +111,6 @@ public class PanelInbox extends JPanel {
         }
     }
 
-    /** Dibuja una fila de la lista: avatar + nombre + último mensaje + hora. */
     private class CeldaConversacion extends JPanel implements ListCellRenderer<Conversacion> {
 
         private final JLabel avatar = new JLabel();
@@ -175,15 +162,10 @@ public class PanelInbox extends JPanel {
         }
     }
 
-    // -----------------------------------------------------------------
-    //  Un chat
-    // -----------------------------------------------------------------
-
     private JComponent tarjetaChat() {
         JPanel p = new JPanel(new BorderLayout());
         p.setBackground(EstiloInsta.BLANCO);
 
-        // Cabecera: volver + avatar + nombre + acciones.
         JButton volver = new JButton("‹");
         volver.setFont(EstiloInsta.TITULO);
         volver.setContentAreaFilled(false);
@@ -232,7 +214,6 @@ public class PanelInbox extends JPanel {
         scroll.setBorder(null);
         p.add(scroll, BorderLayout.CENTER);
 
-        // Barra de escribir: campo + Enviar + Sticker.
         EstiloInsta.estiloCampo(entrada);
         entrada.addActionListener(e -> enviarTexto());
         JButton enviar = EstiloInsta.botonPrimario("Enviar");
@@ -253,13 +234,10 @@ public class PanelInbox extends JPanel {
         return p;
     }
 
-    // -----------------------------------------------------------------
-
     public void recargar() {
         String yo = usuarioActual.getUsername();
         List<Mensaje> inbox = insta.inboxDe(yo);
 
-        // Un nodo por cada persona con la que hay conversación (sin repetir).
         ListaEnlazada<String> otros = new ListaEnlazada<>();
         for (Mensaje m : inbox) {
             String otro = m.getEmisor().equalsIgnoreCase(yo) ? m.getReceptor() : m.getEmisor();
@@ -279,7 +257,7 @@ public class PanelInbox extends JPanel {
                 if (!deEsta) {
                     continue;
                 }
-                ultimo = m;      // los mensajes están en orden de envío
+                ultimo = m;
                 if (m.getReceptor().equalsIgnoreCase(yo) && !m.isLeido()) {
                     noLeidos = true;
                 }
@@ -324,7 +302,6 @@ public class PanelInbox extends JPanel {
         historial.repaint();
     }
 
-    /** Una burbuja del chat: a la derecha si la envié yo, a la izquierda si no. */
     private JComponent filaMensaje(Mensaje m) {
         boolean mio = m.getEmisor().equalsIgnoreCase(usuarioActual.getUsername());
 
@@ -338,7 +315,7 @@ public class PanelInbox extends JPanel {
             } else {
                 img.setText("[sticker: " + archivo.getName() + "]");
             }
-            contenido = img;                       // los stickers van sin burbuja
+            contenido = img;
         } else {
             JPanel burbuja = EstiloInsta.burbuja(mio ? EstiloInsta.AZUL : new Color(239, 239, 239));
             String color = mio ? "#FFFFFF" : "#262626";
@@ -367,8 +344,6 @@ public class PanelInbox extends JPanel {
         fila.add(col);
         return fila;
     }
-
-    // -----------------------------------------------------------------
 
     private void nuevaConversacion() {
         String otro = JOptionPane.showInputDialog(this, "Username del otro usuario:");

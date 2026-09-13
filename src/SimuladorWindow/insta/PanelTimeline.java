@@ -10,14 +10,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Feed / Comentarios / Timeline (enunciado 4.7), con el aspecto del feed de
- * Instagram: arriba la fila de historias y debajo una columna de publicaciones
- * (cada una es una TarjetaPublicacion).
- *
- * El feed son mis publicaciones y las de quienes sigo, de la más nueva a la
- * más vieja, armadas en una ListaEnlazada propia.
- */
 public class PanelTimeline extends JPanel {
 
     private static final int ANCHO_FEED = 380;
@@ -61,9 +53,6 @@ public class PanelTimeline extends JPanel {
             hay = true;
         }
         if (!hay) {
-            // Ojo: mismo alineado (LEFT) que la fila de historias y que las
-            // tarjetas. Si este cartel va CENTER, el BoxLayout mezcla alineados
-            // y empuja la fila de historias hacia la derecha, dejándola estrecha.
             JLabel vacio = new JLabel(
                     "Todavía no hay publicaciones. Crea una o sigue a alguien.",
                     SwingConstants.CENTER);
@@ -79,7 +68,6 @@ public class PanelTimeline extends JPanel {
         feed.repaint();
     }
 
-    /** Timeline ya ordenado (más nuevo primero), en una ListaEnlazada propia. */
     private ListaEnlazada<Publicacion> construirTimeline() {
         List<String> autores = new ArrayList<>();
         autores.add(usuarioActual.getUsername());
@@ -88,7 +76,7 @@ public class PanelTimeline extends JPanel {
         List<Publicacion> todas = new ArrayList<>();
         for (String autor : autores) {
             if (!insta.estaVisible(autor)) {
-                continue;                       // cuenta desactivada: como si no existiera
+                continue;
             }
             todas.addAll(insta.publicacionesDe(autor));
         }
@@ -100,12 +88,6 @@ public class PanelTimeline extends JPanel {
         }
         return resultado;
     }
-
-    // -----------------------------------------------------------------
-    //  Fila de historias: una tira horizontal de fotos de perfil arriba.
-    //  Todas las celdas miden lo mismo, para que los círculos queden
-    //  perfectamente alineados y a la misma distancia.
-    // -----------------------------------------------------------------
 
     private static final int CIRCULO = 56;
     private static final int CELDA_ANCHO = 68;
@@ -140,7 +122,6 @@ public class PanelTimeline extends JPanel {
         return scroll;
     }
 
-    /** Una celda de historia de tamaño fijo: círculo arriba, nombre debajo. */
     private JComponent historia(String username, String foto, String etiqueta, boolean propia) {
         ImageIcon icono = propia
                 ? EstiloInsta.avatarMasBadge(foto, username, CIRCULO)
@@ -150,9 +131,6 @@ public class PanelTimeline extends JPanel {
         circulo.setBorderPainted(false);
         circulo.setFocusPainted(false);
         circulo.setMargin(new Insets(0, 0, 0, 0));
-        // Sin borde: si no, el borde del Look&Feel deja unos pixeles de margen
-        // dentro del boton y la foto (56x56) no queda centrada respecto al
-        // nombre de abajo. Fijamos el tamano al de la imagen.
         circulo.setBorder(BorderFactory.createEmptyBorder());
         circulo.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         circulo.setAlignmentX(CENTER_ALIGNMENT);
@@ -179,7 +157,6 @@ public class PanelTimeline extends JPanel {
         return celda;
     }
 
-    /** Nombres muy largos se acortan con "…" para que no descuadren la fila. */
     private static String recortar(String s) {
         if ("Tu historia".equals(s) || s.length() <= 10) {
             return s;

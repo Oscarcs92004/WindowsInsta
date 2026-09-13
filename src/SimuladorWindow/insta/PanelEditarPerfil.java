@@ -7,12 +7,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 
-/**
- * Editar perfil (enunciado 4.4, 4.10 y 4.13).
- *
- * Deja cambiar nombre, edad, contraseña y foto de perfil, y activar o
- * desactivar la cuenta. Al guardar, UsuarioServicio actualiza usuarios.sop.
- */
+
 public class PanelEditarPerfil extends JPanel {
 
     private final UsuarioServicio usuarios;
@@ -35,7 +30,6 @@ public class PanelEditarPerfil extends JPanel {
         setBackground(EstiloInsta.BLANCO);
         setLayout(new BorderLayout());
 
-        // Cabecera con la flecha de volver.
         JButton volver = new JButton("‹");
         volver.setFont(EstiloInsta.TITULO);
         volver.setContentAreaFilled(false);
@@ -53,7 +47,6 @@ public class PanelEditarPerfil extends JPanel {
         cab.add(titulo);
         add(cab, BorderLayout.NORTH);
 
-        // Formulario.
         form.setBackground(EstiloInsta.BLANCO);
         form.setBorder(EstiloInsta.margen(14, 16, 14, 16));
 
@@ -187,8 +180,6 @@ public class PanelEditarPerfil extends JPanel {
         }
         recargar();
     }
-
-    // -----------------------------------------------------------------
 
     private JLabel etiqueta(String texto) {
         JLabel l = new JLabel(texto);

@@ -2,14 +2,6 @@ package SimuladorWindow.insta;
 
 import java.io.Serializable;
 
-/**
- * Un sticker disponible para un usuario (enunciado 4.12).
- *
- * "nombre" es como se llama (Feliz, Triste, ...) y "ruta" es donde esta la
- * imagen del sticker en disco.
- *
- * Implementa Serializable para guardarse en stickers.ins.
- */
 public class Sticker implements Serializable {
 
     private static final long serialVersionUID = 1L;

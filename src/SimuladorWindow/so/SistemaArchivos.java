@@ -7,14 +7,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
-/**
- * Sistema de archivos simulado sobre carpetas reales (IMPLEMENTACION.md 8).
- *
- * "raiz" es la carpeta tope: el usuario no puede salir de ahi.
- * "carpetaActual" es donde esta parado ahora mismo (la usa la consola).
- *
- * Esta clase ya esta completa; la usan la consola y el explorador.
- */
 public class SistemaArchivos {
 
     private final File raiz;
@@ -37,7 +29,6 @@ public class SistemaArchivos {
 
     public File getRaiz() { return raiz; }
 
-    /** Archivos y carpetas dentro de la carpeta actual. */
     public File[] listar() {
         File[] hijos = carpetaActual.listFiles();
         if (hijos == null) {
@@ -46,7 +37,6 @@ public class SistemaArchivos {
         return hijos;
     }
 
-    /** mkdir: crea una carpeta dentro de la actual. */
     public boolean crearCarpeta(String nombre) {
         if (!nombreValido(nombre)) {
             return false;
@@ -57,7 +47,6 @@ public class SistemaArchivos {
         }
         return carpeta.mkdir();
     }
-    /** rm: borra una carpeta o archivo (y su contenido) de la carpeta actual. */
     public boolean crearCarpetas(String ruta) {
         if (!nombreValido(ruta)) {
             return false;
@@ -68,7 +57,6 @@ public class SistemaArchivos {
         }
         return carpeta.mkdirs();
     }
-    /** cd: entra a una subcarpeta. Devuelve "" si pudo, o un mensaje de error. */
     public String cambiar(String nombre) {
         if (nombre == null || nombre.trim().isEmpty()) {
             return "Debe indicar una carpeta.";
@@ -93,7 +81,6 @@ public class SistemaArchivos {
         return "";
     }
 
-    /** cd .. : sube un nivel, sin pasar de la carpeta raiz. */
     public String subirNivel() {
         if (carpetaActual.equals(raiz)) {
             return "Ya estas en la carpeta raiz.";
@@ -107,7 +94,6 @@ public class SistemaArchivos {
         return "";
     }
 
-    /** dir: lista la carpeta actual como texto. */
     public String listarComoTexto() {
         StringBuilder sb = new StringBuilder();
         File[] archivos = listar();
@@ -322,7 +308,6 @@ public class SistemaArchivos {
         return sb.toString();
     }
 
-    /** Ruta de la carpeta actual, para mostrarla como prompt. */
     public String rutaActual() {
         return carpetaActual.getAbsolutePath();
     }

@@ -8,27 +8,12 @@ import java.awt.*;
 import java.io.File;
 import java.util.function.Consumer;
 
-/**
- * Una publicacion dibujada con el aspecto de una tarjeta del feed de Instagram:
- *
- *   - cabecera: avatar con anillo, usuario en negrita, "· hace X" y los "..."
- *   - la foto o el reel (o, si es solo texto, una tarjeta de texto centrada)
- *   - fila de acciones: me gusta, comentar, compartir  ...  guardar
- *   - linea de "N Me gusta"
- *   - pie: usuario en negrita + el texto, con #hashtags y @menciones en azul
- *
- * La misma tarjeta la usan el Timeline, Interacciones y Buscar Hashtag, para que
- * las tres pantallas se vean igual (enunciado 4.7, 4.8 y 4.10).
- *
- * El "me gusta" se guarda solo en la tarjeta (no se persiste): es un detalle
- * visual para que el feed no se vea vacio.
- */
 public class TarjetaPublicacion extends JPanel {
 
     private final Publicacion publicacion;
     private final UsuarioServicio usuarios;
     private final int anchoFeed;
-    private final Consumer<String> alVerPerfil;   // puede ser null
+    private final Consumer<String> alVerPerfil;
 
     private boolean meGusta = false;
     private boolean guardado = false;
@@ -59,13 +44,10 @@ public class TarjetaPublicacion extends JPanel {
         add(Box.createVerticalStrut(8));
     }
 
-    /** Ocupa todo el ancho disponible, pero no se estira a lo alto. */
     @Override
     public Dimension getMaximumSize() {
         return new Dimension(Integer.MAX_VALUE, getPreferredSize().height);
     }
-
-    // -----------------------------------------------------------------
 
     private JComponent cabecera() {
         Usuario autor = usuarios.buscar(publicacion.getAutor());
@@ -95,7 +77,6 @@ public class TarjetaPublicacion extends JPanel {
         opciones.addActionListener(e -> menuOpciones(opciones));
         fila.add(opciones, BorderLayout.EAST);
 
-        // Tocar el avatar o el usuario abre su perfil (como en Instagram).
         if (alVerPerfil != null) {
             manoYClic(izq, () -> alVerPerfil.accept(publicacion.getAutor()));
         }
@@ -117,7 +98,6 @@ public class TarjetaPublicacion extends JPanel {
             imagen.setAlignmentX(LEFT_ALIGNMENT);
             imagen.setBackground(EstiloInsta.BLANCO);
             imagen.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-            // Doble clic en la foto = me gusta, como en Instagram.
             imagen.addMouseListener(new java.awt.event.MouseAdapter() {
                 @Override
                 public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -131,11 +111,6 @@ public class TarjetaPublicacion extends JPanel {
         return tarjetaTexto();
     }
 
-    /**
-     * Publicación de solo texto: una tarjeta con un degradado de color y el
-     * texto en blanco centrado, como el "modo texto" de las publicaciones de
-     * Instagram. El color sale del texto, así que siempre es el mismo.
-     */
     private JComponent tarjetaTexto() {
         final Color[] par = degradadoTexto(publicacion.getTexto());
         JPanel caja = new JPanel(new GridBagLayout()) {
@@ -160,7 +135,6 @@ public class TarjetaPublicacion extends JPanel {
         return caja;
     }
 
-    /** Un par de colores estable para el fondo de una publicación de solo texto. */
     private static Color[] degradadoTexto(String texto) {
         Color[][] paletas = {
                 {new Color(0x8A, 0x3A, 0xB9), new Color(0xE9, 0x5A, 0x5A)},
@@ -172,7 +146,6 @@ public class TarjetaPublicacion extends JPanel {
         return paletas[Math.abs(texto.hashCode()) % paletas.length];
     }
 
-    /** El "player" del reel: fondo oscuro, un triangulo de play y el nombre. */
     private JComponent tarjetaVideo() {
         JPanel video = new JPanel(new GridBagLayout());
         video.setBackground(new Color(20, 20, 20));
@@ -260,8 +233,6 @@ public class TarjetaPublicacion extends JPanel {
         return panel;
     }
 
-    // -----------------------------------------------------------------
-
     private void alternarLike() {
         meGusta = !meGusta;
         botonLike.setIcon(IconosInsta.icono(IconosInsta.CORAZON, 26, meGusta));
@@ -309,10 +280,6 @@ public class TarjetaPublicacion extends JPanel {
         }
     }
 
-    // -----------------------------------------------------------------
-    //  Ayudantes visuales
-    // -----------------------------------------------------------------
-
     private static JButton iconoBoton(String icono, int tam, boolean activo) {
         JButton b = new JButton(IconosInsta.icono(icono, tam, activo));
         b.setContentAreaFilled(false);
@@ -333,7 +300,6 @@ public class TarjetaPublicacion extends JPanel {
         });
     }
 
-    /** Número decorativo y estable: solo para que el feed no se vea vacío. */
     private static int likesDecorativos(Publicacion p) {
         int h = (p.getAutor() + "|" + p.getFecha()).hashCode();
         return Math.abs(h % 180) + 4;

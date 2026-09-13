@@ -18,40 +18,21 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
 
-/**
- * Todo lo de INSTA+ que toca disco, en un solo lugar (mismo molde que
- * UsuarioServicio): guarda las rutas de los archivos .ins de cada usuario y
- * tiene metodos cortos que llaman a ArchivoBinario para leerlos y guardarlos.
- *
- * Estructura en disco (enunciado 4.3):
- *
- *   datos/INSTA_RAIZ/
- *   ├── stickers_globales/
- *   └── <username>/
- *       ├── following.ins   followers.ins   insta.ins   inbox.ins   stickers.ins
- *       ├── imagenes/
- *       ├── folders_personales/
- *       └── stickers_personales/
- *
- * El registro maestro de usuarios sigue siendo usuarios.sop (lo maneja
- * UsuarioServicio); INSTA+ lo reutiliza en vez de tener su propio users.ins.
- */
+
 public class InstaServicio {
 
-    private final File raiz;                 // datos/INSTA_RAIZ
+    private final File raiz;
     private final UsuarioServicio usuarioServicio;
 
-    /** Los 5 stickers que todos tienen desde el principio (enunciado 4.12). */
     private static final String[] STICKERS_POR_DEFECTO =
             {"Feliz", "Triste", "Corazón", "Risa", "Aplauso"};
 
-    /** Un color por sticker, en el mismo orden que STICKERS_POR_DEFECTO. */
     private static final Color[] COLORES_STICKERS = {
-            new Color(255, 200, 0),     // Feliz  - amarillo
-            new Color(80, 120, 220),    // Triste - azul
-            new Color(220, 60, 90),     // Corazón - rojo
-            new Color(255, 140, 40),    // Risa   - naranja
-            new Color(80, 180, 100),    // Aplauso - verde
+            new Color(255, 200, 0),
+            new Color(80, 120, 220),
+            new Color(220, 60, 90),
+            new Color(255, 140, 40),
+            new Color(80, 180, 100),
     };
 
     public InstaServicio(File carpetaDeDatos, UsuarioServicio usuarioServicio) {
@@ -61,7 +42,6 @@ public class InstaServicio {
         asegurarStickersGlobales();
     }
 
-    /** El registro de cuentas de INSTA+ (users.ins), aparte del de Windows. */
     public UsuarioServicio getUsuarioServicio() {
         return usuarioServicio;
     }
@@ -70,15 +50,10 @@ public class InstaServicio {
         return new File(raiz, "stickers_globales");
     }
 
-    /** La imagen del sticker por defecto <nombre>, dentro de stickers_globales. */
     public File archivoStickerGlobal(String nombre) {
         return new File(carpetaStickersGlobales(), nombre + ".png");
     }
 
-    /**
-     * Dibuja las 5 imagenes de los stickers por defecto (un circulo de color con
-     * la inicial) y las guarda en stickers_globales, solo si no existen ya.
-     */
     private void asegurarStickersGlobales() {
         for (int i = 0; i < STICKERS_POR_DEFECTO.length; i++) {
             File destino = archivoStickerGlobal(STICKERS_POR_DEFECTO[i]);
@@ -102,10 +77,6 @@ public class InstaServicio {
             }
         }
     }
-
-    // -----------------------------------------------------------------
-    //  Rutas
-    // -----------------------------------------------------------------
 
     public File carpetaDe(String username) {
         return new File(raiz, username);
@@ -133,10 +104,6 @@ public class InstaServicio {
     private File archivoInbox(String username)     { return new File(carpetaDe(username), "inbox.ins"); }
     private File archivoStickers(String username)  { return new File(carpetaDe(username), "stickers.ins"); }
 
-    /**
-     * Crea la carpeta del usuario y sus 3 subcarpetas, y le registra los 5
-     * stickers por defecto si todavia no los tiene. Se llama al iniciar sesion.
-     */
     public void asegurarCarpetaUsuario(String username) {
         File carpeta = carpetaDe(username);
         boolean esNueva = !carpeta.exists();
@@ -157,17 +124,11 @@ public class InstaServicio {
         }
     }
 
-    // -----------------------------------------------------------------
-    //  Cuenta desactivada = como si no existiera (enunciado 4.13).
-    //  Un solo metodo; lo llaman el timeline y las busquedas.
-    // -----------------------------------------------------------------
-
     public boolean estaVisible(String username) {
         Usuario u = usuarioServicio.buscar(username);
         return u != null && u.isActiva();
     }
 
-    /** Los usernames de todos los usuarios del sistema. */
     public List<String> todosLosUsuarios() {
         List<String> nombres = new ArrayList<>();
         for (Usuario u : usuarioServicio.listar()) {
@@ -176,20 +137,10 @@ public class InstaServicio {
         return nombres;
     }
 
-    // -----------------------------------------------------------------
-    //  Seguir / dejar de seguir (enunciado 4.5 y 4.9b)
-    //
-    //  Los listados de following y followers se manejan con la ListaEnlazada
-    //  propia (enunciado 2.4): agregar un seguidor es agregarFinal(...) y un
-    //  "dejar de seguir" es eliminar(...), sin reorganizar un arreglo.
-    // -----------------------------------------------------------------
-
-    /** El following de un usuario, ya cargado en una ListaEnlazada. */
     public ListaEnlazada<String> listaFollowing(String username) {
         return aListaEnlazada(leerTextos(archivoFollowing(username)));
     }
 
-    /** Los followers de un usuario, ya cargados en una ListaEnlazada. */
     public ListaEnlazada<String> listaFollowers(String username) {
         return aListaEnlazada(leerTextos(archivoFollowers(username)));
     }
@@ -219,7 +170,7 @@ public class InstaServicio {
         }
 
         ListaEnlazada<String> susFollowers = listaFollowers(otro);
-        if (!susFollowers.contiene(yo)) {          // sin duplicados (enunciado 4.3)
+        if (!susFollowers.contiene(yo)) {
             susFollowers.agregarFinal(yo);
             guardarTextos(archivoFollowers(otro), susFollowers.comoLista());
         }
@@ -243,10 +194,6 @@ public class InstaServicio {
         return lista;
     }
 
-    // -----------------------------------------------------------------
-    //  Publicaciones (enunciado 4.3, 4.6, 4.7)
-    // -----------------------------------------------------------------
-
     public List<Publicacion> publicacionesDe(String username) {
         return leerPublicaciones(archivoInsta(username));
     }
@@ -261,15 +208,10 @@ public class InstaServicio {
         return publicacionesDe(username).size();
     }
 
-    // -----------------------------------------------------------------
-    //  Inbox (enunciado 4.11)
-    // -----------------------------------------------------------------
-
     public List<Mensaje> inboxDe(String username) {
         return leerMensajes(archivoInbox(username));
     }
 
-    /** Guarda el mensaje en el inbox del que envia y en el del que recibe. */
     public void enviarMensaje(Mensaje mensaje) {
         List<Mensaje> deEmisor = inboxDe(mensaje.getEmisor());
         deEmisor.add(mensaje);
@@ -284,7 +226,6 @@ public class InstaServicio {
         ArchivoBinario.guardar(archivoInbox(username), new ArrayList<>(mensajes));
     }
 
-    /** Cuantos mensajes recibidos y sin leer tiene el usuario (para el aviso). */
     public int contarNoLeidos(String username) {
         int cuenta = 0;
         for (Mensaje m : inboxDe(username)) {
@@ -294,10 +235,6 @@ public class InstaServicio {
         }
         return cuenta;
     }
-
-    // -----------------------------------------------------------------
-    //  Stickers (enunciado 4.12)
-    // -----------------------------------------------------------------
 
     public List<Sticker> stickersDe(String username) {
         return leerStickers(archivoStickers(username));
@@ -312,10 +249,6 @@ public class InstaServicio {
     private void guardarStickers(String username, List<Sticker> stickers) {
         ArchivoBinario.guardar(archivoStickers(username), new ArrayList<>(stickers));
     }
-
-    // -----------------------------------------------------------------
-    //  Cuentas de ejemplo (enunciado 4.9)
-    // -----------------------------------------------------------------
 
     public void asegurarCuentasEjemplo() {
         sembrar("noticias", "Canal Noticias", 'F',
@@ -335,7 +268,7 @@ public class InstaServicio {
     private void sembrar(String username, String nombre, char genero,
                          Color a, Color b, String insta1, String insta2) {
         if (usuarioServicio.buscar(username) != null) {
-            return;                          // ya existe
+            return;
         }
         try {
             usuarioServicio.registrar(new Usuario(nombre, genero, username, "1234", 25));
@@ -344,7 +277,6 @@ public class InstaServicio {
         }
         asegurarCarpetaUsuario(username);
 
-        // Foto de perfil y una foto para la primera publicación (generadas).
         File avatar = new File(carpetaDe(username), "perfil.png");
         File foto = new File(carpetaImagenesDe(username), "portada.png");
         pintarDegradado(avatar, 200, 200, a, b, nombre.substring(0, 1));
@@ -359,7 +291,6 @@ public class InstaServicio {
         publicar(username, new Publicacion(username, insta2, null));
     }
 
-    /** Dibuja un PNG con un degradado en diagonal y, si se pasa, una inicial. */
     private void pintarDegradado(File destino, int ancho, int alto,
                                  Color a, Color b, String inicial) {
         if (destino.exists()) {
@@ -385,10 +316,6 @@ public class InstaServicio {
             System.err.println("No se pudo crear la imagen de ejemplo " + destino);
         }
     }
-
-    // -----------------------------------------------------------------
-    //  Guardar / leer los archivos .ins (mismo estilo que UsuarioServicio)
-    // -----------------------------------------------------------------
 
     @SuppressWarnings("unchecked")
     private List<String> leerTextos(File archivo) {

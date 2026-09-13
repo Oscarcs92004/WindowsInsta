@@ -10,15 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-/**
- * Visor de imagenes (enunciado 3.5).
- *
- * YA FUNCIONA: elegir una carpeta y recorrer sus imagenes con
- * "Anterior" y "Siguiente", sin pasarse de los extremos.
- *
- * FALTA (Oscar, Iteracion 3.6): si la carpeta tiene muchas imagenes, cargar la
- * lista con un SwingWorker para que la ventana no se congele.
- */
 public class PanelVisor extends JPanel {
 
     private final File carpetaRaiz;
@@ -130,7 +121,6 @@ public class PanelVisor extends JPanel {
             return encontradas;
         }
 
-        // Se ejecuta de vuelta en el EDT: aqui ya es seguro tocar la interfaz.
         @Override
         protected void done() {
             btnCarpeta.setEnabled(true);

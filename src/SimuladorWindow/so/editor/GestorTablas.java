@@ -15,20 +15,16 @@ import javax.swing.text.Element;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-/**
- * Gestiona tablas dentro del editor.
- */
+
 public class GestorTablas {
 
     public static final int ID_SECCION = 3;
     public static final int MAXIMO = 50;
 
-    // Inserta una tabla en el editor.
     public void insertar(JTextPane pane, int filas, int columnas) {
         pane.insertComponent(crearTabla(filas, columnas));
     }
 
-    // Lee las tablas que hay en el documento.
     public ArrayList<TablaDoc> extraer(JTextPane pane) {
         ArrayList<TablaDoc> tablas = new ArrayList<>();
         Element raiz = pane.getStyledDocument().getDefaultRootElement();
@@ -69,7 +65,6 @@ public class GestorTablas {
         return tablas;
     }
 
-    // Vuelve a poner las tablas en el editor.
     public void aplicar(ArrayList<TablaDoc> tablas, JTextPane pane) throws IOException {
         StyledDocument documento = pane.getStyledDocument();
 
@@ -98,7 +93,6 @@ public class GestorTablas {
         }
     }
 
-    // Guarda la sección de tablas.
     public void escribirSeccion(DataOutputStream salida, ArrayList<TablaDoc> tablas) throws IOException {
         salida.writeInt(ID_SECCION);
         salida.writeInt(tablas.size());
@@ -117,7 +111,6 @@ public class GestorTablas {
         }
     }
 
-    // Lee la sección de tablas.
     public ArrayList<TablaDoc> leerSeccion(DataInputStream entrada) throws IOException {
         int id = entrada.readInt();
         if (id != ID_SECCION) {
@@ -153,7 +146,6 @@ public class GestorTablas {
         return tablas;
     }
 
-    // Crea la tabla visual.
     private JTable crearTabla(int filas, int columnas) {
         DefaultTableModel modelo = new DefaultTableModel(filas, columnas);
         JTable tabla = new JTable(modelo);

@@ -2,15 +2,12 @@ package SimuladorWindow.persistencia;
 
 import java.util.Arrays;
 
-/**
- * Tabla del documento.
- */
 public class Tabla {
 
     private final int filas;
     private final int columnas;
     private final String[][] celdas;
-    private int posicion;   // offset en el texto donde va la tabla
+    private int posicion;
 
     public Tabla(int filas, int columnas) {
         if (filas <= 0 || columnas <= 0) {

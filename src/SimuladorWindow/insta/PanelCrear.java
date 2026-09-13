@@ -12,18 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
-/**
- * Crear una publicación, como el botón "+" de Instagram (enunciado 4.3 y 4.6).
- *
- * Tres pestañas, igual que en la app:
- *   - Publicación: una foto + descripción (máx 220), con carpeta personal
- *     opcional, #hashtags y @menciones.
- *   - Reel: un video (.mp4, .mov, .avi) + descripción (máx 220).
- *   - Texto: un insta de solo texto (máx 140).
- *
- * Las fotos se copian a /imagenes y los videos a /videos de la cuenta, y todo
- * queda registrado en insta.ins como una Publicacion.
- */
+
 public class PanelCrear extends JPanel {
 
     private static final int MAX_TEXTO = 140;
@@ -35,18 +24,15 @@ public class PanelCrear extends JPanel {
     private final CardLayout cartas = new CardLayout();
     private final JPanel cuerpo = new JPanel(cartas);
 
-    // Pestaña "Publicación".
     private final JLabel previewImg = new JLabel("Toca para elegir una foto", SwingConstants.CENTER);
     private final JTextField txtCarpeta = new JTextField(14);
     private final JTextArea txtDescImg = new JTextArea(3, 20);
     private File imagenElegida;
 
-    // Pestaña "Reel".
     private final JLabel previewVid = new JLabel("Toca para elegir un video", SwingConstants.CENTER);
     private final JTextArea txtDescVid = new JTextArea(3, 20);
     private File videoElegido;
 
-    // Pestaña "Texto".
     private final JTextArea txtSoloTexto = new JTextArea(4, 20);
 
     public PanelCrear(InstaServicio insta, Usuario usuarioActual) {
@@ -91,8 +77,6 @@ public class PanelCrear extends JPanel {
         txtSoloTexto.setText("");
         cartas.show(cuerpo, "0");
     }
-
-    // -----------------------------------------------------------------
 
     private JComponent pestanaImagen() {
         prepararArea(txtDescImg);
@@ -184,8 +168,6 @@ public class PanelCrear extends JPanel {
         return envolver(form);
     }
 
-    // -----------------------------------------------------------------
-
     private void publicarImagen() {
         if (imagenElegida == null) {
             JOptionPane.showMessageDialog(this, "Primero elige una foto.");
@@ -262,10 +244,6 @@ public class PanelCrear extends JPanel {
         recargar();
     }
 
-    // -----------------------------------------------------------------
-    //  Piezas visuales
-    // -----------------------------------------------------------------
-
     private PanelFeed columnaForm() {
         PanelFeed p = new PanelFeed();
         p.setBackground(EstiloInsta.BLANCO);
@@ -273,7 +251,6 @@ public class PanelCrear extends JPanel {
         return p;
     }
 
-    /** Coloca el formulario arriba del todo y deja el resto en blanco. */
     private JComponent envolver(PanelFeed form) {
         form.add(Box.createVerticalGlue());
         JScrollPane scroll = new JScrollPane(form,
@@ -343,7 +320,6 @@ public class PanelCrear extends JPanel {
         }
     }
 
-    /** Muestra "N/máx" bajo un área de texto y lo actualiza al escribir. */
     private void contarCaracteres(JTextArea ta, JLabel etiqueta, int max) {
         etiqueta.setFont(EstiloInsta.CHICA);
         etiqueta.setForeground(EstiloInsta.TEXTO_GRIS);

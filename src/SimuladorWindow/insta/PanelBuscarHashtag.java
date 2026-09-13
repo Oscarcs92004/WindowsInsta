@@ -10,15 +10,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Buscar Hashtag (enunciado 4.10).
- *
- * Se escribe una palabra y se muestran todas las publicaciones que llevan ese
- * hashtag, con el mismo aspecto que el feed (una TarjetaPublicacion por
- * publicación). El orden no importa, pero no puede haber publicaciones
- * repetidas: se controla con una ListaEnlazada.
- */
-public class PanelBuscarHashtag extends JPanel {
+ class PanelBuscarHashtag extends JPanel {
 
     private static final int ANCHO_FEED = 380;
 

@@ -3,9 +3,6 @@ package SimuladorWindow.persistencia;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Documento en memoria.
- */
 public class Documento {
 
     private final List<Run> runs = new ArrayList<>();

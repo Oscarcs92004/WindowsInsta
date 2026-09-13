@@ -6,14 +6,6 @@ import SimuladorWindow.servicios.UsuarioServicio;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * La ventana de INSTA+ dentro de Windows 98.
- *
- * Primero muestra el login de INSTA+ (cuentas en users.ins, aparte de las de
- * Windows). Al entrar, muestra la app (PanelInsta) con esa cuenta. Al cerrar
- * sesion vuelve al login, sin tocar la sesion de Windows, asi que se puede
- * entrar con otra cuenta de INSTA+ distinta.
- */
 public class PanelInstaApp extends JPanel {
 
     private final InstaServicio insta;
@@ -29,7 +21,6 @@ public class PanelInstaApp extends JPanel {
     }
 
     private void mostrarLogin() {
-        // Quitamos la app anterior (si la habia) y ponemos el login.
         removeAll();
         add(new PanelLoginInsta(usuariosInsta, this::entrar), "LOGIN");
         cartas.show(this, "LOGIN");

@@ -1,8 +1,5 @@
 package SimuladorWindow.persistencia;
 
-/**
- * Un tramo de texto con formato.
- */
 public class Run {
 
     private String texto;

@@ -9,12 +9,6 @@ import java.awt.*;
 import java.io.File;
 import java.time.format.DateTimeFormatter;
 
-/**
- * Perfil de un usuario (enunciado 4.5 y 4.9b), con el aspecto del perfil de
- * Instagram: arriba el avatar y los tres contadores (publicaciones, followers,
- * following); debajo el nombre y los datos; luego el botón de acción; y al final
- * el grid de 3 columnas con las fotos y los reels publicados.
- */
 public class PanelPerfil extends JPanel {
 
     private static final int LADO_CELDA = 129;
@@ -78,10 +72,6 @@ public class PanelPerfil extends JPanel {
         cuerpo.repaint();
     }
 
-    // -----------------------------------------------------------------
-    //  Cabecera: avatar + contadores + nombre + datos
-    // -----------------------------------------------------------------
-
     private JComponent bloqueCabecera(Usuario u) {
         int publicaciones = insta.contarPublicaciones(u.getUsername());
         int followers = insta.seguidoresDe(u.getUsername()).size();
@@ -126,7 +116,6 @@ public class PanelPerfil extends JPanel {
         bio.setAlignmentX(LEFT_ALIGNMENT);
         datos.add(bio);
 
-        // Estado de la cuenta (enunciado 4.5): siempre visible.
         JLabel estado = new JLabel(u.isActiva() ? "Cuenta activa" : "Cuenta desactivada");
         estado.setFont(EstiloInsta.CHICA);
         estado.setForeground(u.isActiva() ? EstiloInsta.TEXTO_GRIS : EstiloInsta.ROJO);
@@ -145,7 +134,6 @@ public class PanelPerfil extends JPanel {
         return capar(bloque);
     }
 
-    /** Un contador del perfil: número en negrita y la etiqueta debajo. */
     private JComponent contador(int numero, String etiqueta, Runnable accion) {
         JLabel n = new JLabel(String.valueOf(numero), SwingConstants.CENTER);
         n.setFont(EstiloInsta.FUERTE.deriveFont(16f));
@@ -169,10 +157,6 @@ public class PanelPerfil extends JPanel {
         }
         return p;
     }
-
-    // -----------------------------------------------------------------
-    //  Botones de acción
-    // -----------------------------------------------------------------
 
     private JComponent botonesAccion(Usuario u, boolean esOtro) {
         JPanel fila = new JPanel(new GridBagLayout());
@@ -226,7 +210,6 @@ public class PanelPerfil extends JPanel {
         return fila;
     }
 
-    /** La barra con el icono de cuadrícula (una sola pestaña, decorativa). */
     private JComponent barraPestana() {
         JLabel grid = new JLabel(IconosInsta.icono("grid", 22, true), SwingConstants.CENTER);
         grid.setBorder(BorderFactory.createCompoundBorder(
@@ -242,10 +225,6 @@ public class PanelPerfil extends JPanel {
         return capar(wrap);
     }
 
-    // -----------------------------------------------------------------
-    //  Grid de publicaciones (enunciado 4.6: 3 columnas)
-    // -----------------------------------------------------------------
-
     private JComponent grid(Usuario u) {
         JPanel grid = new JPanel(new GridLayout(0, ConfigInsta.COLUMNAS_GRID, 2, 2));
         grid.setOpaque(false);
@@ -254,7 +233,7 @@ public class PanelPerfil extends JPanel {
         int puestas = 0;
         for (Publicacion p : insta.publicacionesDe(u.getUsername())) {
             if (p.esSoloTexto()) {
-                continue;                        // los instas de texto no van al grid
+                continue;
             }
             grid.add(celdaGrid(p));
             puestas++;
@@ -265,7 +244,6 @@ public class PanelPerfil extends JPanel {
             vacio.setBorder(EstiloInsta.margen(30, 12, 30, 12));
             return capar(vacio);
         }
-        // Rellena la última fila para que las celdas queden cuadradas.
         while (puestas % ConfigInsta.COLUMNAS_GRID != 0) {
             JPanel hueco = new JPanel();
             hueco.setOpaque(false);
@@ -298,11 +276,6 @@ public class PanelPerfil extends JPanel {
         return celda;
     }
 
-    // -----------------------------------------------------------------
-    //  Ayudantes de maquetación
-    // -----------------------------------------------------------------
-
-    /** Envuelve un componente para que ocupe el ancho pero no se estire a lo alto. */
     private JComponent capar(JComponent c) {
         c.setAlignmentX(LEFT_ALIGNMENT);
         JPanel wrap = new JPanel(new BorderLayout());
@@ -323,8 +296,6 @@ public class PanelPerfil extends JPanel {
         return wrap;
     }
 
-    // -----------------------------------------------------------------
-
     private void mostrarLista(String titulo, ListaEnlazada<String> lista) {
         StringBuilder sb = new StringBuilder();
         for (String username : lista.comoLista()) {
@@ -339,11 +310,10 @@ public class PanelPerfil extends JPanel {
                 JOptionPane.PLAIN_MESSAGE);
     }
 
-    /** Timeline de ese usuario, de la más reciente a la más antigua. */
     private void verPublicaciones(String username) {
         ListaEnlazada<Publicacion> lista = new ListaEnlazada<>();
         for (Publicacion p : insta.publicacionesDe(username)) {
-            lista.agregarInicio(p);          // el último queda primero
+            lista.agregarInicio(p);
         }
 
         PanelFeed columna = new PanelFeed();
