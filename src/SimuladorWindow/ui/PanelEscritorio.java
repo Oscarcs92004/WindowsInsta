@@ -66,7 +66,7 @@ public class PanelEscritorio extends JPanel {
 
     private Map<String, Supplier<JComponent>> aplicaciones() {
         Map<String, Supplier<JComponent>> apps = new LinkedHashMap<>();
-        apps.put("Explorador",       () -> new PanelExplorador(usuarioActual, carpetaRaiz));
+        apps.put("Explorador",       () -> new PanelExplorador(usuarioActual, carpetaRaiz, this));;
         apps.put("Editor de texto",  () -> new PanelEditor(usuarioActual, carpetaRaiz));
         apps.put("Visor de imagenes",() -> new PanelVisor(usuarioActual, carpetaRaiz));
         apps.put("Consola",          () -> new PanelConsola(usuarioActual, carpetaRaiz));
@@ -249,7 +249,7 @@ public class PanelEscritorio extends JPanel {
         return menu;
     }
 
-    private void abrirApp(String titulo, JComponent contenido) {
+    public void abrirApp(String titulo, JComponent contenido) {
         ImageIcon icono = iconoApp(titulo, Iconos.PEQUENO);
 
         JInternalFrame frame = new JInternalFrame(titulo, true, true, true, true);

@@ -45,6 +45,27 @@ public class PanelEditor extends JPanel {
     private JToggleButton btnTachado;
     private JButton btnColor;
 
+    public void abrirArchivoDesdeExplorador(File archivo) {
+        try {
+            String contenido = new String(
+                    Files.readAllBytes(archivo.toPath()),
+                    StandardCharsets.UTF_8
+            );
+
+            textPane.setText(contenido);
+            archivoActual = archivo;
+            actualizarEstado();
+
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudo abrir el archivo:\n" + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
     public PanelEditor(Usuario usuarioActual, File carpetaRaiz) {
         this.usuarioActual = usuarioActual;
         this.carpetaRaiz = carpetaRaiz;
@@ -402,13 +423,33 @@ public class PanelEditor extends JPanel {
         }
 
         File archivo = chooser.getSelectedFile();
+
         try {
-            Documento documento = PersistenciaEDT.abrir(archivo);
-            PersistenciaEDT.aplicarA(documento, textPane.getStyledDocument());
+            if (archivo.getName().toLowerCase().endsWith(".txt")) {
+                String contenido = new String(
+                        Files.readAllBytes(archivo.toPath()),
+                        StandardCharsets.UTF_8
+                );
+
+                textPane.setText(contenido);
+            } else {
+                Documento documento = PersistenciaEDT.abrir(archivo);
+                PersistenciaEDT.aplicarA(
+                        documento,
+                        textPane.getStyledDocument()
+                );
+            }
+
             archivoActual = archivo;
             actualizarEstado();
+
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "No se pudo abrir el documento:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudo abrir el documento:\n" + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
@@ -421,35 +462,74 @@ public class PanelEditor extends JPanel {
     }
 
     private void accionGuardarComo() {
-        JFileChooser chooser = crearChooser();
+        JFileChooser chooser = new JFileChooser(carpetaRaiz);
+
+        String[] tipos = {"txt", "edt"};
+        JComboBox<String> comboTipo = new JComboBox<>(tipos);
+
+        JPanel panel = new JPanel(new BorderLayout(5, 5));
+        panel.add(new JLabel("Tipo de archivo:"), BorderLayout.WEST);
+        panel.add(comboTipo, BorderLayout.CENTER);
+
+        chooser.setAccessory(panel);
+
         if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
             return;
         }
 
         File archivo = chooser.getSelectedFile();
+        String tipo = (String) comboTipo.getSelectedItem();
 
-        if (!archivo.getName().toLowerCase().endsWith(".edt")) {
-            archivo = new File(archivo.getParentFile(), archivo.getName() + ".edt");
+        if (!archivo.getName().toLowerCase().endsWith("." + tipo)) {
+            archivo = new File(
+                    archivo.getParentFile(),
+                    archivo.getName() + "." + tipo
+            );
         }
+
         guardarDocumento(archivo);
     }
 
     private void guardarDocumento(File archivo) {
         try {
-            Documento documento = PersistenciaEDT.desdeStyledDocument(textPane.getStyledDocument());
-            PersistenciaEDT.guardar(documento, archivo);
+            String nombre = archivo.getName().toLowerCase();
+
+            if (nombre.endsWith(".txt")) {
+                Files.write(
+                        archivo.toPath(),
+                        textPane.getText().getBytes(StandardCharsets.UTF_8)
+                );
+            } else {
+                Documento documento =
+                        PersistenciaEDT.desdeStyledDocument(
+                                textPane.getStyledDocument()
+                        );
+
+                PersistenciaEDT.guardar(documento, archivo);
+            }
+
             archivoActual = archivo;
-            JOptionPane.showMessageDialog(this, "Documento guardado correctamente.", "Guardar", JOptionPane.INFORMATION_MESSAGE);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Documento guardado correctamente.",
+                    "Guardar",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "No se pudo guardar el documento:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudo guardar el documento:\n" + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
     private JFileChooser crearChooser() {
         JFileChooser chooser = new JFileChooser(carpetaRaiz);
-
-        chooser.setFileFilter(new FileNameExtensionFilter("Documentos EDT (*.edt)", "edt"));
-
+        chooser.setFileFilter(new FileNameExtensionFilter("Documentos de texto (*.txt, *.edt)", "txt", "edt"));
         return chooser;
     }
 

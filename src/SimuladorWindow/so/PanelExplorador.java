@@ -3,6 +3,7 @@ package SimuladorWindow.so;
 import SimuladorWindow.estructuras.ListaEnlazada;
 import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.ui.Estilo;
+import SimuladorWindow.ui.PanelEscritorio;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -24,8 +25,10 @@ public class PanelExplorador extends JPanel {
     private static final String[] EXT_DOCUMENTOS = {"pdf","doc","docx","xls","xlsx","ppt","pptx","txt","odt","csv","xml","json"};
     private static final String[] EXT_MUSICA     = {"mp3","wav","ogg","flac","aac","m4a","wma","opus"};
 
+    private Usuario usuarioActual;
     private final File carpetaRaiz;
     private final JTree arbol;
+    private final PanelEscritorio escritorio;
 
     private File portapapeles;
     private String criterioOrden = "nombre";
@@ -34,7 +37,15 @@ public class PanelExplorador extends JPanel {
     private final JLabel       etiquetaProgreso;
     private final JLabel       lblConteo = new JLabel();
 
-    public PanelExplorador(Usuario usuarioActual, File carpetaRaiz) {
+    private void abrirEnEditor(File archivo) {
+        PanelEditor editor = new PanelEditor(usuarioActual, carpetaRaiz);
+        editor.abrirArchivoDesdeExplorador(archivo);
+        escritorio.abrirApp("Editor de texto", editor);
+    }
+
+    public PanelExplorador(Usuario usuarioActual, File carpetaRaiz, PanelEscritorio escritorio) {
+        this.usuarioActual = usuarioActual;
+        this.escritorio = escritorio;
         this.carpetaRaiz = carpetaRaiz;
 
         setLayout(new BorderLayout());
@@ -45,6 +56,19 @@ public class PanelExplorador extends JPanel {
         arbol.setBackground(Color.WHITE);
         arbol.setRowHeight(19);
         arbol.setShowsRootHandles(true);
+        arbol.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    File archivo = archivoSeleccionado();
+                    if (archivo != null
+                            && archivo.isFile()
+                            && extension(archivo).equals("txt")) {
+                        abrirEnEditor(archivo);
+                    }
+                }
+            }
+        });
         JScrollPane scroll = new JScrollPane(arbol);
         scroll.setBorder(Estilo.hundido());
         add(scroll, BorderLayout.CENTER);
