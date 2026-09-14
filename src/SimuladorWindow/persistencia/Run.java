@@ -9,7 +9,7 @@ public class Run {
     private boolean cursiva;
     private boolean subrayado;
     private boolean tachado;
-    private int colorRGB;   // 0x00RRGGBB
+    private int colorRGB;
 
     public Run() {
         this.texto = "";

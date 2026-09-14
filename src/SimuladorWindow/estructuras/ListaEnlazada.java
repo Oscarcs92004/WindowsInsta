@@ -11,8 +11,8 @@ public class ListaEnlazada<T> {
 
     public void agregarInicio(T dato) {
         Nodo<T> nuevo = new Nodo<>(dato);
-        nuevo.siguiente = cabeza;   // el nuevo apunta al que era primero
-        cabeza = nuevo;             // y ahora el nuevo es la cabeza
+        nuevo.siguiente = cabeza;
+        cabeza = nuevo;
         tamano++;
     }
 
