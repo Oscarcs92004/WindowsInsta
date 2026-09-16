@@ -17,7 +17,51 @@ public class PanelVisor extends JPanel {
     private int indice = 0;
 
     private final JLabel etiqueta = new JLabel("Elige una carpeta con imagenes.",
-            SwingConstants.CENTER);
+            SwingConstants.CENTER) {
+        @Override
+        protected void paintComponent(Graphics g) {
+            if (!(getIcon() instanceof ImageIcon)) {
+                super.paintComponent(g);
+                return;
+            }
+            g.setColor(getBackground());
+            g.fillRect(0, 0, getWidth(), getHeight());
+
+            Image imagen = ((ImageIcon) getIcon()).getImage();
+            int anchoImagen = imagen.getWidth(this);
+            int altoImagen = imagen.getHeight(this);
+            Insets bordes = getInsets();
+            int anchoLibre = getWidth() - bordes.left - bordes.right;
+            int altoLibre = getHeight() - bordes.top - bordes.bottom;
+            if (anchoImagen <= 0 || altoImagen <= 0 || anchoLibre <= 0 || altoLibre <= 0) {
+                return;
+            }
+
+            double factor = Math.min(1.0, Math.min((double) anchoLibre / anchoImagen,
+                    (double) altoLibre / altoImagen));
+            int ancho = Math.max(1, (int) Math.round(anchoImagen * factor));
+            int alto = Math.max(1, (int) Math.round(altoImagen * factor));
+            int x = bordes.left + (anchoLibre - ancho) / 2;
+            int y = bordes.top + (altoLibre - alto) / 2;
+
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2.drawImage(imagen, x, y, ancho, alto, this);
+            g2.dispose();
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(320, 240);
+        }
+
+        @Override
+        public Dimension getMinimumSize() {
+            return new Dimension(0, 0);
+        }
+    };
     private final JLabel estado = new JLabel(" ");
 
     private final JButton btnCarpeta = new JButton("Elegir carpeta");
@@ -32,12 +76,11 @@ public class PanelVisor extends JPanel {
 
         etiqueta.setOpaque(true);
         etiqueta.setBackground(Color.WHITE);
-        JScrollPane scroll = new JScrollPane(etiqueta);
-        scroll.setBorder(Estilo.hundido());
+        etiqueta.setBorder(Estilo.hundido());
         JPanel centro = new JPanel(new BorderLayout());
         centro.setBackground(Estilo.PANEL);
         centro.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
-        centro.add(scroll, BorderLayout.CENTER);
+        centro.add(etiqueta, BorderLayout.CENTER);
         add(centro, BorderLayout.CENTER);
 
         estado.setFont(Estilo.NORMAL);
