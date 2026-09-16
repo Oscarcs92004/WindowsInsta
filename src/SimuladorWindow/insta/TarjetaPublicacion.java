@@ -5,6 +5,7 @@ import SimuladorWindow.servicios.UsuarioServicio;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.function.Consumer;
 
@@ -89,6 +90,9 @@ public class TarjetaPublicacion extends JPanel {
         }
         if (publicacion.tieneImagen()) {
             ImageIcon icono = ConfigInsta.escalarParaFeed(new File(publicacion.getRutaImagen()));
+            if (icono != null && publicacion.tieneSticker()) {
+                icono = pegarSticker(icono);
+            }
             JLabel imagen = new JLabel(icono != null ? icono : new ImageIcon(),
                     SwingConstants.CENTER);
             if (icono == null) {
@@ -122,7 +126,9 @@ public class TarjetaPublicacion extends JPanel {
             }
         };
         caja.setAlignmentX(LEFT_ALIGNMENT);
-        int alto = Math.min(300, Math.max(180, 150 + publicacion.getTexto().length()));
+        JLabel sticker = etiquetaSticker(96);
+        int alto = Math.min(300, Math.max(180, 150 + publicacion.getTexto().length()))
+                + (sticker != null ? 100 : 0);
         caja.setPreferredSize(new Dimension(anchoFeed, alto));
         caja.setMaximumSize(new Dimension(Integer.MAX_VALUE, alto));
 
@@ -131,8 +137,43 @@ public class TarjetaPublicacion extends JPanel {
         JLabel texto = EstiloInsta.textoHtml(html, anchoFeed - 80);
         texto.setHorizontalAlignment(SwingConstants.CENTER);
         texto.setFont(EstiloInsta.FUERTE.deriveFont(19f));
-        caja.add(texto);
+
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        caja.add(texto, c);
+        if (sticker != null) {
+            c.gridy = 1;
+            c.insets = new Insets(10, 0, 0, 0);
+            caja.add(sticker, c);
+        }
         return caja;
+    }
+
+    private JLabel etiquetaSticker(int lado) {
+        if (!publicacion.tieneSticker()) {
+            return null;
+        }
+        ImageIcon icono = GaleriaStickers.icono(publicacion.getRutaSticker(), lado);
+        return (icono != null) ? new JLabel(icono) : null;
+    }
+
+    private ImageIcon pegarSticker(ImageIcon base) {
+        int ancho = base.getIconWidth();
+        int alto = base.getIconHeight();
+        ImageIcon sticker = GaleriaStickers.icono(publicacion.getRutaSticker(),
+                Math.max(56, Math.min(ancho, alto) / 4));
+        if (sticker == null) {
+            return base;
+        }
+        BufferedImage img = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = img.createGraphics();
+        base.paintIcon(null, g, 0, 0);
+        int margen = 10;
+        sticker.paintIcon(null, g, ancho - sticker.getIconWidth() - margen,
+                alto - sticker.getIconHeight() - margen);
+        g.dispose();
+        return new ImageIcon(img);
     }
 
     private static Color[] degradadoTexto(String texto) {
@@ -150,8 +191,10 @@ public class TarjetaPublicacion extends JPanel {
         JPanel video = new JPanel(new GridBagLayout());
         video.setBackground(new Color(20, 20, 20));
         video.setAlignmentX(LEFT_ALIGNMENT);
-        video.setPreferredSize(new Dimension(anchoFeed, 260));
-        video.setMaximumSize(new Dimension(Integer.MAX_VALUE, 260));
+        JLabel sticker = etiquetaSticker(80);
+        int alto = (sticker != null) ? 350 : 260;
+        video.setPreferredSize(new Dimension(anchoFeed, alto));
+        video.setMaximumSize(new Dimension(Integer.MAX_VALUE, alto));
 
         JLabel play = new JLabel("▶");
         play.setForeground(Color.WHITE);
@@ -169,6 +212,11 @@ public class TarjetaPublicacion extends JPanel {
         centro.add(play);
         centro.add(Box.createVerticalStrut(6));
         centro.add(nombre);
+        if (sticker != null) {
+            sticker.setAlignmentX(CENTER_ALIGNMENT);
+            centro.add(Box.createVerticalStrut(10));
+            centro.add(sticker);
+        }
         video.add(centro);
 
         video.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));

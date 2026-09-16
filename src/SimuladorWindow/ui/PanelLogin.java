@@ -1,7 +1,5 @@
 package SimuladorWindow.ui;
 
-import SimuladorWindow.excepciones.CuentaDesactivadaException;
-import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.red.Cliente;
 import SimuladorWindow.servicios.UsuarioServicio;
 
@@ -192,32 +190,19 @@ public class PanelLogin extends JPanel {
 
     private void entrar(VentanaPrincipal ventana, UsuarioServicio servicio,
                         String usuario, String clave) {
-        String respuesta = Cliente.intentar("LOGIN;" + usuario + ";" + clave);
+        String respuesta = Cliente.enviar("LOGIN", usuario, clave);
 
         if (respuesta == null) {
-            entrarLocal(ventana, servicio, usuario, clave);
+            JOptionPane.showMessageDialog(this, Cliente.motivo(null),
+                    "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        if (respuesta.startsWith("OK")) {
+        if (Cliente.esOk(respuesta)) {
             ventana.mostrarEscritorio(servicio.buscar(usuario));
         } else if (respuesta.contains("desactivada")) {
             JOptionPane.showMessageDialog(this, "La cuenta esta desactivada.");
         } else {
             error();
-        }
-    }
-
-    private void entrarLocal(VentanaPrincipal ventana, UsuarioServicio servicio,
-                             String usuario, String clave) {
-        try {
-            Usuario u = servicio.login(usuario, clave);
-            if (u == null) {
-                error();
-            } else {
-                ventana.mostrarEscritorio(u);
-            }
-        } catch (CuentaDesactivadaException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage());
         }
     }
 

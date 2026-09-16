@@ -3,6 +3,7 @@ package SimuladorWindow.so;
 import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.persistencia.Documento;
 import SimuladorWindow.persistencia.EdtException;
+import SimuladorWindow.persistencia.FormatoTxt;
 import SimuladorWindow.persistencia.PersistenciaEDT;
 import SimuladorWindow.persistencia.Tabla;
 import SimuladorWindow.so.editor.*;
@@ -47,16 +48,11 @@ public class PanelEditor extends JPanel {
 
     public void abrirArchivoDesdeExplorador(File archivo) {
         try {
-            String contenido = new String(
-                    Files.readAllBytes(archivo.toPath()),
-                    StandardCharsets.UTF_8
-            );
-
-            textPane.setText(contenido);
+            abrirTxt(archivo);
             archivoActual = archivo;
             actualizarEstado();
 
-        } catch (IOException ex) {
+        } catch (IOException | BadLocationException ex) {
             JOptionPane.showMessageDialog(
                     this,
                     "No se pudo abrir el archivo:\n" + ex.getMessage(),
@@ -426,12 +422,7 @@ public class PanelEditor extends JPanel {
 
         try {
             if (archivo.getName().toLowerCase().endsWith(".txt")) {
-                String contenido = new String(
-                        Files.readAllBytes(archivo.toPath()),
-                        StandardCharsets.UTF_8
-                );
-
-                textPane.setText(contenido);
+                abrirTxt(archivo);
             } else {
                 Documento documento = PersistenciaEDT.abrir(archivo);
                 PersistenciaEDT.aplicarA(
@@ -450,6 +441,18 @@ public class PanelEditor extends JPanel {
                     "Error",
                     JOptionPane.ERROR_MESSAGE
             );
+        }
+    }
+
+    private void abrirTxt(File archivo) throws IOException, BadLocationException {
+        byte[] contenido = Files.readAllBytes(archivo.toPath());
+        textPane.setText(new String(contenido, StandardCharsets.UTF_8));
+
+        Documento formato = FormatoTxt.buscar(contenido);
+        StyledDocument doc = textPane.getStyledDocument();
+        if (formato != null && formato.textoPlano().equals(doc.getText(0, doc.getLength()))) {
+            PersistenciaEDT.aplicarA(formato, doc);
+            textPane.setCaretPosition(0);
         }
     }
 
@@ -495,10 +498,10 @@ public class PanelEditor extends JPanel {
             String nombre = archivo.getName().toLowerCase();
 
             if (nombre.endsWith(".txt")) {
-                Files.write(
-                        archivo.toPath(),
-                        textPane.getText().getBytes(StandardCharsets.UTF_8)
-                );
+                byte[] contenido = textPane.getText().getBytes(StandardCharsets.UTF_8);
+                Files.write(archivo.toPath(), contenido);
+                FormatoTxt.guardar(contenido,
+                        PersistenciaEDT.desdeStyledDocument(textPane.getStyledDocument()));
             } else {
                 Documento documento =
                         PersistenciaEDT.desdeStyledDocument(

@@ -12,12 +12,17 @@ import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class PanelExplorador extends JPanel {
 
@@ -61,10 +66,14 @@ public class PanelExplorador extends JPanel {
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (e.getClickCount() == 2) {
                     File archivo = archivoSeleccionado();
-                    if (archivo != null
-                            && archivo.isFile()
-                            && extension(archivo).equals("txt")) {
+                    if (archivo == null || !archivo.isFile()) {
+                        return;
+                    }
+                    String ext = extension(archivo);
+                    if (ext.equals("txt")) {
                         abrirEnEditor(archivo);
+                    } else if (ext.equals("mp3") || ext.equals("wav")) {
+                        escritorio.reproducirCancion(archivo);
                     }
                 }
             }
@@ -100,6 +109,7 @@ public class PanelExplorador extends JPanel {
         JButton btnRenombrar = new JButton("Renombrar");
         JButton btnCopiar = new JButton("Copiar");
         JButton btnPegar = new JButton("Pegar");
+        JButton btnImportar = new JButton("Importar");
         JComboBox<String> cmbOrden = new JComboBox<>(
                 new String[]{"nombre", "fecha", "tipo", "tamaño"});
         JButton   btnOrdenar   = new JButton("Ordenar");
@@ -111,6 +121,7 @@ public class PanelExplorador extends JPanel {
         barra.add(btnRenombrar);
         barra.add(btnCopiar);
         barra.add(btnPegar);
+        barra.add(btnImportar);
         barra.addSeparator();
         barra.add(new JLabel(" Orden: "));
         barra.add(cmbOrden);
@@ -229,6 +240,8 @@ public class PanelExplorador extends JPanel {
             }
             refrescar();
         });
+
+        btnImportar.addActionListener(e -> importar(btnImportar));
 
         btnOrdenar.addActionListener(e -> {
             criterioOrden = (String) cmbOrden.getSelectedItem();
@@ -362,6 +375,169 @@ public class PanelExplorador extends JPanel {
         }
     }
 
+
+    private void importar(JButton boton) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Importar archivos o carpetas");
+        chooser.setMultiSelectionEnabled(true);
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File destino = carpetaDestino();
+        ListaEnlazada<File> elegidos = new ListaEnlazada<>();
+        ListaEnlazada<File> repetidos = new ListaEnlazada<>();
+        for (File origen : chooser.getSelectedFiles()) {
+            if (contieneA(origen, destino)) {
+                JOptionPane.showMessageDialog(this,
+                        "No se puede importar \"" + origen.getName() + "\" dentro de sí misma.");
+                continue;
+            }
+            elegidos.agregarFinal(origen);
+            if (new File(destino, origen.getName()).exists()) {
+                repetidos.agregarFinal(origen);
+            }
+        }
+        if (elegidos.tamano() == 0) {
+            return;
+        }
+
+        if (repetidos.tamano() > 0) {
+            int op = JOptionPane.showConfirmDialog(this,
+                    repetidos.tamano() + " elemento(s) ya existen en \"" + destino.getName()
+                            + "\".\n¿Reemplazarlos?",
+                    "Importar", JOptionPane.YES_NO_CANCEL_OPTION);
+            if (op != JOptionPane.YES_OPTION && op != JOptionPane.NO_OPTION) {
+                return;
+            }
+            if (op == JOptionPane.NO_OPTION) {
+                for (File f : repetidos.comoLista()) {
+                    elegidos.eliminar(f);
+                }
+                if (elegidos.tamano() == 0) {
+                    return;
+                }
+            }
+        }
+
+        boton.setEnabled(false);
+        barraProgreso.setValue(0);
+        barraProgreso.setVisible(true);
+        etiquetaProgreso.setVisible(true);
+        new ImportadorWorker(elegidos, destino, boton).execute();
+    }
+
+    private static boolean contieneA(File carpeta, File otro) {
+        try {
+            String rutaCarpeta = carpeta.getCanonicalPath();
+            String rutaOtro = otro.getCanonicalPath();
+            return rutaOtro.equals(rutaCarpeta)
+                    || rutaOtro.startsWith(rutaCarpeta + File.separator);
+        } catch (IOException e) {
+            return true;
+        }
+    }
+
+    private class ImportadorWorker extends SwingWorker<Integer, String> {
+
+        private final ListaEnlazada<File> origenes;
+        private final File destino;
+        private final JButton boton;
+        private int total;
+        private int copiados;
+        private int fallidos;
+
+        ImportadorWorker(ListaEnlazada<File> origenes, File destino, JButton boton) {
+            this.origenes = origenes;
+            this.destino = destino;
+            this.boton = boton;
+        }
+
+        @Override
+        protected Integer doInBackground() throws Exception {
+            for (File origen : origenes.comoLista()) {
+                total += contarArchivos(origen.toPath());
+            }
+            for (File origen : origenes.comoLista()) {
+                copiar(origen.toPath(), new File(destino, origen.getName()).toPath());
+            }
+            setProgress(100);
+            return copiados;
+        }
+
+        private int contarArchivos(Path origen) throws IOException {
+            int[] cuenta = {0};
+            Files.walkFileTree(origen, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path archivo, BasicFileAttributes atributos) {
+                    cuenta[0]++;
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFileFailed(Path archivo, IOException e) {
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+            return cuenta[0];
+        }
+
+        private void copiar(Path origen, Path copia) throws IOException {
+            Files.walkFileTree(origen, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path carpeta, BasicFileAttributes atributos)
+                        throws IOException {
+                    Files.createDirectories(copia.resolve(origen.relativize(carpeta)));
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile(Path archivo, BasicFileAttributes atributos) {
+                    try {
+                        Files.copy(archivo, copia.resolve(origen.relativize(archivo)),
+                                StandardCopyOption.REPLACE_EXISTING);
+                        copiados++;
+                        publish("Importando: " + archivo.getFileName());
+                    } catch (IOException e) {
+                        fallidos++;
+                    }
+                    setProgress(Math.min(100, (copiados + fallidos) * 100 / Math.max(1, total)));
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFileFailed(Path archivo, IOException e) {
+                    fallidos++;
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        }
+
+        @Override
+        protected void process(List<String> mensajes) {
+            etiquetaProgreso.setText(" " + mensajes.get(mensajes.size() - 1));
+            barraProgreso.setValue(getProgress());
+        }
+
+        @Override
+        protected void done() {
+            refrescar();
+            barraProgreso.setVisible(false);
+            etiquetaProgreso.setVisible(false);
+            boton.setEnabled(true);
+            try {
+                String mensaje = "Se importaron " + get() + " archivo(s) en \"" + destino.getName() + "\".";
+                if (fallidos > 0) {
+                    mensaje += "\nNo se pudieron copiar " + fallidos + " archivo(s).";
+                }
+                JOptionPane.showMessageDialog(PanelExplorador.this, mensaje);
+            } catch (InterruptedException | ExecutionException ex) {
+                JOptionPane.showMessageDialog(PanelExplorador.this,
+                        "Error al importar: " + ex.getMessage());
+            }
+        }
+    }
 
     private void copiarCarpetaRecursivo(File origen, File destino) throws IOException {
         destino.mkdirs();

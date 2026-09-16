@@ -16,16 +16,23 @@ public class Publicacion implements Serializable {
     private final String texto;
     private final String rutaImagen;
     private final String rutaVideo;
+    private final String rutaSticker;
 
     public Publicacion(String autor, String texto, String rutaImagen) {
         this(autor, texto, rutaImagen, null);
     }
 
     public Publicacion(String autor, String texto, String rutaImagen, String rutaVideo) {
+        this(autor, texto, rutaImagen, rutaVideo, null);
+    }
+
+    public Publicacion(String autor, String texto, String rutaImagen, String rutaVideo,
+                       String rutaSticker) {
         this.autor = autor;
         this.texto = texto;
         this.rutaImagen = rutaImagen;
         this.rutaVideo = rutaVideo;
+        this.rutaSticker = rutaSticker;
         this.fecha = LocalDateTime.now();
     }
 
@@ -34,9 +41,11 @@ public class Publicacion implements Serializable {
     public String getTexto()       { return texto; }
     public String getRutaImagen()  { return rutaImagen; }
     public String getRutaVideo()   { return rutaVideo; }
+    public String getRutaSticker() { return rutaSticker; }
 
     public boolean tieneImagen()   { return rutaImagen != null; }
     public boolean esVideo()       { return rutaVideo != null; }
+    public boolean tieneSticker()  { return rutaSticker != null; }
     public boolean esSoloTexto()   { return rutaImagen == null && rutaVideo == null; }
 
     public String getTipo() {

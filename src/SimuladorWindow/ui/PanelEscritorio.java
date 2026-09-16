@@ -296,6 +296,19 @@ public class PanelEscritorio extends JPanel {
         traerAlFrente(frame);
     }
 
+    public void reproducirCancion(File cancion) {
+        for (JInternalFrame frame : escritorio.getAllFrames()) {
+            if (frame.getContentPane() instanceof PanelReproductor) {
+                traerAlFrente(frame);
+                ((PanelReproductor) frame.getContentPane()).reproducirArchivo(cancion);
+                return;
+            }
+        }
+        PanelReproductor reproductor = new PanelReproductor(usuarioActual, carpetaRaiz);
+        abrirApp("Reproductor", reproductor);
+        reproductor.reproducirArchivo(cancion);
+    }
+
     private void traerAlFrente(JInternalFrame frame) {
         try {
             frame.setIcon(false);

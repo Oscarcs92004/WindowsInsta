@@ -8,7 +8,10 @@ import javax.swing.JOptionPane;
 
 import SimuladorWindow.excepciones.ArchivoCorruptoException;
 import SimuladorWindow.insta.InstaServicio;
+import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.red.Servidor;
 import SimuladorWindow.servicios.UsuarioServicio;
+import SimuladorWindow.so.Rutas;
 import SimuladorWindow.ui.Estilo;
 import SimuladorWindow.ui.VentanaPrincipal;
 
@@ -23,6 +26,9 @@ public class Main {
 
         try {
             servicio.asegurarAdmin();
+            for (Usuario u : servicio.listar()) {
+                Rutas.asegurarCarpetasUsuario(u);
+            }
             insta.asegurarCuentasEjemplo();
         } catch (ArchivoCorruptoException e) {
             JOptionPane.showMessageDialog(null,
@@ -30,6 +36,8 @@ public class Main {
                     "Error al leer los datos", JOptionPane.ERROR_MESSAGE);
             return;
         }
+
+        Servidor.iniciarEnSegundoPlano();
 
         SwingUtilities.invokeLater(() -> {
             Estilo.aplicarLookAndFeel();

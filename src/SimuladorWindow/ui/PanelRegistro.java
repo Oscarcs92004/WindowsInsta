@@ -5,6 +5,7 @@ import SimuladorWindow.modelo.Rol;
 import SimuladorWindow.modelo.Usuario;
 import SimuladorWindow.servicios.UsuarioServicio;
 import SimuladorWindow.servicios.ValidadorPassword;
+import SimuladorWindow.so.Rutas;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -153,6 +154,7 @@ public class PanelRegistro extends JPanel {
                 nuevo.setRol(cmbTipo.getSelectedIndex() == 1
                         ? Rol.ADMINISTRADOR : Rol.ESTANDAR);
                 servicio.registrar(nuevo);
+                Rutas.asegurarCarpetasUsuario(nuevo);
 
                 JOptionPane.showMessageDialog(this,
                         "Cuenta \"" + usuario + "\" creada.");

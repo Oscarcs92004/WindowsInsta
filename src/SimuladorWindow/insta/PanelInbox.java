@@ -2,15 +2,12 @@ package SimuladorWindow.insta;
 
 import SimuladorWindow.estructuras.ListaEnlazada;
 import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.red.Cliente;
 import SimuladorWindow.servicios.UsuarioServicio;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -369,68 +366,32 @@ public class PanelInbox extends JPanel {
                     "El mensaje no puede pasar de " + MAX_MENSAJE + " caracteres.");
             return;
         }
-        insta.enviarMensaje(new Mensaje(usuarioActual.getUsername(), chatActual,
-                texto, Mensaje.TEXTO));
+        if (!enviarAlServidor(texto, Mensaje.TEXTO)) {
+            return;
+        }
         entrada.setText("");
         pintarConversacion();
+    }
+
+    private boolean enviarAlServidor(String contenido, String tipo) {
+        String respuesta = Cliente.enviar("MSG", usuarioActual.getUsername(), chatActual,
+                tipo, contenido);
+        if (!Cliente.esOk(respuesta)) {
+            JOptionPane.showMessageDialog(this,
+                    "No se pudo enviar: " + Cliente.motivo(respuesta));
+            return false;
+        }
+        return true;
     }
 
     private void enviarSticker() {
         if (chatActual == null) {
             return;
         }
-        List<Sticker> misStickers = insta.stickersDe(usuarioActual.getUsername());
-
-        Object[] opciones = new Object[misStickers.size() + 1];
-        for (int i = 0; i < misStickers.size(); i++) {
-            opciones[i] = misStickers.get(i).getNombre();
+        Sticker elegido = GaleriaStickers.elegir(this, insta, usuarioActual.getUsername());
+        if (elegido != null && enviarAlServidor(elegido.getRuta(), Mensaje.STICKER)) {
+            pintarConversacion();
         }
-        opciones[misStickers.size()] = "Importar sticker...";
-
-        Object elegido = JOptionPane.showInputDialog(this, "Elige un sticker:",
-                "Stickers", JOptionPane.PLAIN_MESSAGE, null, opciones, opciones[0]);
-        if (elegido == null) {
-            return;
-        }
-        if ("Importar sticker...".equals(elegido)) {
-            importarSticker();
-            return;
-        }
-        for (Sticker s : misStickers) {
-            if (s.getNombre().equals(elegido)) {
-                insta.enviarMensaje(new Mensaje(usuarioActual.getUsername(), chatActual,
-                        s.getRuta(), Mensaje.STICKER));
-                pintarConversacion();
-                return;
-            }
-        }
-    }
-
-    private void importarSticker() {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileFilter(new FileNameExtensionFilter(
-                "Imagenes (png, jpg)", "png", "jpg", "jpeg"));
-        if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
-            return;
-        }
-        File origen = chooser.getSelectedFile();
-        String nombre = origen.getName().toLowerCase();
-        if (!nombre.endsWith(".png") && !nombre.endsWith(".jpg") && !nombre.endsWith(".jpeg")) {
-            JOptionPane.showMessageDialog(this, "El sticker debe ser .png o .jpg");
-            return;
-        }
-        String usuario = usuarioActual.getUsername();
-        File carpeta = insta.carpetaStickersPersonalesDe(usuario);
-        carpeta.mkdirs();
-        File destino = new File(carpeta, origen.getName());
-        try {
-            Files.copy(origen.toPath(), destino.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "No se pudo importar: " + ex.getMessage());
-            return;
-        }
-        insta.agregarSticker(usuario, new Sticker(origen.getName(), destino.getPath()));
-        JOptionPane.showMessageDialog(this, "Sticker importado.");
     }
 
     private void marcarLeidos() {

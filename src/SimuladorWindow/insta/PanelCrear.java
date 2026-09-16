@@ -1,6 +1,7 @@
 package SimuladorWindow.insta;
 
 import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.red.Cliente;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -34,6 +35,10 @@ public class PanelCrear extends JPanel {
     private File videoElegido;
 
     private final JTextArea txtSoloTexto = new JTextArea(4, 20);
+
+    private final SelectorSticker stickerImagen = new SelectorSticker();
+    private final SelectorSticker stickerVideo = new SelectorSticker();
+    private final SelectorSticker stickerTexto = new SelectorSticker();
 
     public PanelCrear(InstaServicio insta, Usuario usuarioActual) {
         this.insta = insta;
@@ -75,6 +80,9 @@ public class PanelCrear extends JPanel {
         txtDescImg.setText("");
         txtDescVid.setText("");
         txtSoloTexto.setText("");
+        stickerImagen.limpiar();
+        stickerVideo.limpiar();
+        stickerTexto.limpiar();
         cartas.show(cuerpo, "0");
     }
 
@@ -110,6 +118,9 @@ public class PanelCrear extends JPanel {
         form.add(Box.createVerticalStrut(8));
         form.add(etiqueta("Carpeta personal (opcional)"));
         form.add(txtCarpeta);
+        form.add(Box.createVerticalStrut(8));
+        form.add(etiqueta("Sticker (opcional)"));
+        form.add(stickerImagen);
         form.add(Box.createVerticalStrut(14));
         form.add(anchoCompleto(compartir));
         return envolver(form);
@@ -144,6 +155,9 @@ public class PanelCrear extends JPanel {
         form.add(etiqueta("Descripción"));
         form.add(scroll(txtDescVid));
         form.add(contador);
+        form.add(Box.createVerticalStrut(8));
+        form.add(etiqueta("Sticker (opcional)"));
+        form.add(stickerVideo);
         form.add(Box.createVerticalStrut(14));
         form.add(anchoCompleto(compartir));
         return envolver(form);
@@ -163,6 +177,9 @@ public class PanelCrear extends JPanel {
         form.add(etiqueta("¿Qué quieres contar?"));
         form.add(scroll(txtSoloTexto));
         form.add(contador);
+        form.add(Box.createVerticalStrut(8));
+        form.add(etiqueta("Sticker (opcional)"));
+        form.add(stickerTexto);
         form.add(Box.createVerticalStrut(14));
         form.add(anchoCompleto(publicar));
         return envolver(form);
@@ -197,7 +214,9 @@ public class PanelCrear extends JPanel {
             JOptionPane.showMessageDialog(this, "No se pudo copiar la foto: " + ex.getMessage());
             return;
         }
-        insta.publicar(usuario, new Publicacion(usuario, desc, destino.getPath()));
+        if (!publicarEnServidor(desc, destino.getPath(), null, stickerImagen.ruta())) {
+            return;
+        }
         JOptionPane.showMessageDialog(this, "Publicación compartida.");
         recargar();
     }
@@ -222,15 +241,17 @@ public class PanelCrear extends JPanel {
             JOptionPane.showMessageDialog(this, "No se pudo copiar el video: " + ex.getMessage());
             return;
         }
-        insta.publicar(usuario, new Publicacion(usuario, desc, null, destino.getPath()));
+        if (!publicarEnServidor(desc, null, destino.getPath(), stickerVideo.ruta())) {
+            return;
+        }
         JOptionPane.showMessageDialog(this, "Reel compartido.");
         recargar();
     }
 
     private void publicarTexto() {
         String texto = txtSoloTexto.getText().trim();
-        if (texto.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Escribe algo.");
+        if (texto.isEmpty() && stickerTexto.ruta() == null) {
+            JOptionPane.showMessageDialog(this, "Escribe algo o agrega un sticker.");
             return;
         }
         if (texto.length() > MAX_TEXTO) {
@@ -238,10 +259,23 @@ public class PanelCrear extends JPanel {
                     "El texto no puede pasar de " + MAX_TEXTO + " caracteres.");
             return;
         }
-        insta.publicar(usuarioActual.getUsername(),
-                new Publicacion(usuarioActual.getUsername(), texto, null));
+        if (!publicarEnServidor(texto, null, null, stickerTexto.ruta())) {
+            return;
+        }
         JOptionPane.showMessageDialog(this, "Publicado.");
         recargar();
+    }
+
+    private boolean publicarEnServidor(String texto, String rutaImagen, String rutaVideo,
+                                       String rutaSticker) {
+        String respuesta = Cliente.enviar("POST", usuarioActual.getUsername(),
+                texto, rutaImagen, rutaVideo, rutaSticker);
+        if (!Cliente.esOk(respuesta)) {
+            JOptionPane.showMessageDialog(this,
+                    "No se pudo publicar: " + Cliente.motivo(respuesta));
+            return false;
+        }
+        return true;
     }
 
     private PanelFeed columnaForm() {
@@ -337,6 +371,55 @@ public class PanelCrear extends JPanel {
             public void removeUpdate(DocumentEvent e) { actualizar.run(); }
             public void changedUpdate(DocumentEvent e) { actualizar.run(); }
         });
+    }
+
+    private class SelectorSticker extends JPanel {
+
+        private final JLabel vista = new JLabel("Sin sticker");
+        private Sticker elegido;
+
+        SelectorSticker() {
+            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+            setOpaque(false);
+            setAlignmentX(LEFT_ALIGNMENT);
+            vista.setFont(EstiloInsta.CHICA);
+            vista.setForeground(EstiloInsta.TEXTO_GRIS);
+
+            JButton elegir = EstiloInsta.botonSecundario("Agregar sticker");
+            elegir.addActionListener(e -> {
+                Sticker s = GaleriaStickers.elegir(PanelCrear.this, insta,
+                        usuarioActual.getUsername());
+                if (s != null) {
+                    elegido = s;
+                    vista.setIcon(GaleriaStickers.icono(s.getRuta(), 44));
+                    vista.setText(s.getNombre());
+                }
+            });
+            JButton quitar = EstiloInsta.enlace("Quitar");
+            quitar.addActionListener(e -> limpiar());
+
+            add(elegir);
+            add(Box.createHorizontalStrut(8));
+            add(vista);
+            add(Box.createHorizontalStrut(8));
+            add(quitar);
+            add(Box.createHorizontalGlue());
+        }
+
+        @Override
+        public Dimension getMaximumSize() {
+            return new Dimension(Integer.MAX_VALUE, getPreferredSize().height);
+        }
+
+        String ruta() {
+            return (elegido == null) ? null : elegido.getRuta();
+        }
+
+        void limpiar() {
+            elegido = null;
+            vista.setIcon(null);
+            vista.setText("Sin sticker");
+        }
     }
 
     private File elegirArchivo(String desc, String... exts) {

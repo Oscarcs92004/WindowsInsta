@@ -22,7 +22,7 @@ public class PanelInstaApp extends JPanel {
 
     private void mostrarLogin() {
         removeAll();
-        add(new PanelLoginInsta(usuariosInsta, this::entrar), "LOGIN");
+        add(new PanelLoginInsta(insta, this::entrar), "LOGIN");
         cartas.show(this, "LOGIN");
         revalidate();
         repaint();
@@ -34,5 +34,12 @@ public class PanelInstaApp extends JPanel {
         cartas.show(this, "APP");
         revalidate();
         repaint();
+
+        if (!cuenta.isActiva()) {
+            app.irAEditarPerfil();
+            JOptionPane.showMessageDialog(this,
+                    "Tu cuenta está desactivada: nadie puede ver tu perfil ni tus publicaciones.\n"
+                            + "Puedes reactivarla con \"Activar / Desactivar cuenta\".");
+        }
     }
 }

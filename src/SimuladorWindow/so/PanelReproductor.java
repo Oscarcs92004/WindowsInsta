@@ -6,6 +6,9 @@ import SimuladorWindow.ui.Estilo;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Path2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,6 +21,8 @@ import java.util.List;
 
 public class PanelReproductor extends JPanel {
 
+    private static final int LADO_CARATULA = 200;
+
     private final DefaultListModel<String> modeloLista = new DefaultListModel<>();
     private final List<File> canciones = new ArrayList<>();
     private final Usuario usuarioActual;
@@ -26,7 +31,7 @@ public class PanelReproductor extends JPanel {
 
     private final JList<String> lista = new JList<>(modeloLista);
     private final JLabel caratula = new JLabel("Sin caratula", SwingConstants.CENTER);
-    private final JTextArea descripcion = new JTextArea(3, 20);
+    private final JTextArea descripcion = new JTextArea(5, 20);
 
     private HiloReproductor hilo;
     private int indiceActual = -1;
@@ -116,6 +121,12 @@ public class PanelReproductor extends JPanel {
         setBackground(Estilo.PANEL);
 
         lista.setFont(Estilo.NORMAL);
+        lista.addListSelectionListener(e -> {
+            int i = lista.getSelectedIndex();
+            if (!e.getValueIsAdjusting() && i >= 0) {
+                mostrarInfo(canciones.get(i));
+            }
+        });
         JScrollPane scrollLista = new JScrollPane(lista);
         scrollLista.setBorder(Estilo.hundido());
         scrollLista.setPreferredSize(new Dimension(180, 10));
@@ -166,16 +177,33 @@ public class PanelReproductor extends JPanel {
             JOptionPane.showMessageDialog(this, "Seleccione una cancion de la lista.");
             return;
         }
-        if (hilo != null && i == indiceActual) {
+        if (hilo != null && hilo.isAlive() && i == indiceActual) {
             hilo.reanudar();
             return;
         }
         detener();
         File cancion = canciones.get(i);
-        mostrarInfo(cancion);
         hilo = new HiloReproductor(cancion);
         indiceActual = i;
         hilo.start();
+    }
+
+    public void reproducirArchivo(File archivo) {
+        int indice = -1;
+        for (int i = 0; i < canciones.size(); i++) {
+            if (canciones.get(i).getAbsoluteFile().equals(archivo.getAbsoluteFile())) {
+                indice = i;
+                break;
+            }
+        }
+        if (indice < 0) {
+            canciones.add(archivo);
+            modeloLista.addElement(archivo.getName());
+            indice = canciones.size() - 1;
+        }
+        lista.setSelectedIndex(indice);
+        lista.ensureIndexIsVisible(indice);
+        reproducir();
     }
 
     private void pausar() {
@@ -193,25 +221,53 @@ public class PanelReproductor extends JPanel {
     }
 
     private void mostrarInfo(File cancion) {
-        long kb = cancion.length() / 1024;
-        descripcion.setText(
-                "Cancion: " + cancion.getName()
-                        + "\nCarpeta: " + cancion.getParent()
-                        + "\nTamano: " + kb + " KB");
+        EtiquetasMp3 etiquetas = EtiquetasMp3.leer(cancion);
 
-        File archivoCaratula = buscarCaratula(cancion.getParentFile());
-        if (archivoCaratula != null) {
-            ImageIcon icono = new ImageIcon(archivoCaratula.getPath());
-            Image escalada = icono.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
-            caratula.setIcon(new ImageIcon(escalada));
-            caratula.setText("");
-        } else {
-            caratula.setIcon(null);
-            caratula.setText("Sin caratula");
+        StringBuilder texto = new StringBuilder();
+        texto.append("Cancion: ")
+                .append(etiquetas.getTitulo() != null ? etiquetas.getTitulo() : cancion.getName());
+        if (etiquetas.getArtista() != null) {
+            texto.append("\nArtista: ").append(etiquetas.getArtista());
         }
+        if (etiquetas.getAlbum() != null) {
+            texto.append("\nAlbum: ").append(etiquetas.getAlbum());
+        }
+        texto.append("\nArchivo: ").append(cancion.getName());
+        texto.append("\nCarpeta: ").append(cancion.getParent());
+        texto.append("\nTamano: ").append(cancion.length() / 1024).append(" KB");
+        descripcion.setText(texto.toString());
+        descripcion.setCaretPosition(0);
+
+        ImageIcon icono = null;
+        if (etiquetas.getCaratula() != null) {
+            icono = new ImageIcon(etiquetas.getCaratula());
+        }
+        if (icono == null || icono.getIconWidth() <= 0) {
+            File archivoCaratula = buscarCaratula(cancion);
+            icono = (archivoCaratula != null) ? new ImageIcon(archivoCaratula.getPath()) : null;
+        }
+
+        if (icono != null && icono.getIconWidth() > 0) {
+            caratula.setIcon(escalar(icono));
+        } else {
+            String clave = etiquetas.getAlbum() != null ? etiquetas.getAlbum() : cancion.getName();
+            caratula.setIcon(caratulaGenerica(clave));
+        }
+        caratula.setText("");
     }
 
-    private File buscarCaratula(File carpeta) {
+    private ImageIcon escalar(ImageIcon icono) {
+        int ancho = icono.getIconWidth();
+        int alto = icono.getIconHeight();
+        double factor = Math.min((double) LADO_CARATULA / ancho, (double) LADO_CARATULA / alto);
+        int nuevoAncho = Math.max(1, (int) Math.round(ancho * factor));
+        int nuevoAlto = Math.max(1, (int) Math.round(alto * factor));
+        return new ImageIcon(icono.getImage()
+                .getScaledInstance(nuevoAncho, nuevoAlto, Image.SCALE_SMOOTH));
+    }
+
+    private File buscarCaratula(File cancion) {
+        File carpeta = cancion.getParentFile();
         if (carpeta == null) {
             return null;
         }
@@ -226,5 +282,36 @@ public class PanelReproductor extends JPanel {
             }
         }
         return null;
+    }
+
+    private ImageIcon caratulaGenerica(String clave) {
+        float tono = (clave.hashCode() & 0x7FFFFFFF) % 360 / 360f;
+        Color claro = Color.getHSBColor(tono, 0.45f, 0.85f);
+        Color oscuro = Color.getHSBColor(tono, 0.60f, 0.45f);
+
+        int lado = LADO_CARATULA;
+        BufferedImage img = new BufferedImage(lado, lado, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = img.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setPaint(new GradientPaint(0, 0, claro, lado, lado, oscuro));
+        g.fillRect(0, 0, lado, lado);
+
+        g.setColor(new Color(255, 255, 255, 230));
+        int cabeza = lado / 5;
+        int x = lado / 2 - cabeza / 2;
+        int y = lado * 5 / 8;
+        g.fill(new Ellipse2D.Double(x - cabeza / 2.0, y, cabeza * 1.3, cabeza));
+        int plica = x + (int) (cabeza * 0.8);
+        g.fillRect(plica, lado / 4, lado / 25, y - lado / 4 + cabeza / 2);
+        Path2D bandera = new Path2D.Double();
+        bandera.moveTo(plica, lado / 4.0);
+        bandera.curveTo(plica + lado / 5.0, lado / 3.0, plica + lado / 4.0, lado / 2.2,
+                plica + lado / 8.0, lado / 1.8);
+        bandera.curveTo(plica + lado / 6.0, lado / 2.4, plica + lado / 10.0, lado / 2.8,
+                plica, lado / 2.6);
+        bandera.closePath();
+        g.fill(bandera);
+        g.dispose();
+        return new ImageIcon(img);
     }
 }

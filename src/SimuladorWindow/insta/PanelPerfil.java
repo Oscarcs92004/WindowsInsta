@@ -2,6 +2,7 @@ package SimuladorWindow.insta;
 
 import SimuladorWindow.estructuras.ListaEnlazada;
 import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.red.Cliente;
 import SimuladorWindow.servicios.UsuarioServicio;
 
 import javax.swing.*;
@@ -196,9 +197,12 @@ public class PanelPerfil extends JPanel {
                 if (op != JOptionPane.YES_OPTION) {
                     return;
                 }
-                insta.dejarDeSeguir(usuarioActual.getUsername(), u.getUsername());
-            } else {
-                insta.seguir(usuarioActual.getUsername(), u.getUsername());
+            }
+            String respuesta = Cliente.enviar(sigo ? "UNFOLLOW" : "FOLLOW",
+                    usuarioActual.getUsername(), u.getUsername());
+            if (!Cliente.esOk(respuesta)) {
+                JOptionPane.showMessageDialog(this, Cliente.motivo(respuesta));
+                return;
             }
             mostrarPerfilDe(u.getUsername());
         });

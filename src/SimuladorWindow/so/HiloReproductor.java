@@ -1,5 +1,7 @@
 package SimuladorWindow.so;
 
+import javazoom.jl.decoder.Bitstream;
+import javazoom.jl.decoder.Header;
 import javazoom.jl.player.advanced.AdvancedPlayer;
 import javazoom.jl.player.advanced.PlaybackEvent;
 import javazoom.jl.player.advanced.PlaybackListener;
@@ -14,13 +16,15 @@ import java.io.IOException;
 public class HiloReproductor extends Thread {
 
     private static final int TAMANO_BLOQUE = 4096;
+    private static final double MS_POR_FRAME_COMUN = 26.12245;
 
     private final File cancion;
     private volatile boolean pausado = false;
     private volatile boolean detenido = false;
 
     private AdvancedPlayer playerMp3;
-    private int frameMp3 = 0;
+    private volatile int frameMp3 = 0;
+    private volatile double msPorFrame = MS_POR_FRAME_COMUN;
 
     public HiloReproductor(File cancion) {
         this.cancion = cancion;
@@ -59,6 +63,7 @@ public class HiloReproductor extends Thread {
 
 
     private void reproducirMp3() {
+        msPorFrame = leerMsPorFrame();
         while (!detenido) {
             if (pausado) {
                 dormir(100);
@@ -79,7 +84,7 @@ public class HiloReproductor extends Thread {
             playerMp3.setPlayBackListener(new PlaybackListener() {
                 @Override
                 public void playbackFinished(PlaybackEvent evt) {
-                    frameMp3 = desdeFrame + evt.getFrame();
+                    frameMp3 = desdeFrame + (int) Math.round(evt.getFrame() / msPorFrame);
                 }
             });
 
@@ -91,6 +96,20 @@ public class HiloReproductor extends Thread {
             System.err.println("No se pudo reproducir el mp3: " + e.getMessage());
             return true;
         }
+    }
+
+    private double leerMsPorFrame() {
+        try (FileInputStream fis = new FileInputStream(cancion)) {
+            Bitstream bitstream = new Bitstream(new BufferedInputStream(fis));
+            Header cabecera = bitstream.readFrame();
+            bitstream.close();
+            if (cabecera != null && cabecera.ms_per_frame() > 0) {
+                return cabecera.ms_per_frame();
+            }
+        } catch (Exception e) {
+            System.err.println("No se pudo leer la cabecera del mp3: " + e.getMessage());
+        }
+        return MS_POR_FRAME_COMUN;
     }
 
 

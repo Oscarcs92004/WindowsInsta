@@ -1,8 +1,8 @@
 package SimuladorWindow.insta;
 
-import SimuladorWindow.excepciones.CuentaDesactivadaException;
 import SimuladorWindow.excepciones.UsernameDuplicadoException;
 import SimuladorWindow.modelo.Usuario;
+import SimuladorWindow.red.Cliente;
 import SimuladorWindow.servicios.UsuarioServicio;
 import SimuladorWindow.servicios.ValidadorPassword;
 
@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 
 public class PanelLoginInsta extends JPanel {
 
+    private final InstaServicio insta;
     private final UsuarioServicio usuarios;
     private final Consumer<Usuario> alEntrar;
 
@@ -22,8 +23,9 @@ public class PanelLoginInsta extends JPanel {
 
     private String rutaFoto;
 
-    public PanelLoginInsta(UsuarioServicio usuarios, Consumer<Usuario> alEntrar) {
-        this.usuarios = usuarios;
+    public PanelLoginInsta(InstaServicio insta, Consumer<Usuario> alEntrar) {
+        this.insta = insta;
+        this.usuarios = insta.getUsuarioServicio();
         this.alEntrar = alEntrar;
 
         setBackground(EstiloInsta.BLANCO);
@@ -151,15 +153,22 @@ public class PanelLoginInsta extends JPanel {
     }
 
     private void intentarLogin(String usuario, String clave) {
-        try {
-            Usuario u = usuarios.login(usuario, clave);
-            if (u == null) {
-                JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos.");
-                return;
-            }
-            alEntrar.accept(u);
-        } catch (CuentaDesactivadaException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage());
+        String respuesta = Cliente.enviar("LOGIN_INSTA", usuario, clave);
+        if (Cliente.esOk(respuesta)) {
+            alEntrar.accept(usuarios.buscar(usuario));
+            return;
+        }
+        if (respuesta == null) {
+            JOptionPane.showMessageDialog(this, Cliente.motivo(respuesta));
+            return;
+        }
+        Object[] opciones = {"Repetir login", "Crear cuenta nueva"};
+        int op = JOptionPane.showOptionDialog(this,
+                "Usuario o contraseña incorrectos.\n¿Quieres repetir el login o crear una cuenta nueva?",
+                "No se pudo iniciar sesión", JOptionPane.DEFAULT_OPTION,
+                JOptionPane.ERROR_MESSAGE, null, opciones, opciones[0]);
+        if (op == 1) {
+            cartas.show(contenido, "UP");
         }
     }
 
@@ -185,6 +194,7 @@ public class PanelLoginInsta extends JPanel {
             Usuario nuevo = new Usuario(nombre, genero, usuario, clave, edad);
             nuevo.setFotoPerfil(rutaFoto);
             usuarios.registrar(nuevo);
+            insta.asegurarCarpetaUsuario(nuevo.getUsername());
             JOptionPane.showMessageDialog(this, "Cuenta creada. Ya puedes entrar.");
             cartas.show(contenido, "IN");
         } catch (UsernameDuplicadoException ex) {

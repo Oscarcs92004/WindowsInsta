@@ -21,6 +21,9 @@ public final class TextoInsta {
         } else if (p.tieneImagen()) {
             texto = texto + "\n[imagen adjunta]";
         }
+        if (p.tieneSticker()) {
+            texto = texto + "\n[sticker adjunto]";
+        }
         return texto;
     }
 
