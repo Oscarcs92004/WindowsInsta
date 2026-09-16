@@ -45,6 +45,9 @@ public class PanelInbox extends JPanel {
         add(tarjetaChat(), "CHAT");
 
         recargar();
+
+        Timer refresco = new Timer(2000, e -> recargar());
+        refresco.start();
     }
 
     private JComponent tarjetaLista() {
@@ -247,7 +250,6 @@ public class PanelInbox extends JPanel {
         }
 
         modeloConv.clear();
-        boolean sigueChatActual = false;
         for (String otro : otros.comoLista()) {
             Mensaje ultimo = null;
             boolean noLeidos = false;
@@ -265,15 +267,11 @@ public class PanelInbox extends JPanel {
             String texto = (ultimo == null || ultimo.esSticker()) ? "" : ultimo.getTexto();
             modeloConv.addElement(new Conversacion(otro, texto,
                     ultimo == null ? null : ultimo.getFechaHora(), noLeidos));
-            if (otro.equals(chatActual)) {
-                sigueChatActual = true;
-            }
         }
 
-        if (chatActual != null && sigueChatActual) {
+        if (chatActual != null) {
             pintarConversacion();
         } else {
-            chatActual = null;
             conversaciones.clearSelection();
             cartas.show(this, "LISTA");
         }

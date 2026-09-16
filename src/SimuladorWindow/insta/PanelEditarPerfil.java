@@ -56,6 +56,7 @@ public class PanelEditarPerfil extends JPanel {
         EstiloInsta.estiloCampo(txtEdad);
         EstiloInsta.estiloCampo(txtClave);
         EstiloInsta.estiloCampo(txtFoto);
+        JComponent claveConToggle = EstiloInsta.campoClaveConToggle(txtClave);
 
         avatar.setAlignmentX(CENTER_ALIGNMENT);
         JButton btnFoto = EstiloInsta.enlace("Cambiar foto de perfil");
@@ -72,7 +73,7 @@ public class PanelEditarPerfil extends JPanel {
         form.add(etiqueta("Edad"));
         form.add(campo(txtEdad));
         form.add(etiqueta("Contraseña"));
-        form.add(campo(txtClave));
+        form.add(campo(claveConToggle, 58));
         form.add(etiqueta("Foto de perfil"));
         form.add(campo(txtFoto));
         form.add(Box.createVerticalStrut(14));
@@ -197,8 +198,12 @@ public class PanelEditarPerfil extends JPanel {
     }
 
     private JComponent campo(JComponent c) {
+        return campo(c, 36);
+    }
+
+    private JComponent campo(JComponent c, int alto) {
         c.setAlignmentX(LEFT_ALIGNMENT);
-        c.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        c.setMaximumSize(new Dimension(Integer.MAX_VALUE, alto));
         return c;
     }
 

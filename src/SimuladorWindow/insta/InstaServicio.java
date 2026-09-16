@@ -14,6 +14,9 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
@@ -27,13 +30,8 @@ public class InstaServicio {
     private static final String[] STICKERS_POR_DEFECTO =
             {"Feliz", "Triste", "Corazón", "Risa", "Aplauso"};
 
-    private static final Color[] COLORES_STICKERS = {
-            new Color(255, 200, 0),
-            new Color(80, 120, 220),
-            new Color(220, 60, 90),
-            new Color(255, 140, 40),
-            new Color(80, 180, 100),
-    };
+    private static final String[] ARCHIVOS_STICKERS_POR_DEFECTO =
+            {"feliz.png", "triste.png", "corazon.png", "risa.png", "aplauso.png"};
 
     public InstaServicio(File carpetaDeDatos, UsuarioServicio usuarioServicio) {
         this.raiz = new File(carpetaDeDatos, "INSTA_RAIZ");
@@ -60,22 +58,26 @@ public class InstaServicio {
             if (destino.exists()) {
                 continue;
             }
-            BufferedImage img = new BufferedImage(96, 96, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g = img.createGraphics();
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setColor(COLORES_STICKERS[i]);
-            g.fillOval(4, 4, 88, 88);
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("SansSerif", Font.BOLD, 48));
-            String inicial = STICKERS_POR_DEFECTO[i].substring(0, 1);
-            g.drawString(inicial, 33, 62);
-            g.dispose();
-            try {
-                ImageIO.write(img, "png", destino);
+            String recurso = "/SimuladorWindow/recursos/Sticker/" + ARCHIVOS_STICKERS_POR_DEFECTO[i];
+            try (InputStream in = abrirRecursoSticker(recurso)) {
+                if (in == null) {
+                    System.err.println("No se encontro el sticker " + recurso);
+                    continue;
+                }
+                Files.copy(in, destino.toPath());
             } catch (IOException e) {
-                System.err.println("No se pudo crear el sticker " + destino);
+                System.err.println("No se pudo copiar el sticker " + destino);
             }
         }
+    }
+
+    private InputStream abrirRecursoSticker(String recurso) throws IOException {
+        URL url = InstaServicio.class.getResource(recurso);
+        if (url != null) {
+            return url.openStream();
+        }
+        File archivo = new File("src" + recurso);
+        return archivo.exists() ? Files.newInputStream(archivo.toPath()) : null;
     }
 
     public File carpetaDe(String username) {

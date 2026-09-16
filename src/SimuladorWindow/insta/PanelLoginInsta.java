@@ -40,6 +40,7 @@ public class PanelLoginInsta extends JPanel {
         JPasswordField clave = new JPasswordField(16);
         EstiloInsta.estiloCampo(usuario);
         EstiloInsta.estiloCampo(clave);
+        JComponent claveConToggle = EstiloInsta.campoClaveConToggle(clave);
         EstiloInsta.placeholder(usuario, "Usuario");
         EstiloInsta.placeholder(clave, "Contraseña");
 
@@ -63,7 +64,7 @@ public class PanelLoginInsta extends JPanel {
         col.add(Box.createVerticalStrut(28));
         col.add(anchoCompleto(usuario));
         col.add(Box.createVerticalStrut(8));
-        col.add(anchoCompleto(clave));
+        col.add(anchoCompleto(claveConToggle, 62));
         col.add(Box.createVerticalStrut(14));
         col.add(anchoCompleto(entrar));
         col.add(Box.createVerticalStrut(14));
@@ -85,6 +86,7 @@ public class PanelLoginInsta extends JPanel {
         EstiloInsta.estiloCampo(usuario);
         EstiloInsta.estiloCampo(clave);
         EstiloInsta.estiloCampo(edad);
+        JComponent claveConToggle = EstiloInsta.campoClaveConToggle(clave);
         EstiloInsta.placeholder(nombre, "Nombre completo");
         EstiloInsta.placeholder(usuario, "Nombre de usuario");
         EstiloInsta.placeholder(clave, "Contraseña");
@@ -129,7 +131,7 @@ public class PanelLoginInsta extends JPanel {
         col.add(Box.createVerticalStrut(6));
         col.add(anchoCompleto(usuario));
         col.add(Box.createVerticalStrut(6));
-        col.add(anchoCompleto(clave));
+        col.add(anchoCompleto(claveConToggle, 62));
         col.add(Box.createVerticalStrut(6));
         col.add(fila("Edad:", edad));
         col.add(Box.createVerticalStrut(6));
@@ -199,11 +201,15 @@ public class PanelLoginInsta extends JPanel {
     }
 
     private JComponent anchoCompleto(JComponent comp) {
+        return anchoCompleto(comp, 40);
+    }
+
+    private JComponent anchoCompleto(JComponent comp, int alto) {
         comp.setAlignmentX(CENTER_ALIGNMENT);
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
         p.setAlignmentX(CENTER_ALIGNMENT);
-        p.setMaximumSize(new Dimension(260, 40));
+        p.setMaximumSize(new Dimension(260, alto));
         p.add(comp, BorderLayout.CENTER);
         return p;
     }

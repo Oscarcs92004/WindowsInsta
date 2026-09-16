@@ -132,6 +132,31 @@ public final class EstiloInsta {
                 BorderFactory.createEmptyBorder(9, 10, 9, 10)));
     }
 
+    public static JComponent campoClaveConToggle(JPasswordField clave) {
+        final char eco = clave.getEchoChar();
+
+        clave.setMaximumSize(new Dimension(Integer.MAX_VALUE,
+                clave.getPreferredSize().height));
+
+        JCheckBox ver = new JCheckBox("Mostrar contraseña");
+        ver.setFont(CHICA);
+        ver.setForeground(TEXTO_GRIS);
+        ver.setOpaque(false);
+        ver.setFocusable(false);
+        ver.setMargin(new Insets(0, 0, 0, 0));
+        ver.addActionListener(e -> clave.setEchoChar(ver.isSelected() ? (char) 0 : eco));
+
+        JPanel col = new JPanel();
+        col.setOpaque(false);
+        col.setLayout(new BoxLayout(col, BoxLayout.Y_AXIS));
+        clave.setAlignmentX(Component.LEFT_ALIGNMENT);
+        ver.setAlignmentX(Component.LEFT_ALIGNMENT);
+        col.add(clave);
+        col.add(Box.createVerticalStrut(4));
+        col.add(ver);
+        return col;
+    }
+
     public static void placeholder(JTextField campo, String ayuda) {
         final char eco = (campo instanceof JPasswordField)
                 ? ((JPasswordField) campo).getEchoChar() : 0;
