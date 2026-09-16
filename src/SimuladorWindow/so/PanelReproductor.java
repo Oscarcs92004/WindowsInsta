@@ -212,7 +212,7 @@ public class PanelReproductor extends JPanel {
         }
     }
 
-    private void detener() {
+    public void detener() {
         if (hilo != null) {
             hilo.detener();
             hilo = null;

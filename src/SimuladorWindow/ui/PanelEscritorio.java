@@ -242,6 +242,9 @@ public class PanelEscritorio extends JPanel {
             int op = JOptionPane.showConfirmDialog(this, "Cerrar sesion?",
                     "Confirmar", JOptionPane.YES_NO_OPTION);
             if (op == JOptionPane.YES_OPTION) {
+                for (JInternalFrame frame : escritorio.getAllFrames()) {
+                    frame.dispose();
+                }
                 ventana.mostrarLogin();
             }
         });
@@ -290,6 +293,9 @@ public class PanelEscritorio extends JPanel {
                 areaVentanas.remove(botonTarea);
                 areaVentanas.revalidate();
                 areaVentanas.repaint();
+                if (contenido instanceof PanelReproductor) {
+                    ((PanelReproductor) contenido).detener();
+                }
             }
         });
 
