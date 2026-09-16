@@ -297,16 +297,31 @@ public class PanelEscritorio extends JPanel {
     }
 
     public void reproducirCancion(File cancion) {
+        PanelReproductor reproductor = ventanaAbierta(PanelReproductor.class);
+        if (reproductor == null) {
+            reproductor = new PanelReproductor(usuarioActual, carpetaRaiz);
+            abrirApp("Reproductor", reproductor);
+        }
+        reproductor.reproducirArchivo(cancion);
+    }
+
+    public void verImagen(File imagen) {
+        PanelVisor visor = ventanaAbierta(PanelVisor.class);
+        if (visor == null) {
+            visor = new PanelVisor(usuarioActual, carpetaRaiz);
+            abrirApp("Visor de imagenes", visor);
+        }
+        visor.abrirImagen(imagen);
+    }
+
+    private <T extends JComponent> T ventanaAbierta(Class<T> tipo) {
         for (JInternalFrame frame : escritorio.getAllFrames()) {
-            if (frame.getContentPane() instanceof PanelReproductor) {
+            if (tipo.isInstance(frame.getContentPane())) {
                 traerAlFrente(frame);
-                ((PanelReproductor) frame.getContentPane()).reproducirArchivo(cancion);
-                return;
+                return tipo.cast(frame.getContentPane());
             }
         }
-        PanelReproductor reproductor = new PanelReproductor(usuarioActual, carpetaRaiz);
-        abrirApp("Reproductor", reproductor);
-        reproductor.reproducirArchivo(cancion);
+        return null;
     }
 
     private void traerAlFrente(JInternalFrame frame) {

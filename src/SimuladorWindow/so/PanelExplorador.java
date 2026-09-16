@@ -74,6 +74,9 @@ public class PanelExplorador extends JPanel {
                         abrirEnEditor(archivo);
                     } else if (ext.equals("mp3") || ext.equals("wav")) {
                         escritorio.reproducirCancion(archivo);
+                    } else if (ext.equals("png") || ext.equals("jpg")
+                            || ext.equals("jpeg") || ext.equals("gif")) {
+                        escritorio.verImagen(archivo);
                     }
                 }
             }

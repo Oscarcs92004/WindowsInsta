@@ -60,7 +60,7 @@ public class PanelVisor extends JPanel {
             JFileChooser chooser = new JFileChooser(carpetaRaiz);
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                cargarCarpeta(chooser.getSelectedFile());
+                cargarCarpeta(chooser.getSelectedFile(), null);
             }
         });
 
@@ -79,7 +79,11 @@ public class PanelVisor extends JPanel {
         });
     }
 
-    private void cargarCarpeta(File carpeta) {
+    public void abrirImagen(File imagen) {
+        cargarCarpeta(imagen.getParentFile(), imagen.getName());
+    }
+
+    private void cargarCarpeta(File carpeta, String nombreInicial) {
         btnCarpeta.setEnabled(false);
         btnAnterior.setEnabled(false);
         btnSiguiente.setEnabled(false);
@@ -87,7 +91,7 @@ public class PanelVisor extends JPanel {
         etiqueta.setIcon(null);
         etiqueta.setText("Cargando imagenes...");
 
-        new CargaCarpetaWorker(carpeta).execute();
+        new CargaCarpetaWorker(carpeta, nombreInicial).execute();
     }
 
     private void mostrarActual() {
@@ -100,9 +104,11 @@ public class PanelVisor extends JPanel {
     private class CargaCarpetaWorker extends SwingWorker<List<File>, Void> {
 
         private final File carpeta;
+        private final String nombreInicial;
 
-        CargaCarpetaWorker(File carpeta) {
+        CargaCarpetaWorker(File carpeta, String nombreInicial) {
             this.carpeta = carpeta;
+            this.nombreInicial = nombreInicial;
         }
 
         @Override
@@ -131,6 +137,12 @@ public class PanelVisor extends JPanel {
                 imagenes.clear();
                 imagenes.addAll(get());
                 indice = 0;
+                for (int i = 0; i < imagenes.size(); i++) {
+                    if (imagenes.get(i).getName().equals(nombreInicial)) {
+                        indice = i;
+                        break;
+                    }
+                }
 
                 if (imagenes.isEmpty()) {
                     etiqueta.setIcon(null);
