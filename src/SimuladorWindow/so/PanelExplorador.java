@@ -101,15 +101,20 @@ public class PanelExplorador extends JPanel {
         add(panelSur, BorderLayout.SOUTH);
         actualizarConteo();
 
-        JToolBar barra = new JToolBar();
-        barra.setFloatable(false);
-        barra.setRollover(true);
-        barra.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Estilo.SOMBRA));
+        JToolBar barraArchivos = new JToolBar();
+        barraArchivos.setFloatable(false);
+        barraArchivos.setRollover(true);
+
+        JToolBar barraOrden = new JToolBar();
+        barraOrden.setFloatable(false);
+        barraOrden.setRollover(true);
+        barraOrden.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Estilo.SOMBRA));
 
         JButton btnRefrescar = new JButton("Refrescar");
         JButton btnNueva = new JButton("Nueva carpeta");
         JButton btnNuevoArchivo = new JButton("Nuevo archivo");
         JButton btnRenombrar = new JButton("Renombrar");
+        JButton btnEliminar = new JButton("Eliminar");
         JButton btnCopiar = new JButton("Copiar");
         JButton btnPegar = new JButton("Pegar");
         JButton btnImportar = new JButton("Importar");
@@ -118,20 +123,25 @@ public class PanelExplorador extends JPanel {
         JButton   btnOrdenar   = new JButton("Ordenar");
         JButton btnOrganizar = new JButton("Organizar");
 
-        barra.add(btnRefrescar);
-        barra.add(btnNueva);
-        barra.add(btnNuevoArchivo);
-        barra.add(btnRenombrar);
-        barra.add(btnCopiar);
-        barra.add(btnPegar);
-        barra.add(btnImportar);
-        barra.addSeparator();
-        barra.add(new JLabel(" Orden: "));
-        barra.add(cmbOrden);
-        barra.add(btnOrdenar);
-        barra.addSeparator();
-        barra.add(btnOrganizar);
-        add(barra, BorderLayout.NORTH);
+        barraArchivos.add(btnRefrescar);
+        barraArchivos.add(btnNueva);
+        barraArchivos.add(btnNuevoArchivo);
+        barraArchivos.add(btnRenombrar);
+        barraArchivos.add(btnEliminar);
+        barraArchivos.add(btnCopiar);
+        barraArchivos.add(btnPegar);
+        barraArchivos.add(btnImportar);
+
+        barraOrden.add(new JLabel(" Orden: "));
+        barraOrden.add(cmbOrden);
+        barraOrden.add(btnOrdenar);
+        barraOrden.addSeparator();
+        barraOrden.add(btnOrganizar);
+
+        JPanel barras = new JPanel(new GridLayout(2, 1));
+        barras.add(barraArchivos);
+        barras.add(barraOrden);
+        add(barras, BorderLayout.NORTH);
 
         btnRefrescar.addActionListener(e -> refrescar());
 
@@ -188,6 +198,26 @@ public class PanelExplorador extends JPanel {
                 JOptionPane.showMessageDialog(this,
                         "No se pudo renombrar. Compruebe permisos.");
                 return;
+            }
+            refrescar();
+        });
+
+        btnEliminar.addActionListener(e -> {
+            File sel = archivoSeleccionado();
+            if (sel == null) {
+                JOptionPane.showMessageDialog(this,
+                        "Seleccione un archivo o carpeta para eliminar.");
+                return;
+            }
+            int resp = JOptionPane.showConfirmDialog(this,
+                    "¿Eliminar \"" + sel.getName() + "\"? Esta acción no se puede deshacer.",
+                    "Eliminar", JOptionPane.YES_NO_OPTION);
+            if (resp != JOptionPane.YES_OPTION) {
+                return;
+            }
+            if (!eliminarRecursivo(sel)) {
+                JOptionPane.showMessageDialog(this,
+                        "No se pudo eliminar \"" + sel.getName() + "\".");
             }
             refrescar();
         });
@@ -368,10 +398,15 @@ public class PanelExplorador extends JPanel {
         }
 
         private Component getComponentFromBar(String texto) {
-            JToolBar bar = (JToolBar) PanelExplorador.this.getComponent(2);
-            for (Component c : bar.getComponents()) {
-                if (c instanceof JButton && texto.equals(((JButton) c).getText())) {
-                    return c;
+            Container barras = (Container) PanelExplorador.this.getComponent(2);
+            for (Component fila : barras.getComponents()) {
+                if (!(fila instanceof JToolBar)) {
+                    continue;
+                }
+                for (Component c : ((JToolBar) fila).getComponents()) {
+                    if (c instanceof JButton && texto.equals(((JButton) c).getText())) {
+                        return c;
+                    }
                 }
             }
             return new JButton();
@@ -555,6 +590,20 @@ public class PanelExplorador extends JPanel {
                         StandardCopyOption.REPLACE_EXISTING);
             }
         }
+    }
+
+    private boolean eliminarRecursivo(File archivo) {
+        if (archivo.isDirectory()) {
+            File[] hijos = archivo.listFiles();
+            if (hijos != null) {
+                for (File hijo : hijos) {
+                    if (!eliminarRecursivo(hijo)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return archivo.delete();
     }
 
     private static String extension(File f) {
