@@ -243,7 +243,7 @@ public class PanelPerfil extends JPanel {
             puestas++;
         }
         if (puestas == 0) {
-            JLabel vacio = new JLabel("Sin fotos ni reels publicados todavía.", SwingConstants.CENTER);
+            JLabel vacio = new JLabel("Sin fotos publicadas todavía.", SwingConstants.CENTER);
             vacio.setForeground(EstiloInsta.TEXTO_GRIS);
             vacio.setBorder(EstiloInsta.margen(30, 12, 30, 12));
             return capar(vacio);
@@ -263,19 +263,13 @@ public class PanelPerfil extends JPanel {
         celda.setOpaque(true);
         celda.setToolTipText(p.getTexto());
 
-        if (p.esVideo()) {
-            celda.setText("<html><center>REEL<br>&#9654;</center></html>");
-            celda.setBackground(new Color(30, 30, 30));
-            celda.setForeground(Color.WHITE);
+        ImageIcon mini = ConfigInsta.miniatura(new File(p.getRutaImagen()), LADO_CELDA);
+        celda.setBackground(new Color(235, 235, 235));
+        if (mini != null) {
+            celda.setIcon(mini);
         } else {
-            ImageIcon mini = ConfigInsta.miniatura(new File(p.getRutaImagen()), LADO_CELDA);
-            celda.setBackground(new Color(235, 235, 235));
-            if (mini != null) {
-                celda.setIcon(mini);
-            } else {
-                celda.setText("(imagen)");
-                celda.setForeground(EstiloInsta.TEXTO_GRIS);
-            }
+            celda.setText("(imagen)");
+            celda.setForeground(EstiloInsta.TEXTO_GRIS);
         }
         return celda;
     }

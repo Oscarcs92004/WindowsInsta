@@ -30,14 +30,9 @@ public class PanelCrear extends JPanel {
     private final JTextArea txtDescImg = new JTextArea(3, 20);
     private File imagenElegida;
 
-    private final JLabel previewVid = new JLabel("Toca para elegir un video", SwingConstants.CENTER);
-    private final JTextArea txtDescVid = new JTextArea(3, 20);
-    private File videoElegido;
-
     private final JTextArea txtSoloTexto = new JTextArea(4, 20);
 
     private final SelectorSticker stickerImagen = new SelectorSticker();
-    private final SelectorSticker stickerVideo = new SelectorSticker();
     private final SelectorSticker stickerTexto = new SelectorSticker();
 
     public PanelCrear(InstaServicio insta, Usuario usuarioActual) {
@@ -52,13 +47,12 @@ public class PanelCrear extends JPanel {
         titulo.setBorder(EstiloInsta.margen(10, 12, 10, 12));
 
         JComponent tabs = EstiloInsta.barraSegmentos(
-                new String[] {"Publicación", "Reel", "Texto"},
+                new String[] {"Publicación", "Texto"},
                 i -> cartas.show(cuerpo, String.valueOf(i)));
 
         cuerpo.setBackground(EstiloInsta.BLANCO);
         cuerpo.add(pestanaImagen(), "0");
-        cuerpo.add(pestanaVideo(), "1");
-        cuerpo.add(pestanaTexto(), "2");
+        cuerpo.add(pestanaTexto(), "1");
 
         JPanel norte = new JPanel(new BorderLayout());
         norte.setBackground(EstiloInsta.BLANCO);
@@ -71,17 +65,12 @@ public class PanelCrear extends JPanel {
 
     public void recargar() {
         imagenElegida = null;
-        videoElegido = null;
         previewImg.setIcon(null);
         previewImg.setText("Toca para elegir una foto");
-        previewVid.setIcon(null);
-        previewVid.setText("Toca para elegir un video");
         txtCarpeta.setText("");
         txtDescImg.setText("");
-        txtDescVid.setText("");
         txtSoloTexto.setText("");
         stickerImagen.limpiar();
-        stickerVideo.limpiar();
         stickerTexto.limpiar();
         cartas.show(cuerpo, "0");
     }
@@ -98,7 +87,7 @@ public class PanelCrear extends JPanel {
                 File f = elegirArchivo("Imágenes (png, jpg)", "png", "jpg", "jpeg");
                 if (f != null) {
                     imagenElegida = f;
-                    ponerPreview(previewImg, f, false);
+                    ponerPreview(previewImg, f);
                 }
             }
         });
@@ -121,43 +110,6 @@ public class PanelCrear extends JPanel {
         form.add(Box.createVerticalStrut(8));
         form.add(etiqueta("Sticker (opcional)"));
         form.add(stickerImagen);
-        form.add(Box.createVerticalStrut(14));
-        form.add(anchoCompleto(compartir));
-        return envolver(form);
-    }
-
-    private JComponent pestanaVideo() {
-        prepararArea(txtDescVid);
-
-        previewVid.setPreferredSize(new Dimension(360, 200));
-        marcoPreview(previewVid);
-        previewVid.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-                File f = elegirArchivo("Videos (mp4, mov, avi, webm, mkv)",
-                        "mp4", "mov", "avi", "webm", "mkv");
-                if (f != null) {
-                    videoElegido = f;
-                    ponerPreview(previewVid, f, true);
-                }
-            }
-        });
-
-        JLabel contador = new JLabel();
-        contarCaracteres(txtDescVid, contador, MAX_DESCRIPCION);
-
-        JButton compartir = EstiloInsta.botonPrimario("Compartir reel");
-        compartir.addActionListener(e -> publicarVideo());
-
-        PanelFeed form = columnaForm();
-        form.add(previewVid);
-        form.add(Box.createVerticalStrut(12));
-        form.add(etiqueta("Descripción"));
-        form.add(scroll(txtDescVid));
-        form.add(contador);
-        form.add(Box.createVerticalStrut(8));
-        form.add(etiqueta("Sticker (opcional)"));
-        form.add(stickerVideo);
         form.add(Box.createVerticalStrut(14));
         form.add(anchoCompleto(compartir));
         return envolver(form);
@@ -214,37 +166,10 @@ public class PanelCrear extends JPanel {
             JOptionPane.showMessageDialog(this, "No se pudo copiar la foto: " + ex.getMessage());
             return;
         }
-        if (!publicarEnServidor(desc, destino.getPath(), null, stickerImagen.ruta())) {
+        if (!publicarEnServidor(desc, destino.getPath(), stickerImagen.ruta())) {
             return;
         }
         JOptionPane.showMessageDialog(this, "Publicación compartida.");
-        recargar();
-    }
-
-    private void publicarVideo() {
-        if (videoElegido == null) {
-            JOptionPane.showMessageDialog(this, "Primero elige un video.");
-            return;
-        }
-        String desc = txtDescVid.getText().trim();
-        if (desc.length() > MAX_DESCRIPCION) {
-            JOptionPane.showMessageDialog(this,
-                    "La descripción no puede pasar de " + MAX_DESCRIPCION + " caracteres.");
-            return;
-        }
-        String usuario = usuarioActual.getUsername();
-        File destino = new File(insta.carpetaVideosDe(usuario), videoElegido.getName());
-        try {
-            insta.carpetaVideosDe(usuario).mkdirs();
-            Files.copy(videoElegido.toPath(), destino.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "No se pudo copiar el video: " + ex.getMessage());
-            return;
-        }
-        if (!publicarEnServidor(desc, null, destino.getPath(), stickerVideo.ruta())) {
-            return;
-        }
-        JOptionPane.showMessageDialog(this, "Reel compartido.");
         recargar();
     }
 
@@ -259,17 +184,16 @@ public class PanelCrear extends JPanel {
                     "El texto no puede pasar de " + MAX_TEXTO + " caracteres.");
             return;
         }
-        if (!publicarEnServidor(texto, null, null, stickerTexto.ruta())) {
+        if (!publicarEnServidor(texto, null, stickerTexto.ruta())) {
             return;
         }
         JOptionPane.showMessageDialog(this, "Publicado.");
         recargar();
     }
 
-    private boolean publicarEnServidor(String texto, String rutaImagen, String rutaVideo,
-                                       String rutaSticker) {
+    private boolean publicarEnServidor(String texto, String rutaImagen, String rutaSticker) {
         String respuesta = Cliente.enviar("POST", usuarioActual.getUsername(),
-                texto, rutaImagen, rutaVideo, rutaSticker);
+                texto, rutaImagen, rutaSticker);
         if (!Cliente.esOk(respuesta)) {
             JOptionPane.showMessageDialog(this,
                     "No se pudo publicar: " + Cliente.motivo(respuesta));
@@ -341,17 +265,11 @@ public class PanelCrear extends JPanel {
         preview.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
-    private void ponerPreview(JLabel preview, File archivo, boolean esVideo) {
-        if (esVideo) {
-            preview.setIcon(IconosInsta.icono("play", 40, true));
-            preview.setText("  " + archivo.getName());
-            preview.setHorizontalTextPosition(SwingConstants.RIGHT);
-        } else {
-            ImageIcon ic = new ImageIcon(new ImageIcon(archivo.getPath()).getImage()
-                    .getScaledInstance(-1, 230, Image.SCALE_SMOOTH));
-            preview.setIcon(ic);
-            preview.setText("");
-        }
+    private void ponerPreview(JLabel preview, File archivo) {
+        ImageIcon ic = new ImageIcon(new ImageIcon(archivo.getPath()).getImage()
+                .getScaledInstance(-1, 230, Image.SCALE_SMOOTH));
+        preview.setIcon(ic);
+        preview.setText("");
     }
 
     private void contarCaracteres(JTextArea ta, JLabel etiqueta, int max) {

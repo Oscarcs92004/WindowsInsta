@@ -16,9 +16,7 @@ public final class TextoInsta {
     public static String formato(Publicacion p) {
         String texto = p.getAutor() + " escribio:\n\""
                 + p.getTexto() + "\" - " + FECHA.format(p.getFecha());
-        if (p.esVideo()) {
-            texto = texto + "\n[reel adjunto]";
-        } else if (p.tieneImagen()) {
+        if (p.tieneImagen()) {
             texto = texto + "\n[imagen adjunta]";
         }
         if (p.tieneSticker()) {

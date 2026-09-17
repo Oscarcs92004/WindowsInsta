@@ -88,10 +88,6 @@ public class InstaServicio {
         return new File(carpetaDe(username), "imagenes");
     }
 
-    public File carpetaVideosDe(String username) {
-        return new File(carpetaDe(username), "videos");
-    }
-
     public File carpetaFoldersPersonalesDe(String username) {
         return new File(carpetaDe(username), "folders_personales");
     }
@@ -112,7 +108,6 @@ public class InstaServicio {
 
         carpeta.mkdirs();
         carpetaImagenesDe(username).mkdirs();
-        carpetaVideosDe(username).mkdirs();
         carpetaFoldersPersonalesDe(username).mkdirs();
         carpetaStickersPersonalesDe(username).mkdirs();
 

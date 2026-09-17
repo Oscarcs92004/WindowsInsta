@@ -85,9 +85,6 @@ public class TarjetaPublicacion extends JPanel {
     }
 
     private JComponent medio() {
-        if (publicacion.esVideo()) {
-            return tarjetaVideo();
-        }
         if (publicacion.tieneImagen()) {
             ImageIcon icono = ConfigInsta.escalarParaFeed(new File(publicacion.getRutaImagen()));
             if (icono != null && publicacion.tieneSticker()) {
@@ -187,47 +184,6 @@ public class TarjetaPublicacion extends JPanel {
         return paletas[Math.abs(texto.hashCode()) % paletas.length];
     }
 
-    private JComponent tarjetaVideo() {
-        JPanel video = new JPanel(new GridBagLayout());
-        video.setBackground(new Color(20, 20, 20));
-        video.setAlignmentX(LEFT_ALIGNMENT);
-        JLabel sticker = etiquetaSticker(80);
-        int alto = (sticker != null) ? 350 : 260;
-        video.setPreferredSize(new Dimension(anchoFeed, alto));
-        video.setMaximumSize(new Dimension(Integer.MAX_VALUE, alto));
-
-        JLabel play = new JLabel("▶");
-        play.setForeground(Color.WHITE);
-        play.setFont(new Font("SansSerif", Font.BOLD, 46));
-
-        JLabel nombre = new JLabel("REEL · " + new File(publicacion.getRutaVideo()).getName());
-        nombre.setForeground(new Color(220, 220, 220));
-        nombre.setFont(EstiloInsta.CHICA);
-
-        JPanel centro = new JPanel();
-        centro.setOpaque(false);
-        centro.setLayout(new BoxLayout(centro, BoxLayout.Y_AXIS));
-        play.setAlignmentX(CENTER_ALIGNMENT);
-        nombre.setAlignmentX(CENTER_ALIGNMENT);
-        centro.add(play);
-        centro.add(Box.createVerticalStrut(6));
-        centro.add(nombre);
-        if (sticker != null) {
-            sticker.setAlignmentX(CENTER_ALIGNMENT);
-            centro.add(Box.createVerticalStrut(10));
-            centro.add(sticker);
-        }
-        video.add(centro);
-
-        video.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        video.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-                reproducirVideo(new File(publicacion.getRutaVideo()));
-            }
-        });
-        return video;
-    }
 
     private JComponent filaAcciones() {
         JPanel fila = new JPanel(new BorderLayout());
@@ -313,19 +269,6 @@ public class TarjetaPublicacion extends JPanel {
                         TextoInsta.formato(publicacion)), null));
         menu.add(copiar);
         menu.show(ancla, 0, ancla.getHeight());
-    }
-
-    private void reproducirVideo(File archivo) {
-        if (!archivo.exists()) {
-            JOptionPane.showMessageDialog(this, "El video ya no está disponible.");
-            return;
-        }
-        try {
-            Desktop.getDesktop().open(archivo);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this,
-                    "No se pudo abrir el video: " + ex.getMessage());
-        }
     }
 
     private static JButton iconoBoton(String icono, int tam, boolean activo) {

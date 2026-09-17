@@ -110,10 +110,9 @@ class AtenderCliente implements Runnable {
             return "ERROR;usuario no existe";
         }
         String rutaImagen = opcional(p, 3);
-        String rutaVideo = opcional(p, 4);
-        String rutaSticker = opcional(p, 5);
+        String rutaSticker = opcional(p, 4);
         INSTA.asegurarCarpetaUsuario(p[1]);
-        INSTA.publicar(p[1], new Publicacion(p[1], p[2], rutaImagen, rutaVideo, rutaSticker));
+        INSTA.publicar(p[1], new Publicacion(p[1], p[2], rutaImagen, rutaSticker));
         return "OK;publicado";
     }
 
